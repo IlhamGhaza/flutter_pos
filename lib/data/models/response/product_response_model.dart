@@ -69,17 +69,28 @@ class Product {
   factory Product.fromMap(Map<String, dynamic> json) => Product(
         id: json["id"],
         productId: json["product_id"],
-        name: json["name"],
+        name: json["name"] ?? '',
         description: json["description"] ?? '',
-        price: json["price"],
-        stock: json["stock"],
-        category: json["category"],
-        categoryId: json["category_id"] is String ? int.parse(json["category_id"]) : json["category_id"],
+        price: json["price"] ?? 0,
+        stock: json["stock"] ?? 0,
+        category: json["category"] ?? '',
+        categoryId: json["category_id"] != null
+            ? (json["category_id"] is String
+                ? int.tryParse(json["category_id"]) ?? 0
+                : json["category_id"])
+            : 0,
         image: json["image"] ?? '',
         isBestSeller: json["is_best_seller"] == 1 ? true : false,
 
         // createdAt: DateTime.parse(json["created_at"]),
         // updatedAt: DateTime.parse(json["updated_at"]),
+
+        // createdAt: json["created_at"] != null
+        //     ? DateTime.parse(json["created_at"])
+        //     : null,
+        // updatedAt: json["updated_at"] != null
+        //     ? DateTime.parse(json["updated_at"])
+        //     : null,
       );
 
   Map<String, dynamic> toMap() => {
