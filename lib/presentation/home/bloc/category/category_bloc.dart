@@ -19,27 +19,21 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<_GetCategories>((event, emit) async {
       emit(const _Loading());
       try {
-        final result = await productRemoteDatasource.getCategories();
-        await result.fold(
-          (l) async {
-            if (!emit.isDone) emit(_Error(l));
-          },
-          (r) async {
-            if (r.data != null && r.data!.isNotEmpty) {
-              // Save categories to local database
-              await ProductLocalDatasource.instance.insertAllCategories(r.data!);
-              categories = r.data!;
-              if (!emit.isDone) emit(_Loaded(categories));
-            } else {
-              // If no categories from API, try to load from local
-              final localCategories = await ProductLocalDatasource.instance.getAllCategories();
-              categories = localCategories;
-              if (!emit.isDone) emit(_LoadedLocal(categories));
-            }
-          },
-        );
+        // First try to get categories from local database
+        final localCategories = await ProductLocalDatasource.instance.getAllCategories();
+        if (localCategories.isNotEmpty) {
+          categories = localCategories;
+          if (!emit.isDone) emit(_LoadedLocal(categories));
+          
+          // Then try to update from remote in the background
+          _fetchFromRemote(emit);
+        } else {
+          // If no local categories, fetch from remote
+          await _fetchFromRemote(emit);
+        }
       } catch (e) {
-        if (!emit.isDone) emit(_Error(e.toString()));
+        // If any error occurs with local DB, try to fetch from remote
+        await _fetchFromRemote(emit);
       }
     });
 
@@ -51,15 +45,42 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
           categories = localCategories;
           if (!emit.isDone) emit(_LoadedLocal(categories));
         } else {
-          // If no local categories, fetch from remote
-          add(const CategoryEvent.getCategories());
+          // If no local categories, emit empty list instead of fetching from remote
+          categories = [];
+          if (!emit.isDone) emit(const _LoadedLocal([]));
         }
       } catch (e) {
-        // If any error occurs, try to fetch from remote
-        add(const CategoryEvent.getCategories());
+        // On error, emit empty list
+        if (!emit.isDone) emit(const _LoadedLocal([]));
       }
     });
   }
 
-
+  // Helper method to fetch categories from remote and update local DB
+  Future<void> _fetchFromRemote(Emitter<CategoryState> emit) async {
+    try {
+      final result = await productRemoteDatasource.getCategories();
+      await result.fold(
+        (error) async {
+          // Only emit error if we don't have any local data
+          if (categories.isEmpty && !emit.isDone) {
+            emit(_Error(error));
+          }
+        },
+        (response) async {
+          if (response.data != null && response.data!.isNotEmpty) {
+            // Save to local database
+            await ProductLocalDatasource.instance.insertAllCategories(response.data!);
+            categories = response.data!;
+            if (!emit.isDone) emit(_Loaded(categories));
+          }
+        },
+      );
+    } catch (e) {
+      // Only emit error if we don't have any local data
+      if (categories.isEmpty && !emit.isDone) {
+        emit(_Error(e.toString()));
+      }
+    }
+  }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter_pos/core/constants/variables.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
@@ -15,6 +16,7 @@ class CustomerRemoteDatasource {
       },
     );
     if (response.statusCode == 200) {
+      log('Success to get all customer response: ${response.body}');
       final data = json.decode(response.body);
       if (data is List) {
         return CustomerResponseModel.fromList(data);
@@ -24,6 +26,7 @@ class CustomerRemoteDatasource {
         throw Exception('Unexpected response format');
       }
     } else {
+      log('failed to get all customer response: ${response.body}');
       throw Exception('Failed to load customers');
     }
   }

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter_pos/core/constants/variables.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
@@ -7,66 +7,132 @@ import 'package:flutter_pos/data/models/response/discount_response_model.dart';
 
 class DiscountRemoteDatasource {
   Future<List<DiscountResponseModel>> getDiscounts() async {
-    final authData = await AuthLocalDatasource().getAuthData();
-    final response = await http.get(
-      Uri.parse('${Variables.baseUrl}/api/discounts'),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${authData.token}',
-      },
-    );
+    try {
+      final authData = await AuthLocalDatasource().getAuthData();
+      final response = await http.get(
+        Uri.parse('${Variables.baseUrl}/api/discounts'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${authData.token}',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      debugPrint('Discounts loaded successfully: ${response.body}');
-      final jsonData = json.decode(response.body);
-      final List<dynamic> discounts = jsonData['data'];
-      return discounts
-          .map((json) => DiscountResponseModel.fromMap(json))
-          .toList();
-    } else {
-      debugPrint('Failed to load discounts: ${response.body}');
-      throw Exception('Failed to load discounts');
+      if (response.statusCode == 200) {
+        log('Success to get all discount response: ${response.body}');
+        final dynamic decodedBody = json.decode(response.body);
+        
+        // The API returns a single response with all discounts in the 'data' array
+        if (decodedBody is Map<String, dynamic> && decodedBody['data'] is List) {
+          // Create a single DiscountResponseModel with all discounts in the data field
+          return [
+            DiscountResponseModel(
+              message: decodedBody['message'] ?? '',
+              data: (decodedBody['data'] as List)
+                  .whereType<Map<String, dynamic>>()
+                  .map((item) => DiscountModel.fromMap(item))
+                  .toList(),
+              syncTime: DateTime.now().toUtc(),
+              total: (decodedBody['total'] is int) 
+                  ? decodedBody['total'] 
+                  : int.tryParse(decodedBody['total']?.toString() ?? '0') ?? 0,
+            )
+          ];
+        }
+        
+        throw Exception('Unexpected response format: ${response.body}');
+      } else {
+        log('Failed to get all discount response: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to load discounts: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Error in getDiscounts: $e');
+      rethrow;
     }
   }
 
   Future<List<DiscountResponseModel>> getTodayDiscounts() async {
-    final authData = await AuthLocalDatasource().getAuthData();
-    final response = await http.get(
-      Uri.parse('${Variables.baseUrl}/api/discounts/filter/today'),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${authData.token}',
-      },
-    );
+    try {
+      final authData = await AuthLocalDatasource().getAuthData();
+      final response = await http.get(
+        Uri.parse('${Variables.baseUrl}/api/discounts/filter/today'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${authData.token}',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      debugPrint('Today discounts loaded successfully: ${response.body}');
-      final jsonData = json.decode(response.body);
-      final List<dynamic> discounts = jsonData['data'];
-      return discounts
-          .map((json) => DiscountResponseModel.fromMap(json))
-          .toList();
-    } else {
-      debugPrint('error fetch today discounts: ${response.body}');
-      throw Exception('Failed to load today discounts');
+      if (response.statusCode == 200) {
+        log('Success to get today discount response: ${response.body}');
+        final dynamic decodedBody = json.decode(response.body);
+        
+        // The API returns a single response with all discounts in the 'data' array
+        if (decodedBody is Map<String, dynamic> && decodedBody['data'] is List) {
+          // Create a single DiscountResponseModel with all discounts in the data field
+          return [
+            DiscountResponseModel(
+              message: decodedBody['message'] ?? '',
+              data: (decodedBody['data'] as List)
+                  .whereType<Map<String, dynamic>>()
+                  .map((item) => DiscountModel.fromMap(item))
+                  .toList(),
+              syncTime: DateTime.now().toUtc(),
+              total: (decodedBody['total'] is int) 
+                  ? decodedBody['total'] 
+                  : int.tryParse(decodedBody['total']?.toString() ?? '0') ?? 0,
+            )
+          ];
+        }
+        
+        log('Unexpected response format: $decodedBody');
+        return [];
+      } else {
+        log('Failed to get today\'s discounts: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to load today\'s discounts: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Error in getTodayDiscounts: $e');
+      rethrow;
     }
   }
 
   Future<DiscountResponseModel> getDiscountById(int id) async {
-    final authData = await AuthLocalDatasource().getAuthData();
-    final response = await http.get(
-      Uri.parse('${Variables.baseUrl}/api/discounts/$id'),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${authData.token}',
-      },
-    );
+    try {
+      final authData = await AuthLocalDatasource().getAuthData();
+      final response = await http.get(
+        Uri.parse('${Variables.baseUrl}/api/discounts/$id'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${authData.token}',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return DiscountResponseModel.fromMap(jsonData['data']);
-    } else {
-      throw Exception('Failed to load discount');
+      if (response.statusCode == 200) {
+        log('Success to get discount by id response: ${response.body}');
+        final dynamic jsonData = json.decode(response.body);
+        
+        // Handle different response formats
+        if (jsonData is Map<String, dynamic>) {
+          // If response has a 'data' field, use that
+          if (jsonData['data'] != null) {
+            return DiscountResponseModel.fromMap(
+              jsonData['data'] is Map<String, dynamic> 
+                ? jsonData['data'] 
+                : {'data': jsonData['data']}
+            );
+          }
+          // If no 'data' field, assume the entire response is the discount
+          return DiscountResponseModel.fromMap(jsonData);
+        } else {
+          log('Unexpected response format: $jsonData');
+          throw Exception('Invalid discount data format');
+        }
+      } else {
+        log('Failed to get discount by id: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to load discount: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Error in getDiscountById: $e');
+      rethrow;
     }
   }
 }

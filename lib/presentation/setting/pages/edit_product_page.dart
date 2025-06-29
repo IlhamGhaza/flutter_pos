@@ -125,8 +125,8 @@ class _EditProductPageState extends State<EditProductPage> {
                     // Update product with new data
                     final updatedProduct = widget.product.copyWith(
                       name: nameController.text,
-                      price: priceController.text.toIntegerFromText,
-                      stock: stockController.text.toIntegerFromText,
+                      price: double.parse(priceController.text),
+                      stock: int.parse(stockController.text),
                       isBestSeller: isBestSeller,
                       // Update image path if a new image was selected
                       image: imageFile?.path ?? widget.product.image,

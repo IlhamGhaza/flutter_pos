@@ -20,8 +20,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"var jsonData = JSON.parse(responseBody);",
-											"postman.setEnvironmentVariable(\"token\", jsonData.token);"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -186,11 +185,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has success status\", function () { pm.expect(responseJson.success).to.be.true; });",
-											"pm.test(\"Response has message\", function () { pm.expect(responseJson.message).to.eql(\"Order Created Successfully\"); });",
-											"pm.test(\"Response has data\", function () { pm.expect(responseJson).to.have.property('data'); });"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -222,7 +217,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"transaction_time\": \"2023-10-27 10:00:00\",\n    \"kasir_id\": 1,\n    \"total_price\": 150.75,\n    \"total_item\": 2,\n    \"payment_method\": \"cash\",\n    \"payment_amount\": 200.00,\n    \"sub_total\": 140.00,\n    \"tax\": 10.75,\n    \"discount_id\": 1,\n    \"service_charge\": 0.00,\n    \"order_items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 1,\n            \"total_price\": 100.50\n        },\n        {\n            \"product_id\": 2,\n            \"quantity\": 1,\n            \"total_price\": 50.25\n        }\n    ]\n}",
+									"raw": "{\n  \"transaction_time\": \"2024-10-27 14:30:00\",\n  \"kasir_id\": 1,\n  \"customer_id\": 2,\n  \"sub_total\": 150000,\n  \"tax_id\": 1,\n  \"tax_rate\": 11,\n  \"service_charge_id\": 1,\n  \"service_charge_rate\": 5,\n  \"discount_id\": 1,\n  \"total_price\": 165000,\n  \"total_item\": 3,\n  \"payment_method\": \"cash\",\n  \"payment_amount\": 200000,\n  \"change_amount\": 35000,\n  \"order_type\": \"in-person\",\n  \"customer_order_notes\": \"Mohon bungkus rapi\",\n  \"order_items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2,\n      \"price\": 50000\n    },\n    {\n      \"product_id\": 2,\n      \"quantity\": 1,\n      \"price\": 50000\n    }\n  ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -242,7 +237,7 @@
 							},
 							"response": [
 								{
-									"name": "200",
+									"name": "201 cash",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -264,7 +259,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"transaction_time\": \"2023-10-27 10:00:00\",\n    \"kasir_id\": 1,\n    \"total_price\": 150.75,\n    \"total_item\": 2,\n    \"payment_method\": \"cash\",\n    \"payment_amount\": 200.00,\n    \"sub_total\": 140.00,\n    \"tax\": 10.75,\n    \"discount_id\": 1,\n    \"service_charge\": 0.00,\n    \"order_items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 1,\n            \"total_price\": 100.50\n        },\n        {\n            \"product_id\": 2,\n            \"quantity\": 1,\n            \"total_price\": 50.25\n        }\n    ]\n}",
+											"raw": "{\n  \"transaction_time\": \"2024-10-27 14:30:00\",\n  \"kasir_id\": 1,\n  \"customer_id\": 2,\n  \"sub_total\": 150000,\n  \"tax_id\": 1,\n  \"tax_rate\": 11,\n  \"service_charge_id\": 1,\n  \"service_charge_rate\": 5,\n  \"discount_id\": 1,\n  \"total_price\": 165000,\n  \"total_item\": 3,\n  \"payment_method\": \"cash\",\n  \"payment_amount\": 200000,\n  \"change_amount\": 35000,\n  \"order_type\": \"in-person\",\n  \"customer_order_notes\": \"Mohon bungkus rapi\",\n  \"order_items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2,\n      \"price\": 50000\n    },\n    {\n      \"product_id\": 2,\n      \"quantity\": 1,\n      \"price\": 50000\n    }\n  ]\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -304,7 +299,7 @@
 										},
 										{
 											"key": "Date",
-											"value": "Mon, 23 Jun 2025 22:26:16 GMT"
+											"value": "Sun, 29 Jun 2025 06:23:23 GMT"
 										},
 										{
 											"key": "Content-Type",
@@ -316,7 +311,84 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n    \"success\": true,\n    \"message\": \"Order Created Successfully\",\n    \"data\": {\n        \"transaction_time\": \"2023-10-27T03:00:00.000000Z\",\n        \"kasir_id\": 1,\n        \"total_price\": \"150.75\",\n        \"total_item\": 2,\n        \"payment_method\": \"cash\",\n        \"payment_amount\": \"200.00\",\n        \"sub_total\": \"140.00\",\n        \"tax_amount\": \"10.75\",\n        \"discount_id\": 1,\n        \"discount_amount\": \"7.00\",\n        \"midtrans_order_id\": \"ORD-20250624-0002\",\n        \"updated_at\": \"2025-06-23T22:26:15.000000Z\",\n        \"created_at\": \"2025-06-23T22:26:15.000000Z\",\n        \"id\": 2,\n        \"order_items\": [\n            {\n                \"id\": 3,\n                \"order_id\": 2,\n                \"product_id\": 1,\n                \"quantity\": 1,\n                \"total_price\": \"0.00\",\n                \"created_at\": \"2025-06-23T22:26:15.000000Z\",\n                \"updated_at\": \"2025-06-23T22:26:15.000000Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 4,\n                \"order_id\": 2,\n                \"product_id\": 2,\n                \"quantity\": 1,\n                \"total_price\": \"0.00\",\n                \"created_at\": \"2025-06-23T22:26:15.000000Z\",\n                \"updated_at\": \"2025-06-23T22:26:15.000000Z\",\n                \"deleted_at\": null\n            }\n        ]\n    }\n}"
+									"body": "{\n    \"success\": true,\n    \"message\": \"Order created successfully\",\n    \"data\": {\n        \"transaction_time\": \"2024-10-27T07:30:00.000000Z\",\n        \"kasir_id\": 1,\n        \"kasir_name\": \"Test User\",\n        \"customer_id\": 2,\n        \"customer_name\": \"Favian Kihn\",\n        \"sub_total\": \"150000.00\",\n        \"total_price\": \"165300.00\",\n        \"total_item\": 3,\n        \"payment_method\": \"cash\",\n        \"payment_amount\": \"200000.00\",\n        \"change_amount\": \"34700.00\",\n        \"order_type\": \"in-person\",\n        \"customer_order_notes\": \"Mohon bungkus rapi\",\n        \"status\": \"paid\",\n        \"paid_at\": \"2025-06-29T06:23:23.000000Z\",\n        \"tax_amount\": \"15675.00\",\n        \"service_charge\": \"7125.00\",\n        \"discount_amount\": \"7500.00\",\n        \"tax_id\": 1,\n        \"tax_rate\": \"11.00\",\n        \"service_charge_id\": 1,\n        \"service_charge_rate\": \"5.00\",\n        \"discount_id\": 1,\n        \"discount_details\": {\n            \"type\": \"percentage\",\n            \"value\": \"5.00\"\n        },\n        \"midtrans_order_id\": null,\n        \"updated_at\": \"2025-06-29T06:23:23.000000Z\",\n        \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n        \"id\": 1,\n        \"order_items\": [\n            {\n                \"id\": 1,\n                \"order_id\": 1,\n                \"product_id\": 1,\n                \"product_name\": null,\n                \"price\": \"50000.00\",\n                \"quantity\": 2,\n                \"total_price\": \"100000.00\",\n                \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n                \"updated_at\": \"2025-06-29T06:23:23.000000Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 2,\n                \"order_id\": 1,\n                \"product_id\": 2,\n                \"product_name\": null,\n                \"price\": \"50000.00\",\n                \"quantity\": 1,\n                \"total_price\": \"50000.00\",\n                \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n                \"updated_at\": \"2025-06-29T06:23:23.000000Z\",\n                \"deleted_at\": null\n            }\n        ]\n    }\n}"
+								},
+								{
+									"name": "201 qris",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "string"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "string"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{token}}",
+												"type": "string"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"transaction_time\": \"2024-10-27 14:30:00\",\n  \"kasir_id\": 1,\n  \"customer_id\": 2,\n  \"sub_total\": 150000,\n  \"tax_id\": 1,\n  \"tax_rate\": 11,\n  \"service_charge_id\": 1,\n  \"service_charge_rate\": 5,\n  \"discount_id\": 1,\n  \"total_price\": 165000,\n  \"total_item\": 3,\n  \"payment_method\": \"qris\",\n  \"payment_amount\": 200000,\n  \"change_amount\": 35000,\n  \"order_type\": \"in-person\",\n  \"customer_order_notes\": \"Mohon bungkus rapi\",\n  \"order_items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2,\n      \"price\": 50000\n    },\n    {\n      \"product_id\": 2,\n      \"quantity\": 1,\n      \"price\": 50000\n    }\n  ]\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/orders",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"orders"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Host",
+											"value": "localhost:8000"
+										},
+										{
+											"key": "Connection",
+											"value": "close"
+										},
+										{
+											"key": "X-Powered-By",
+											"value": "PHP/8.4.4"
+										},
+										{
+											"key": "Cache-Control",
+											"value": "no-cache, private"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 29 Jun 2025 06:23:52 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "*"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"success\": true,\n    \"message\": \"Order created successfully\",\n    \"data\": {\n        \"transaction_time\": \"2024-10-27T07:30:00.000000Z\",\n        \"kasir_id\": 1,\n        \"kasir_name\": \"Test User\",\n        \"customer_id\": 2,\n        \"customer_name\": \"Favian Kihn\",\n        \"sub_total\": \"150000.00\",\n        \"total_price\": \"165300.00\",\n        \"total_item\": 3,\n        \"payment_method\": \"qris\",\n        \"payment_amount\": \"200000.00\",\n        \"change_amount\": \"34700.00\",\n        \"order_type\": \"in-person\",\n        \"customer_order_notes\": \"Mohon bungkus rapi\",\n        \"status\": \"paid\",\n        \"paid_at\": \"2025-06-29T06:23:51.000000Z\",\n        \"tax_amount\": \"15675.00\",\n        \"service_charge\": \"7125.00\",\n        \"discount_amount\": \"7500.00\",\n        \"tax_id\": 1,\n        \"tax_rate\": \"11.00\",\n        \"service_charge_id\": 1,\n        \"service_charge_rate\": \"5.00\",\n        \"discount_id\": 1,\n        \"discount_details\": {\n            \"type\": \"percentage\",\n            \"value\": \"5.00\"\n        },\n        \"midtrans_order_id\": \"ORD-20250629-0002-\",\n        \"updated_at\": \"2025-06-29T06:23:51.000000Z\",\n        \"created_at\": \"2025-06-29T06:23:51.000000Z\",\n        \"id\": 2,\n        \"order_items\": [\n            {\n                \"id\": 3,\n                \"order_id\": 2,\n                \"product_id\": 1,\n                \"product_name\": null,\n                \"price\": \"50000.00\",\n                \"quantity\": 2,\n                \"total_price\": \"100000.00\",\n                \"created_at\": \"2025-06-29T06:23:51.000000Z\",\n                \"updated_at\": \"2025-06-29T06:23:51.000000Z\",\n                \"deleted_at\": null\n            },\n            {\n                \"id\": 4,\n                \"order_id\": 2,\n                \"product_id\": 2,\n                \"product_name\": null,\n                \"price\": \"50000.00\",\n                \"quantity\": 1,\n                \"total_price\": \"50000.00\",\n                \"created_at\": \"2025-06-29T06:23:51.000000Z\",\n                \"updated_at\": \"2025-06-29T06:23:51.000000Z\",\n                \"deleted_at\": null\n            }\n        ]\n    }\n}"
 								}
 							]
 						},
@@ -397,7 +469,7 @@
 										},
 										{
 											"key": "Date",
-											"value": "Mon, 23 Jun 2025 22:34:30 GMT"
+											"value": "Sun, 29 Jun 2025 06:24:24 GMT"
 										},
 										{
 											"key": "Content-Type",
@@ -409,7 +481,7 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n    \"success\": true,\n    \"message\": \"Daftar pesanan berhasil diambil\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"transaction_time\": \"2023-10-27T03:00:00.000000Z\",\n            \"kasir_id\": 1,\n            \"customer_id\": null,\n            \"order_type\": \"in-person\",\n            \"customer_order_notes\": null,\n            \"sub_total\": \"140.00\",\n            \"tax_amount\": \"10.75\",\n            \"service_charge\": \"0.00\",\n            \"discount_amount\": \"7.00\",\n            \"total_price\": \"150.75\",\n            \"total_item\": 2,\n            \"payment_method\": \"cash\",\n            \"status\": \"pending\",\n            \"midtrans_transaction_id\": null,\n            \"midtrans_order_id\": \"ORD-20250624-0001\",\n            \"payment_gateway_response\": null,\n            \"paid_at\": null,\n            \"payment_amount\": \"200.00\",\n            \"change_amount\": \"0.00\",\n            \"discount_id\": 1,\n            \"tax_rate\": \"0.00\",\n            \"service_charge_rate\": \"0.00\",\n            \"is_synced_from_mobile\": false,\n            \"mobile_sync_validation_status\": null,\n            \"mobile_sync_notes\": null,\n            \"mobile_synced_at\": null,\n            \"created_at\": \"2025-06-23T22:34:25.000000Z\",\n            \"updated_at\": \"2025-06-23T22:34:25.000000Z\",\n            \"deleted_at\": null,\n            \"order_items\": [\n                {\n                    \"id\": 1,\n                    \"order_id\": 1,\n                    \"product_id\": 1,\n                    \"quantity\": 1,\n                    \"total_price\": \"0.00\",\n                    \"created_at\": \"2025-06-23T22:34:25.000000Z\",\n                    \"updated_at\": \"2025-06-23T22:34:25.000000Z\",\n                    \"deleted_at\": null,\n                    \"product\": {\n                        \"id\": 1,\n                        \"name\": \"voluptatem perspiciatis exercitationem\",\n                        \"category_id\": 1,\n                        \"sku\": \"29248711\",\n                        \"description\": \"Aut nisi veritatis ex et.\",\n                        \"price\": \"52.00\",\n                        \"unit_of_measure\": \"kg\",\n                        \"expired_date\": \"2026-03-14\",\n                        \"stock\": 0,\n                        \"image\": \"products/default-product.jpg\",\n                        \"is_best_seller\": false,\n                        \"isReady\": true,\n                        \"created_at\": \"2025-06-23T22:30:20.000000Z\",\n                        \"updated_at\": \"2025-06-23T22:30:20.000000Z\",\n                        \"deleted_at\": null\n                    }\n                },\n                {\n                    \"id\": 2,\n                    \"order_id\": 1,\n                    \"product_id\": 2,\n                    \"quantity\": 1,\n                    \"total_price\": \"0.00\",\n                    \"created_at\": \"2025-06-23T22:34:25.000000Z\",\n                    \"updated_at\": \"2025-06-23T22:34:25.000000Z\",\n                    \"deleted_at\": null,\n                    \"product\": {\n                        \"id\": 2,\n                        \"name\": \"dolorem hic ut\",\n                        \"category_id\": 1,\n                        \"sku\": \"96252833\",\n                        \"description\": \"Dolorem ut eaque iusto modi quidem perferendis iste.\",\n                        \"price\": \"83.00\",\n                        \"unit_of_measure\": \"pack\",\n                        \"expired_date\": \"2026-06-17\",\n                        \"stock\": 0,\n                        \"image\": \"products/default-product.jpg\",\n                        \"is_best_seller\": false,\n                        \"isReady\": true,\n                        \"created_at\": \"2025-06-23T22:30:20.000000Z\",\n                        \"updated_at\": \"2025-06-23T22:30:20.000000Z\",\n                        \"deleted_at\": null\n                    }\n                }\n            ],\n            \"kasir\": {\n                \"id\": 1,\n                \"name\": \"Test User\",\n                \"email\": \"test@example.com\",\n                \"phone\": null,\n                \"email_verified_at\": \"2025-06-23T22:30:19.000000Z\",\n                \"created_at\": \"2025-06-23T22:30:19.000000Z\",\n                \"updated_at\": \"2025-06-23T22:30:19.000000Z\",\n                \"deleted_at\": null\n            }\n        }\n    ]\n}"
+									"body": "{\n    \"success\": true,\n    \"message\": \"Daftar pesanan berhasil diambil\",\n    \"data\": [\n        {\n            \"id\": 2,\n            \"order_number\": \"ORD-20250629-0002-\",\n            \"status\": \"paid\",\n            \"order_type\": \"in-person\",\n            \"transaction_time\": \"2024-10-27T07:30:00.000000Z\",\n            \"created_at\": \"2025-06-29T06:23:51.000000Z\",\n            \"updated_at\": \"2025-06-29T06:23:51.000000Z\",\n            \"kasir_id\": 1,\n            \"kasir_name\": \"Test User\",\n            \"customer_id\": 2,\n            \"customer_name\": \"Favian Kihn\",\n            \"customer_order_notes\": \"Mohon bungkus rapi\",\n            \"sub_total\": 150000,\n            \"total_price\": 165300,\n            \"total_item\": 3,\n            \"tax_id\": 1,\n            \"tax_rate\": 11,\n            \"tax_amount\": 15675,\n            \"service_charge_id\": 1,\n            \"service_charge_rate\": 5,\n            \"service_charge\": 7125,\n            \"discount_id\": 1,\n            \"discount_amount\": 7500,\n            \"discount_details\": {\n                \"type\": \"percentage\",\n                \"value\": \"5.00\"\n            },\n            \"payment_method\": \"qris\",\n            \"payment_amount\": 200000,\n            \"change_amount\": 34700,\n            \"paid_at\": \"2025-06-29T06:23:51.000000Z\",\n            \"midtrans_transaction_id\": null,\n            \"midtrans_order_id\": \"ORD-20250629-0002-\",\n            \"payment_gateway_response\": null,\n            \"is_synced_from_mobile\": false,\n            \"mobile_sync_validation_status\": null,\n            \"mobile_sync_notes\": null,\n            \"mobile_synced_at\": null,\n            \"items\": [\n                {\n                    \"id\": 3,\n                    \"product_id\": 1,\n                    \"product_name\": \"rem velit enim\",\n                    \"quantity\": 2,\n                    \"price\": 50000,\n                    \"total_price\": 100000,\n                    \"created_at\": \"2025-06-29T06:23:51.000000Z\",\n                    \"updated_at\": \"2025-06-29T06:23:51.000000Z\"\n                },\n                {\n                    \"id\": 4,\n                    \"product_id\": 2,\n                    \"product_name\": \"sit ducimus beatae\",\n                    \"quantity\": 1,\n                    \"price\": 50000,\n                    \"total_price\": 50000,\n                    \"created_at\": \"2025-06-29T06:23:51.000000Z\",\n                    \"updated_at\": \"2025-06-29T06:23:51.000000Z\"\n                }\n            ]\n        },\n        {\n            \"id\": 1,\n            \"order_number\": null,\n            \"status\": \"paid\",\n            \"order_type\": \"in-person\",\n            \"transaction_time\": \"2024-10-27T07:30:00.000000Z\",\n            \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n            \"updated_at\": \"2025-06-29T06:23:23.000000Z\",\n            \"kasir_id\": 1,\n            \"kasir_name\": \"Test User\",\n            \"customer_id\": 2,\n            \"customer_name\": \"Favian Kihn\",\n            \"customer_order_notes\": \"Mohon bungkus rapi\",\n            \"sub_total\": 150000,\n            \"total_price\": 165300,\n            \"total_item\": 3,\n            \"tax_id\": 1,\n            \"tax_rate\": 11,\n            \"tax_amount\": 15675,\n            \"service_charge_id\": 1,\n            \"service_charge_rate\": 5,\n            \"service_charge\": 7125,\n            \"discount_id\": 1,\n            \"discount_amount\": 7500,\n            \"discount_details\": {\n                \"type\": \"percentage\",\n                \"value\": \"5.00\"\n            },\n            \"payment_method\": \"cash\",\n            \"payment_amount\": 200000,\n            \"change_amount\": 34700,\n            \"paid_at\": \"2025-06-29T06:23:23.000000Z\",\n            \"midtrans_transaction_id\": null,\n            \"midtrans_order_id\": null,\n            \"payment_gateway_response\": null,\n            \"is_synced_from_mobile\": false,\n            \"mobile_sync_validation_status\": null,\n            \"mobile_sync_notes\": null,\n            \"mobile_synced_at\": null,\n            \"items\": [\n                {\n                    \"id\": 1,\n                    \"product_id\": 1,\n                    \"product_name\": \"rem velit enim\",\n                    \"quantity\": 2,\n                    \"price\": 50000,\n                    \"total_price\": 100000,\n                    \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n                    \"updated_at\": \"2025-06-29T06:23:23.000000Z\"\n                },\n                {\n                    \"id\": 2,\n                    \"product_id\": 2,\n                    \"product_name\": \"sit ducimus beatae\",\n                    \"quantity\": 1,\n                    \"price\": 50000,\n                    \"total_price\": 50000,\n                    \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n                    \"updated_at\": \"2025-06-29T06:23:23.000000Z\"\n                }\n            ]\n        }\n    ]\n}"
 								}
 							]
 						},
@@ -492,7 +564,7 @@
 										},
 										{
 											"key": "Date",
-											"value": "Mon, 23 Jun 2025 22:34:59 GMT"
+											"value": "Sun, 29 Jun 2025 06:24:36 GMT"
 										},
 										{
 											"key": "Content-Type",
@@ -504,7 +576,7 @@
 										}
 									],
 									"cookie": [],
-									"body": "{\n    \"success\": true,\n    \"message\": \"Detail pesanan berhasil diambil\",\n    \"data\": {\n        \"id\": 1,\n        \"transaction_time\": \"2023-10-27T03:00:00.000000Z\",\n        \"kasir_id\": 1,\n        \"customer_id\": null,\n        \"order_type\": \"in-person\",\n        \"customer_order_notes\": null,\n        \"sub_total\": \"140.00\",\n        \"tax_amount\": \"10.75\",\n        \"service_charge\": \"0.00\",\n        \"discount_amount\": \"7.00\",\n        \"total_price\": \"150.75\",\n        \"total_item\": 2,\n        \"payment_method\": \"cash\",\n        \"status\": \"pending\",\n        \"midtrans_transaction_id\": null,\n        \"midtrans_order_id\": \"ORD-20250624-0001\",\n        \"payment_gateway_response\": null,\n        \"paid_at\": null,\n        \"payment_amount\": \"200.00\",\n        \"change_amount\": \"0.00\",\n        \"discount_id\": 1,\n        \"tax_rate\": \"0.00\",\n        \"service_charge_rate\": \"0.00\",\n        \"is_synced_from_mobile\": false,\n        \"mobile_sync_validation_status\": null,\n        \"mobile_sync_notes\": null,\n        \"mobile_synced_at\": null,\n        \"created_at\": \"2025-06-23T22:34:25.000000Z\",\n        \"updated_at\": \"2025-06-23T22:34:25.000000Z\",\n        \"deleted_at\": null,\n        \"order_items\": [\n            {\n                \"id\": 1,\n                \"order_id\": 1,\n                \"product_id\": 1,\n                \"quantity\": 1,\n                \"total_price\": \"0.00\",\n                \"created_at\": \"2025-06-23T22:34:25.000000Z\",\n                \"updated_at\": \"2025-06-23T22:34:25.000000Z\",\n                \"deleted_at\": null,\n                \"product\": {\n                    \"id\": 1,\n                    \"name\": \"voluptatem perspiciatis exercitationem\",\n                    \"category_id\": 1,\n                    \"sku\": \"29248711\",\n                    \"description\": \"Aut nisi veritatis ex et.\",\n                    \"price\": \"52.00\",\n                    \"unit_of_measure\": \"kg\",\n                    \"expired_date\": \"2026-03-14\",\n                    \"stock\": 0,\n                    \"image\": \"products/default-product.jpg\",\n                    \"is_best_seller\": false,\n                    \"isReady\": true,\n                    \"created_at\": \"2025-06-23T22:30:20.000000Z\",\n                    \"updated_at\": \"2025-06-23T22:30:20.000000Z\",\n                    \"deleted_at\": null\n                }\n            },\n            {\n                \"id\": 2,\n                \"order_id\": 1,\n                \"product_id\": 2,\n                \"quantity\": 1,\n                \"total_price\": \"0.00\",\n                \"created_at\": \"2025-06-23T22:34:25.000000Z\",\n                \"updated_at\": \"2025-06-23T22:34:25.000000Z\",\n                \"deleted_at\": null,\n                \"product\": {\n                    \"id\": 2,\n                    \"name\": \"dolorem hic ut\",\n                    \"category_id\": 1,\n                    \"sku\": \"96252833\",\n                    \"description\": \"Dolorem ut eaque iusto modi quidem perferendis iste.\",\n                    \"price\": \"83.00\",\n                    \"unit_of_measure\": \"pack\",\n                    \"expired_date\": \"2026-06-17\",\n                    \"stock\": 0,\n                    \"image\": \"products/default-product.jpg\",\n                    \"is_best_seller\": false,\n                    \"isReady\": true,\n                    \"created_at\": \"2025-06-23T22:30:20.000000Z\",\n                    \"updated_at\": \"2025-06-23T22:30:20.000000Z\",\n                    \"deleted_at\": null\n                }\n            }\n        ],\n        \"kasir\": {\n            \"id\": 1,\n            \"name\": \"Test User\",\n            \"email\": \"test@example.com\",\n            \"phone\": null,\n            \"email_verified_at\": \"2025-06-23T22:30:19.000000Z\",\n            \"created_at\": \"2025-06-23T22:30:19.000000Z\",\n            \"updated_at\": \"2025-06-23T22:30:19.000000Z\",\n            \"deleted_at\": null\n        }\n    }\n}"
+									"body": "{\n    \"success\": true,\n    \"message\": \"Detail pesanan berhasil diambil\",\n    \"data\": {\n        \"id\": 1,\n        \"order_number\": null,\n        \"status\": \"paid\",\n        \"order_type\": \"in-person\",\n        \"transaction_time\": \"2024-10-27T07:30:00.000000Z\",\n        \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n        \"updated_at\": \"2025-06-29T06:23:23.000000Z\",\n        \"kasir_id\": 1,\n        \"kasir_name\": \"Test User\",\n        \"customer_id\": 2,\n        \"customer_name\": \"Favian Kihn\",\n        \"customer_order_notes\": \"Mohon bungkus rapi\",\n        \"sub_total\": 150000,\n        \"total_price\": 165300,\n        \"total_item\": 3,\n        \"tax_id\": 1,\n        \"tax_rate\": 11,\n        \"tax_amount\": 15675,\n        \"service_charge_id\": 1,\n        \"service_charge_rate\": 5,\n        \"service_charge\": 7125,\n        \"discount_id\": 1,\n        \"discount_amount\": 7500,\n        \"discount_details\": {\n            \"type\": \"percentage\",\n            \"value\": \"5.00\"\n        },\n        \"payment_method\": \"cash\",\n        \"payment_amount\": 200000,\n        \"change_amount\": 34700,\n        \"paid_at\": \"2025-06-29T06:23:23.000000Z\",\n        \"midtrans_transaction_id\": null,\n        \"midtrans_order_id\": null,\n        \"payment_gateway_response\": null,\n        \"is_synced_from_mobile\": false,\n        \"mobile_sync_validation_status\": null,\n        \"mobile_sync_notes\": null,\n        \"mobile_synced_at\": null,\n        \"items\": [\n            {\n                \"id\": 1,\n                \"product_id\": 1,\n                \"product_name\": \"rem velit enim\",\n                \"quantity\": 2,\n                \"price\": 50000,\n                \"total_price\": 100000,\n                \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n                \"updated_at\": \"2025-06-29T06:23:23.000000Z\"\n            },\n            {\n                \"id\": 2,\n                \"product_id\": 2,\n                \"product_name\": \"sit ducimus beatae\",\n                \"quantity\": 1,\n                \"price\": 50000,\n                \"total_price\": 50000,\n                \"created_at\": \"2025-06-29T06:23:23.000000Z\",\n                \"updated_at\": \"2025-06-29T06:23:23.000000Z\"\n            }\n        ]\n    }\n}"
 								}
 							]
 						}
@@ -538,13 +610,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has purchase order data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"    pm.expect(responseJson.status).to.eql(\"pending\");",
-											"    pm.expect(responseJson).to.have.property('items');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -675,7 +741,7 @@
 							]
 						},
 						{
-							"name": "New Request",
+							"name": "get status",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
 							},
@@ -804,13 +870,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message and data\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Taxes retrieved successfully.\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"    pm.expect(responseJson.data).to.be.an('array');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -919,13 +979,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message and data\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Tax created successfully.\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"    pm.expect(responseJson.data.name).to.eql(\"VAT\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1062,12 +1116,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message and data\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Tax retrieved successfully.\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1323,11 +1372,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Tax deleted successfully.\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1461,12 +1506,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message and data\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Service charges retrieved successfully\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1575,12 +1615,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message and data\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Service charge created successfully\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1717,12 +1752,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message and data\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Service charge retrieved successfully.\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1833,12 +1863,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message and data\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Service charge updated successfully.\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1977,11 +2002,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has message\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"Service charge deleted successfully.\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -2115,14 +2136,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has status, message and data\", function () {",
-											"    pm.expect(responseJson.status).to.be.true;",
-											"    pm.expect(responseJson.message).to.eql(\"List data categories\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"    pm.expect(responseJson.data).to.be.an('array');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -2254,15 +2268,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response structure is correct\", function () {",
-											"    pm.expect(responseJson.message).to.eql(\"success\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"    pm.expect(responseJson.data).to.be.an('array');",
-											"    pm.expect(responseJson).to.have.property('sync_time');",
-											"    pm.expect(responseJson).to.have.property('total');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -2371,13 +2377,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response structure is correct\", function () {",
-											"    pm.expect(responseJson.status).to.eql(\"success\");",
-											"    pm.expect(responseJson.message).to.eql(\"Discount created successfully\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -2662,12 +2662,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response structure is correct\", function () {",
-											"    pm.expect(responseJson.status).to.eql(\"success\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -2778,13 +2773,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response structure is correct\", function () {",
-											"    pm.expect(responseJson.status).to.eql(\"success\");",
-											"    pm.expect(responseJson.message).to.eql(\"Discount updated successfully\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -2921,12 +2910,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response structure is correct\", function () {",
-											"    pm.expect(responseJson.status).to.eql(\"success\");",
-											"    pm.expect(responseJson.message).to.eql(\"Discount deleted successfully\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3037,15 +3021,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response structure is correct\", function () {",
-											"    pm.expect(responseJson.status).to.eql(\"success\");",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"    pm.expect(responseJson.data).to.be.an('array');",
-											"    pm.expect(responseJson).to.have.property('today');",
-											"    pm.expect(responseJson).to.have.property('total');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3181,11 +3157,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response is an array\", function () {",
-											"    pm.expect(responseJson).to.be.an('array');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3294,12 +3266,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has product data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"    pm.expect(responseJson.name).to.eql(\"Super Widget\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3493,12 +3460,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has product data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"    pm.expect(responseJson).to.have.property('category');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3609,11 +3571,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has updated product data\", function () {",
-											"    pm.expect(responseJson.name).to.eql(\"Super Widget Updated\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3769,7 +3727,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3903,11 +3861,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response is an array\", function () {",
-											"    pm.expect(responseJson).to.be.an('array');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -4016,12 +3970,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has customer data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"    pm.expect(responseJson.name).to.eql(\"Alice Wonderland\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -4158,11 +4107,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has customer data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -4273,11 +4218,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has updated customer data\", function () {",
-											"    pm.expect(responseJson.name).to.eql(\"Alice Updated\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -4416,7 +4357,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -4485,13 +4426,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has pagination structure\", function () {",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"    pm.expect(responseJson.data).to.be.an('array');",
-											"    pm.expect(responseJson).to.have.property('current_page');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -4600,12 +4535,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has supplier data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"    pm.expect(responseJson.name).to.eql(\"ACME Corp\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -4742,11 +4672,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has supplier data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -4857,11 +4783,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has updated supplier data\", function () {",
-											"    pm.expect(responseJson.name).to.eql(\"ACME Corp Updated\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -5000,7 +4922,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -5069,13 +4991,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has pagination structure\", function () {",
-											"    pm.expect(responseJson).to.have.property('data');",
-											"    pm.expect(responseJson.data).to.be.an('array');",
-											"    pm.expect(responseJson).to.have.property('current_page');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -5120,13 +5036,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has purchase order data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"    pm.expect(responseJson.status).to.eql(\"pending\");",
-											"    pm.expect(responseJson).to.have.property('items');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -5185,13 +5095,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has purchase order data\", function () {",
-											"    pm.expect(responseJson).to.have.property('id');",
-											"    pm.expect(responseJson).to.have.property('supplier');",
-											"    pm.expect(responseJson).to.have.property('items');",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -5237,11 +5141,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-											"const responseJson = pm.response.json();",
-											"pm.test(\"Response has updated purchase order data\", function () {",
-											"    pm.expect(responseJson.status).to.eql(\"completed\");",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}

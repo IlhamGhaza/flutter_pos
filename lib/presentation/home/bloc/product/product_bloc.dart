@@ -46,21 +46,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       emit(const ProductState.loading());
       try {
         final localProducts = await ProductLocalDatasource.instance.getAllProduct();
-        if (localProducts.isNotEmpty) {
-          products = localProducts;
-          if (!emit.isDone) {
-            emit(ProductState.success(products));
-          }
-        } else {
-          // If no local products, fetch from remote
-          add(const ProductEvent.fetch());
+        products = localProducts;
+        if (!emit.isDone) {
+          emit(ProductState.success(products));
         }
       } catch (e) {
         if (!emit.isDone) {
           emit(ProductState.error('Failed to load local products: $e'));
         }
-        // Try to fetch from remote if local fails
-        add(const ProductEvent.fetch());
       }
     });
 
@@ -82,7 +75,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       final requestData = ProductRequestModel(
         name: event.product.name,
         description: event.product.description,
-        price: event.product.price,
+        price: event.product.price.toInt(),
         stock: event.product.stock,
         categoryId: event.product.categoryId,
         sku: event.product.sku,

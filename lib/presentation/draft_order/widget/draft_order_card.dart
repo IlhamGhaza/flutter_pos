@@ -71,8 +71,7 @@ class DraftOrderCard extends StatelessWidget {
                         CheckoutEvent.loadDraftOrder(data),
                       );
                   context.push(const OrderPage());
-                  ProductLocalDatasource.instance
-                      .removeDraftOrderById(data.id!);
+                  ProductLocalDatasource.instance.removeDraftOrder(data.id!);
                 },
                 label: 'Pay',
                 width: 80.0,
@@ -92,7 +91,7 @@ class DraftOrderCard extends StatelessWidget {
                 return ListTile(
                   title: Text(item.product.name),
                   subtitle: Text(
-                    '${item.quantity} x ${item.product.price.currencyFormatRp}',
+                    '${item.quantity} x ${item.product.price}'.currencyFormatRp,
                   ),
                   trailing: Text(
                     '${item.quantity * item.product.price}'.currencyFormatRp,

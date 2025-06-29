@@ -45,11 +45,15 @@ class PaymentSuccessDialog extends StatelessWidget {
                 subTotal,
                 discountPercentage,
                 appliedDiscount,
-                paymentType,
+                paymentMethod,
                 nominalBayar,
                 idKasir,
                 namaKasir,
-                customerName) {
+                customerName,
+                tax,
+                taxRate,
+                serviceCharge,
+                serviceChargeRate)  {
               context.read<CheckoutBloc>().add(const CheckoutEvent.started());
 
               // Use the correct variables that match the state
@@ -62,7 +66,7 @@ class PaymentSuccessDialog extends StatelessWidget {
                 children: [
                   LabelValue(
                     label: 'Payment Method',
-                    value: paymentType == 'QRIS' ? 'QRIS' : paymentType,
+                    value: paymentMethod == 'QRIS' ? 'QRIS' : paymentMethod,
                   ),
                   const Divider(height: 16.0),
                   LabelValue(
@@ -109,7 +113,7 @@ class PaymentSuccessDialog extends StatelessWidget {
                         child: Button.outlined(
                           onPressed: () async {
                             final printValue = await CwbPrint.instance
-                                .printOrderV2(products, qty, total, paymentType,
+                                .printOrderV2(products, qty, total, paymentMethod,
                                     nominalBayar, namaKasir, customerName);
                             await PrintBluetoothThermal.writeBytes(printValue);
                           },

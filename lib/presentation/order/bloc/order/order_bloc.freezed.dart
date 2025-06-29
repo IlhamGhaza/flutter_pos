@@ -27,6 +27,9 @@ mixin _$OrderEvent {
     required TResult Function(List<int> validDays, int percentage)
         applyAutoDiscount,
     required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
     required TResult Function(int orderId, bool isSynced) updateSyncStatus,
   }) =>
       throw _privateConstructorUsedError;
@@ -40,6 +43,9 @@ mixin _$OrderEvent {
     TResult? Function()? syncOfflineOrders,
     TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
   }) =>
       throw _privateConstructorUsedError;
@@ -53,6 +59,9 @@ mixin _$OrderEvent {
     TResult Function()? syncOfflineOrders,
     TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult Function(int orderId, bool isSynced)? updateSyncStatus,
     required TResult orElse(),
   }) =>
@@ -65,6 +74,8 @@ mixin _$OrderEvent {
     required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
     required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
     required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
     required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
   }) =>
       throw _privateConstructorUsedError;
@@ -76,6 +87,8 @@ mixin _$OrderEvent {
     TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
   }) =>
       throw _privateConstructorUsedError;
@@ -87,6 +100,8 @@ mixin _$OrderEvent {
     TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
     required TResult orElse(),
   }) =>
@@ -170,6 +185,9 @@ class _$StartedImpl with DiagnosticableTreeMixin implements _Started {
     required TResult Function(List<int> validDays, int percentage)
         applyAutoDiscount,
     required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
     required TResult Function(int orderId, bool isSynced) updateSyncStatus,
   }) {
     return started();
@@ -186,6 +204,9 @@ class _$StartedImpl with DiagnosticableTreeMixin implements _Started {
     TResult? Function()? syncOfflineOrders,
     TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
   }) {
     return started?.call();
@@ -202,6 +223,9 @@ class _$StartedImpl with DiagnosticableTreeMixin implements _Started {
     TResult Function()? syncOfflineOrders,
     TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult Function(int orderId, bool isSynced)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -220,6 +244,8 @@ class _$StartedImpl with DiagnosticableTreeMixin implements _Started {
     required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
     required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
     required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
     required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
   }) {
     return started(this);
@@ -234,6 +260,8 @@ class _$StartedImpl with DiagnosticableTreeMixin implements _Started {
     TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
   }) {
     return started?.call(this);
@@ -248,6 +276,8 @@ class _$StartedImpl with DiagnosticableTreeMixin implements _Started {
     TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -380,6 +410,9 @@ class _$AddPaymentMethodImpl
     required TResult Function(List<int> validDays, int percentage)
         applyAutoDiscount,
     required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
     required TResult Function(int orderId, bool isSynced) updateSyncStatus,
   }) {
     return addPaymentMethod(paymentMethod, orders, customerName);
@@ -396,6 +429,9 @@ class _$AddPaymentMethodImpl
     TResult? Function()? syncOfflineOrders,
     TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
   }) {
     return addPaymentMethod?.call(paymentMethod, orders, customerName);
@@ -412,6 +448,9 @@ class _$AddPaymentMethodImpl
     TResult Function()? syncOfflineOrders,
     TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult Function(int orderId, bool isSynced)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -430,6 +469,8 @@ class _$AddPaymentMethodImpl
     required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
     required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
     required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
     required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
   }) {
     return addPaymentMethod(this);
@@ -444,6 +485,8 @@ class _$AddPaymentMethodImpl
     TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
   }) {
     return addPaymentMethod?.call(this);
@@ -458,6 +501,8 @@ class _$AddPaymentMethodImpl
     TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -573,6 +618,9 @@ class _$AddNominalBayarImpl
     required TResult Function(List<int> validDays, int percentage)
         applyAutoDiscount,
     required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
     required TResult Function(int orderId, bool isSynced) updateSyncStatus,
   }) {
     return addNominalBayar(nominal);
@@ -589,6 +637,9 @@ class _$AddNominalBayarImpl
     TResult? Function()? syncOfflineOrders,
     TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
   }) {
     return addNominalBayar?.call(nominal);
@@ -605,6 +656,9 @@ class _$AddNominalBayarImpl
     TResult Function()? syncOfflineOrders,
     TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult Function(int orderId, bool isSynced)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -623,6 +677,8 @@ class _$AddNominalBayarImpl
     required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
     required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
     required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
     required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
   }) {
     return addNominalBayar(this);
@@ -637,6 +693,8 @@ class _$AddNominalBayarImpl
     TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
   }) {
     return addNominalBayar?.call(this);
@@ -651,6 +709,8 @@ class _$AddNominalBayarImpl
     TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -732,6 +792,9 @@ class _$SyncOfflineOrdersImpl
     required TResult Function(List<int> validDays, int percentage)
         applyAutoDiscount,
     required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
     required TResult Function(int orderId, bool isSynced) updateSyncStatus,
   }) {
     return syncOfflineOrders();
@@ -748,6 +811,9 @@ class _$SyncOfflineOrdersImpl
     TResult? Function()? syncOfflineOrders,
     TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
   }) {
     return syncOfflineOrders?.call();
@@ -764,6 +830,9 @@ class _$SyncOfflineOrdersImpl
     TResult Function()? syncOfflineOrders,
     TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult Function(int orderId, bool isSynced)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -782,6 +851,8 @@ class _$SyncOfflineOrdersImpl
     required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
     required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
     required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
     required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
   }) {
     return syncOfflineOrders(this);
@@ -796,6 +867,8 @@ class _$SyncOfflineOrdersImpl
     TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
   }) {
     return syncOfflineOrders?.call(this);
@@ -810,6 +883,8 @@ class _$SyncOfflineOrdersImpl
     TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -931,6 +1006,9 @@ class _$ApplyAutoDiscountImpl
     required TResult Function(List<int> validDays, int percentage)
         applyAutoDiscount,
     required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
     required TResult Function(int orderId, bool isSynced) updateSyncStatus,
   }) {
     return applyAutoDiscount(validDays, percentage);
@@ -947,6 +1025,9 @@ class _$ApplyAutoDiscountImpl
     TResult? Function()? syncOfflineOrders,
     TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
   }) {
     return applyAutoDiscount?.call(validDays, percentage);
@@ -963,6 +1044,9 @@ class _$ApplyAutoDiscountImpl
     TResult Function()? syncOfflineOrders,
     TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult Function(int orderId, bool isSynced)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -981,6 +1065,8 @@ class _$ApplyAutoDiscountImpl
     required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
     required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
     required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
     required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
   }) {
     return applyAutoDiscount(this);
@@ -995,6 +1081,8 @@ class _$ApplyAutoDiscountImpl
     TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
   }) {
     return applyAutoDiscount?.call(this);
@@ -1009,6 +1097,8 @@ class _$ApplyAutoDiscountImpl
     TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -1123,6 +1213,9 @@ class _$ApplyManualDiscountImpl
     required TResult Function(List<int> validDays, int percentage)
         applyAutoDiscount,
     required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
     required TResult Function(int orderId, bool isSynced) updateSyncStatus,
   }) {
     return applyManualDiscount(percentage);
@@ -1139,6 +1232,9 @@ class _$ApplyManualDiscountImpl
     TResult? Function()? syncOfflineOrders,
     TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
   }) {
     return applyManualDiscount?.call(percentage);
@@ -1155,6 +1251,9 @@ class _$ApplyManualDiscountImpl
     TResult Function()? syncOfflineOrders,
     TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult Function(int orderId, bool isSynced)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -1173,6 +1272,8 @@ class _$ApplyManualDiscountImpl
     required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
     required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
     required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
     required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
   }) {
     return applyManualDiscount(this);
@@ -1187,6 +1288,8 @@ class _$ApplyManualDiscountImpl
     TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
   }) {
     return applyManualDiscount?.call(this);
@@ -1201,6 +1304,8 @@ class _$ApplyManualDiscountImpl
     TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -1221,6 +1326,412 @@ abstract class _ApplyManualDiscount implements OrderEvent {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ApplyManualDiscountImplCopyWith<_$ApplyManualDiscountImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ApplyTaxImplCopyWith<$Res> {
+  factory _$$ApplyTaxImplCopyWith(
+          _$ApplyTaxImpl value, $Res Function(_$ApplyTaxImpl) then) =
+      __$$ApplyTaxImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({TaxResponseModel tax});
+}
+
+/// @nodoc
+class __$$ApplyTaxImplCopyWithImpl<$Res>
+    extends _$OrderEventCopyWithImpl<$Res, _$ApplyTaxImpl>
+    implements _$$ApplyTaxImplCopyWith<$Res> {
+  __$$ApplyTaxImplCopyWithImpl(
+      _$ApplyTaxImpl _value, $Res Function(_$ApplyTaxImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of OrderEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? tax = null,
+  }) {
+    return _then(_$ApplyTaxImpl(
+      null == tax
+          ? _value.tax
+          : tax // ignore: cast_nullable_to_non_nullable
+              as TaxResponseModel,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ApplyTaxImpl with DiagnosticableTreeMixin implements _ApplyTax {
+  const _$ApplyTaxImpl(this.tax);
+
+  @override
+  final TaxResponseModel tax;
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'OrderEvent.applyTax(tax: $tax)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'OrderEvent.applyTax'))
+      ..add(DiagnosticsProperty('tax', tax));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ApplyTaxImpl &&
+            (identical(other.tax, tax) || other.tax == tax));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, tax);
+
+  /// Create a copy of OrderEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ApplyTaxImplCopyWith<_$ApplyTaxImpl> get copyWith =>
+      __$$ApplyTaxImplCopyWithImpl<_$ApplyTaxImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() started,
+    required TResult Function(
+            String paymentMethod, List<OrderItem> orders, String customerName)
+        addPaymentMethod,
+    required TResult Function(int nominal) addNominalBayar,
+    required TResult Function() syncOfflineOrders,
+    required TResult Function(List<int> validDays, int percentage)
+        applyAutoDiscount,
+    required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
+    required TResult Function(int orderId, bool isSynced) updateSyncStatus,
+  }) {
+    return applyTax(tax);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? started,
+    TResult? Function(
+            String paymentMethod, List<OrderItem> orders, String customerName)?
+        addPaymentMethod,
+    TResult? Function(int nominal)? addNominalBayar,
+    TResult? Function()? syncOfflineOrders,
+    TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
+    TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
+    TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
+  }) {
+    return applyTax?.call(tax);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? started,
+    TResult Function(
+            String paymentMethod, List<OrderItem> orders, String customerName)?
+        addPaymentMethod,
+    TResult Function(int nominal)? addNominalBayar,
+    TResult Function()? syncOfflineOrders,
+    TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
+    TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
+    TResult Function(int orderId, bool isSynced)? updateSyncStatus,
+    required TResult orElse(),
+  }) {
+    if (applyTax != null) {
+      return applyTax(tax);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Started value) started,
+    required TResult Function(_AddPaymentMethod value) addPaymentMethod,
+    required TResult Function(_AddNominalBayar value) addNominalBayar,
+    required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
+    required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
+    required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
+    required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
+  }) {
+    return applyTax(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Started value)? started,
+    TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
+    TResult? Function(_AddNominalBayar value)? addNominalBayar,
+    TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
+    TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
+    TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
+    TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
+  }) {
+    return applyTax?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Started value)? started,
+    TResult Function(_AddPaymentMethod value)? addPaymentMethod,
+    TResult Function(_AddNominalBayar value)? addNominalBayar,
+    TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
+    TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
+    TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
+    TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
+    required TResult orElse(),
+  }) {
+    if (applyTax != null) {
+      return applyTax(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ApplyTax implements OrderEvent {
+  const factory _ApplyTax(final TaxResponseModel tax) = _$ApplyTaxImpl;
+
+  TaxResponseModel get tax;
+
+  /// Create a copy of OrderEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ApplyTaxImplCopyWith<_$ApplyTaxImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ApplyServiceChargeImplCopyWith<$Res> {
+  factory _$$ApplyServiceChargeImplCopyWith(_$ApplyServiceChargeImpl value,
+          $Res Function(_$ApplyServiceChargeImpl) then) =
+      __$$ApplyServiceChargeImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({ServiceChargeResponseModel serviceCharge});
+}
+
+/// @nodoc
+class __$$ApplyServiceChargeImplCopyWithImpl<$Res>
+    extends _$OrderEventCopyWithImpl<$Res, _$ApplyServiceChargeImpl>
+    implements _$$ApplyServiceChargeImplCopyWith<$Res> {
+  __$$ApplyServiceChargeImplCopyWithImpl(_$ApplyServiceChargeImpl _value,
+      $Res Function(_$ApplyServiceChargeImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of OrderEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? serviceCharge = null,
+  }) {
+    return _then(_$ApplyServiceChargeImpl(
+      null == serviceCharge
+          ? _value.serviceCharge
+          : serviceCharge // ignore: cast_nullable_to_non_nullable
+              as ServiceChargeResponseModel,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ApplyServiceChargeImpl
+    with DiagnosticableTreeMixin
+    implements _ApplyServiceCharge {
+  const _$ApplyServiceChargeImpl(this.serviceCharge);
+
+  @override
+  final ServiceChargeResponseModel serviceCharge;
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'OrderEvent.applyServiceCharge(serviceCharge: $serviceCharge)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'OrderEvent.applyServiceCharge'))
+      ..add(DiagnosticsProperty('serviceCharge', serviceCharge));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ApplyServiceChargeImpl &&
+            (identical(other.serviceCharge, serviceCharge) ||
+                other.serviceCharge == serviceCharge));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, serviceCharge);
+
+  /// Create a copy of OrderEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ApplyServiceChargeImplCopyWith<_$ApplyServiceChargeImpl> get copyWith =>
+      __$$ApplyServiceChargeImplCopyWithImpl<_$ApplyServiceChargeImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() started,
+    required TResult Function(
+            String paymentMethod, List<OrderItem> orders, String customerName)
+        addPaymentMethod,
+    required TResult Function(int nominal) addNominalBayar,
+    required TResult Function() syncOfflineOrders,
+    required TResult Function(List<int> validDays, int percentage)
+        applyAutoDiscount,
+    required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
+    required TResult Function(int orderId, bool isSynced) updateSyncStatus,
+  }) {
+    return applyServiceCharge(serviceCharge);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? started,
+    TResult? Function(
+            String paymentMethod, List<OrderItem> orders, String customerName)?
+        addPaymentMethod,
+    TResult? Function(int nominal)? addNominalBayar,
+    TResult? Function()? syncOfflineOrders,
+    TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
+    TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
+    TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
+  }) {
+    return applyServiceCharge?.call(serviceCharge);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? started,
+    TResult Function(
+            String paymentMethod, List<OrderItem> orders, String customerName)?
+        addPaymentMethod,
+    TResult Function(int nominal)? addNominalBayar,
+    TResult Function()? syncOfflineOrders,
+    TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
+    TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
+    TResult Function(int orderId, bool isSynced)? updateSyncStatus,
+    required TResult orElse(),
+  }) {
+    if (applyServiceCharge != null) {
+      return applyServiceCharge(serviceCharge);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Started value) started,
+    required TResult Function(_AddPaymentMethod value) addPaymentMethod,
+    required TResult Function(_AddNominalBayar value) addNominalBayar,
+    required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
+    required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
+    required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
+    required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
+  }) {
+    return applyServiceCharge(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Started value)? started,
+    TResult? Function(_AddPaymentMethod value)? addPaymentMethod,
+    TResult? Function(_AddNominalBayar value)? addNominalBayar,
+    TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
+    TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
+    TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
+    TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
+  }) {
+    return applyServiceCharge?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Started value)? started,
+    TResult Function(_AddPaymentMethod value)? addPaymentMethod,
+    TResult Function(_AddNominalBayar value)? addNominalBayar,
+    TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
+    TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
+    TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
+    TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
+    required TResult orElse(),
+  }) {
+    if (applyServiceCharge != null) {
+      return applyServiceCharge(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ApplyServiceCharge implements OrderEvent {
+  const factory _ApplyServiceCharge(
+          final ServiceChargeResponseModel serviceCharge) =
+      _$ApplyServiceChargeImpl;
+
+  ServiceChargeResponseModel get serviceCharge;
+
+  /// Create a copy of OrderEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ApplyServiceChargeImplCopyWith<_$ApplyServiceChargeImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1322,6 +1833,9 @@ class _$UpdateSyncStatusImpl
     required TResult Function(List<int> validDays, int percentage)
         applyAutoDiscount,
     required TResult Function(int percentage) applyManualDiscount,
+    required TResult Function(TaxResponseModel tax) applyTax,
+    required TResult Function(ServiceChargeResponseModel serviceCharge)
+        applyServiceCharge,
     required TResult Function(int orderId, bool isSynced) updateSyncStatus,
   }) {
     return updateSyncStatus(orderId, isSynced);
@@ -1338,6 +1852,9 @@ class _$UpdateSyncStatusImpl
     TResult? Function()? syncOfflineOrders,
     TResult? Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult? Function(int percentage)? applyManualDiscount,
+    TResult? Function(TaxResponseModel tax)? applyTax,
+    TResult? Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult? Function(int orderId, bool isSynced)? updateSyncStatus,
   }) {
     return updateSyncStatus?.call(orderId, isSynced);
@@ -1354,6 +1871,9 @@ class _$UpdateSyncStatusImpl
     TResult Function()? syncOfflineOrders,
     TResult Function(List<int> validDays, int percentage)? applyAutoDiscount,
     TResult Function(int percentage)? applyManualDiscount,
+    TResult Function(TaxResponseModel tax)? applyTax,
+    TResult Function(ServiceChargeResponseModel serviceCharge)?
+        applyServiceCharge,
     TResult Function(int orderId, bool isSynced)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -1372,6 +1892,8 @@ class _$UpdateSyncStatusImpl
     required TResult Function(_SyncOfflineOrders value) syncOfflineOrders,
     required TResult Function(_ApplyAutoDiscount value) applyAutoDiscount,
     required TResult Function(_ApplyManualDiscount value) applyManualDiscount,
+    required TResult Function(_ApplyTax value) applyTax,
+    required TResult Function(_ApplyServiceCharge value) applyServiceCharge,
     required TResult Function(_UpdateSyncStatus value) updateSyncStatus,
   }) {
     return updateSyncStatus(this);
@@ -1386,6 +1908,8 @@ class _$UpdateSyncStatusImpl
     TResult? Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult? Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult? Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult? Function(_ApplyTax value)? applyTax,
+    TResult? Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult? Function(_UpdateSyncStatus value)? updateSyncStatus,
   }) {
     return updateSyncStatus?.call(this);
@@ -1400,6 +1924,8 @@ class _$UpdateSyncStatusImpl
     TResult Function(_SyncOfflineOrders value)? syncOfflineOrders,
     TResult Function(_ApplyAutoDiscount value)? applyAutoDiscount,
     TResult Function(_ApplyManualDiscount value)? applyManualDiscount,
+    TResult Function(_ApplyTax value)? applyTax,
+    TResult Function(_ApplyServiceCharge value)? applyServiceCharge,
     TResult Function(_UpdateSyncStatus value)? updateSyncStatus,
     required TResult orElse(),
   }) {
@@ -1441,7 +1967,11 @@ mixin _$OrderState {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)
         success,
     required TResult Function(String message) error,
     required TResult Function() syncing,
@@ -1465,7 +1995,11 @@ mixin _$OrderState {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult? Function(String message)? error,
     TResult? Function()? syncing,
@@ -1489,7 +2023,11 @@ mixin _$OrderState {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult Function(String message)? error,
     TResult Function()? syncing,
@@ -1616,7 +2154,11 @@ class _$InitialImpl with DiagnosticableTreeMixin implements _Initial {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)
         success,
     required TResult Function(String message) error,
     required TResult Function() syncing,
@@ -1643,7 +2185,11 @@ class _$InitialImpl with DiagnosticableTreeMixin implements _Initial {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult? Function(String message)? error,
     TResult? Function()? syncing,
@@ -1670,7 +2216,11 @@ class _$InitialImpl with DiagnosticableTreeMixin implements _Initial {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult Function(String message)? error,
     TResult Function()? syncing,
@@ -1796,7 +2346,11 @@ class _$LoadingImpl with DiagnosticableTreeMixin implements _Loading {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)
         success,
     required TResult Function(String message) error,
     required TResult Function() syncing,
@@ -1823,7 +2377,11 @@ class _$LoadingImpl with DiagnosticableTreeMixin implements _Loading {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult? Function(String message)? error,
     TResult? Function()? syncing,
@@ -1850,7 +2408,11 @@ class _$LoadingImpl with DiagnosticableTreeMixin implements _Loading {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult Function(String message)? error,
     TResult Function()? syncing,
@@ -1933,7 +2495,11 @@ abstract class _$$SuccessImplCopyWith<$Res> {
       int nominalBayar,
       int idKasir,
       String namaKasir,
-      String customerName});
+      String customerName,
+      int? tax,
+      double? taxRate,
+      int? serviceCharge,
+      double? serviceChargeRate});
 }
 
 /// @nodoc
@@ -1960,6 +2526,10 @@ class __$$SuccessImplCopyWithImpl<$Res>
     Object? idKasir = null,
     Object? namaKasir = null,
     Object? customerName = null,
+    Object? tax = freezed,
+    Object? taxRate = freezed,
+    Object? serviceCharge = freezed,
+    Object? serviceChargeRate = freezed,
   }) {
     return _then(_$SuccessImpl(
       null == products
@@ -2006,6 +2576,22 @@ class __$$SuccessImplCopyWithImpl<$Res>
           ? _value.customerName
           : customerName // ignore: cast_nullable_to_non_nullable
               as String,
+      tax: freezed == tax
+          ? _value.tax
+          : tax // ignore: cast_nullable_to_non_nullable
+              as int?,
+      taxRate: freezed == taxRate
+          ? _value.taxRate
+          : taxRate // ignore: cast_nullable_to_non_nullable
+              as double?,
+      serviceCharge: freezed == serviceCharge
+          ? _value.serviceCharge
+          : serviceCharge // ignore: cast_nullable_to_non_nullable
+              as int?,
+      serviceChargeRate: freezed == serviceChargeRate
+          ? _value.serviceChargeRate
+          : serviceChargeRate // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -2022,7 +2608,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
       required this.nominalBayar,
       required this.idKasir,
       required this.namaKasir,
-      required this.customerName})
+      required this.customerName,
+      this.tax,
+      this.taxRate,
+      this.serviceCharge,
+      this.serviceChargeRate})
       : _products = products;
 
   final List<OrderItem> _products;
@@ -2053,10 +2643,18 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
   final String namaKasir;
   @override
   final String customerName;
+  @override
+  final int? tax;
+  @override
+  final double? taxRate;
+  @override
+  final int? serviceCharge;
+  @override
+  final double? serviceChargeRate;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'OrderState.success(products: $products, totalQuantity: $totalQuantity, totalPrice: $totalPrice, subTotal: $subTotal, discountPercentage: $discountPercentage, appliedDiscount: $appliedDiscount, paymentMethod: $paymentMethod, nominalBayar: $nominalBayar, idKasir: $idKasir, namaKasir: $namaKasir, customerName: $customerName)';
+    return 'OrderState.success(products: $products, totalQuantity: $totalQuantity, totalPrice: $totalPrice, subTotal: $subTotal, discountPercentage: $discountPercentage, appliedDiscount: $appliedDiscount, paymentMethod: $paymentMethod, nominalBayar: $nominalBayar, idKasir: $idKasir, namaKasir: $namaKasir, customerName: $customerName, tax: $tax, taxRate: $taxRate, serviceCharge: $serviceCharge, serviceChargeRate: $serviceChargeRate)';
   }
 
   @override
@@ -2074,7 +2672,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
       ..add(DiagnosticsProperty('nominalBayar', nominalBayar))
       ..add(DiagnosticsProperty('idKasir', idKasir))
       ..add(DiagnosticsProperty('namaKasir', namaKasir))
-      ..add(DiagnosticsProperty('customerName', customerName));
+      ..add(DiagnosticsProperty('customerName', customerName))
+      ..add(DiagnosticsProperty('tax', tax))
+      ..add(DiagnosticsProperty('taxRate', taxRate))
+      ..add(DiagnosticsProperty('serviceCharge', serviceCharge))
+      ..add(DiagnosticsProperty('serviceChargeRate', serviceChargeRate));
   }
 
   @override
@@ -2101,7 +2703,13 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
             (identical(other.namaKasir, namaKasir) ||
                 other.namaKasir == namaKasir) &&
             (identical(other.customerName, customerName) ||
-                other.customerName == customerName));
+                other.customerName == customerName) &&
+            (identical(other.tax, tax) || other.tax == tax) &&
+            (identical(other.taxRate, taxRate) || other.taxRate == taxRate) &&
+            (identical(other.serviceCharge, serviceCharge) ||
+                other.serviceCharge == serviceCharge) &&
+            (identical(other.serviceChargeRate, serviceChargeRate) ||
+                other.serviceChargeRate == serviceChargeRate));
   }
 
   @override
@@ -2117,7 +2725,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
       nominalBayar,
       idKasir,
       namaKasir,
-      customerName);
+      customerName,
+      tax,
+      taxRate,
+      serviceCharge,
+      serviceChargeRate);
 
   /// Create a copy of OrderState
   /// with the given fields replaced by the non-null parameter values.
@@ -2143,7 +2755,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)
         success,
     required TResult Function(String message) error,
     required TResult Function() syncing,
@@ -2162,7 +2778,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
         nominalBayar,
         idKasir,
         namaKasir,
-        customerName);
+        customerName,
+        tax,
+        taxRate,
+        serviceCharge,
+        serviceChargeRate);
   }
 
   @override
@@ -2181,7 +2801,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult? Function(String message)? error,
     TResult? Function()? syncing,
@@ -2200,7 +2824,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
         nominalBayar,
         idKasir,
         namaKasir,
-        customerName);
+        customerName,
+        tax,
+        taxRate,
+        serviceCharge,
+        serviceChargeRate);
   }
 
   @override
@@ -2219,7 +2847,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult Function(String message)? error,
     TResult Function()? syncing,
@@ -2240,7 +2872,11 @@ class _$SuccessImpl with DiagnosticableTreeMixin implements _Success {
           nominalBayar,
           idKasir,
           namaKasir,
-          customerName);
+          customerName,
+          tax,
+          taxRate,
+          serviceCharge,
+          serviceChargeRate);
     }
     return orElse();
   }
@@ -2302,7 +2938,11 @@ abstract class _Success implements OrderState {
       required final int nominalBayar,
       required final int idKasir,
       required final String namaKasir,
-      required final String customerName}) = _$SuccessImpl;
+      required final String customerName,
+      final int? tax,
+      final double? taxRate,
+      final int? serviceCharge,
+      final double? serviceChargeRate}) = _$SuccessImpl;
 
   List<OrderItem> get products;
   int get totalQuantity;
@@ -2315,6 +2955,10 @@ abstract class _Success implements OrderState {
   int get idKasir;
   String get namaKasir;
   String get customerName;
+  int? get tax;
+  double? get taxRate;
+  int? get serviceCharge;
+  double? get serviceChargeRate;
 
   /// Create a copy of OrderState
   /// with the given fields replaced by the non-null parameter values.
@@ -2412,7 +3056,11 @@ class _$ErrorImpl with DiagnosticableTreeMixin implements _Error {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)
         success,
     required TResult Function(String message) error,
     required TResult Function() syncing,
@@ -2439,7 +3087,11 @@ class _$ErrorImpl with DiagnosticableTreeMixin implements _Error {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult? Function(String message)? error,
     TResult? Function()? syncing,
@@ -2466,7 +3118,11 @@ class _$ErrorImpl with DiagnosticableTreeMixin implements _Error {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult Function(String message)? error,
     TResult Function()? syncing,
@@ -2600,7 +3256,11 @@ class _$SyncingImpl with DiagnosticableTreeMixin implements _Syncing {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)
         success,
     required TResult Function(String message) error,
     required TResult Function() syncing,
@@ -2627,7 +3287,11 @@ class _$SyncingImpl with DiagnosticableTreeMixin implements _Syncing {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult? Function(String message)? error,
     TResult? Function()? syncing,
@@ -2654,7 +3318,11 @@ class _$SyncingImpl with DiagnosticableTreeMixin implements _Syncing {
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult Function(String message)? error,
     TResult Function()? syncing,
@@ -2824,7 +3492,11 @@ class _$DiscountAppliedImpl
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)
         success,
     required TResult Function(String message) error,
     required TResult Function() syncing,
@@ -2851,7 +3523,11 @@ class _$DiscountAppliedImpl
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult? Function(String message)? error,
     TResult? Function()? syncing,
@@ -2878,7 +3554,11 @@ class _$DiscountAppliedImpl
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult Function(String message)? error,
     TResult Function()? syncing,
@@ -3057,7 +3737,11 @@ class _$SyncStatusUpdatedImpl
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)
         success,
     required TResult Function(String message) error,
     required TResult Function() syncing,
@@ -3084,7 +3768,11 @@ class _$SyncStatusUpdatedImpl
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult? Function(String message)? error,
     TResult? Function()? syncing,
@@ -3111,7 +3799,11 @@ class _$SyncStatusUpdatedImpl
             int nominalBayar,
             int idKasir,
             String namaKasir,
-            String customerName)?
+            String customerName,
+            int? tax,
+            double? taxRate,
+            int? serviceCharge,
+            double? serviceChargeRate)?
         success,
     TResult Function(String message)? error,
     TResult Function()? syncing,

@@ -30,22 +30,28 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    super.initState();
     _checkConnectivity();
+    // Fetch products from local storage
     context.read<ProductBloc>().add(const ProductEvent.fetchLocal());
+    // Fetch categories from local storage
     context.read<CategoryBloc>().add(const CategoryEvent.getCategoriesLocal());
+    
+    // Initialize printer connection if available
     AuthLocalDatasource().getPrinter().then((value) async {
       if (value.isNotEmpty) {
         await PrintBluetoothThermal.connect(macPrinterAddress: value);
       }
     });
-    super.initState();
   }
 
   Future<void> _checkConnectivity() async {
     final connected = await ConnectivityUtils.isConnected();
-    setState(() {
-      isOnline = connected;
-    });
+    if (mounted) {
+      setState(() {
+        isOnline = connected;
+      });
+    }
   }
 
   void onCategoryTap(int index, {String? categoryName, int? categoryId}) {
@@ -56,9 +62,8 @@ class _HomePageState extends State<HomePage> {
     if (index == 0) {
       context.read<ProductBloc>().add(const ProductEvent.fetchLocal());
     } else if (categoryId != null) {
-      context
-          .read<ProductBloc>()
-          .add(ProductEvent.fetchByCategory(categoryId.toString()));
+      // Fetch products by category from local data
+      context.read<ProductBloc>().add(ProductEvent.fetchByCategory(categoryId.toString()));
     }
   }
 
@@ -125,15 +130,14 @@ class _HomePageState extends State<HomePage> {
           SearchInput(
             controller: searchController,
             onChanged: (value) {
-              if (value.length > 3) {
+              if (value.length >= 1) {  // Reduced minimum length for better UX
                 context
                     .read<ProductBloc>()
                     .add(ProductEvent.searchProduct(value));
               }
               if (value.isEmpty) {
-                context
-                    .read<ProductBloc>()
-                    .add(const ProductEvent.fetchAllFromState());
+                // When search is cleared, show all products from local storage
+                context.read<ProductBloc>().add(const ProductEvent.fetchLocal());
               }
             },
           ),

@@ -16,6 +16,10 @@ class OrderState with _$OrderState {
     required int idKasir,
     required String namaKasir,
     required String customerName,
+    int? tax,
+    double? taxRate,
+    int? serviceCharge,
+    double? serviceChargeRate,
   }) = _Success;
   const factory OrderState.error(String message) = _Error;
   const factory OrderState.syncing() = _Syncing;

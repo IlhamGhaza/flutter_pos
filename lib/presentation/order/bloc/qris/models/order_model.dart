@@ -14,6 +14,8 @@ class OrderModel {
   final String namaKasir;
   final String transactionTime;
   final bool isSync;
+  final String? customerName;
+  final String? customerPhone;
   OrderModel({
     this.id,
     required this.paymentMethod,
@@ -25,6 +27,8 @@ class OrderModel {
     required this.namaKasir,
     required this.isSync,
     required this.transactionTime,
+    this.customerName,
+    this.customerPhone,
   });
 
   Map<String, dynamic> toMap() {
@@ -37,6 +41,8 @@ class OrderModel {
       'idKasir': idKasir,
       'namaKasir': namaKasir,
       'isSync': isSync,
+      'customerName': customerName,
+      'customerPhone': customerPhone,
     };
   }
 
@@ -56,6 +62,8 @@ class OrderModel {
       'nama_kasir': namaKasir,
       'is_sync': isSync ? 1 : 0,
       'transaction_time': transactionTime,
+      'customer_name': customerName,
+      'customer_phone': customerPhone,
     };
   }
 
@@ -71,6 +79,8 @@ class OrderModel {
       namaKasir: map['nama_kasir'] ?? '',
       id: map['id']?.toInt() ?? 0,
       transactionTime: map['transaction_time'] ?? '',
+      customerName: map['customer_name'],
+      customerPhone: map['customer_phone'],
     );
   }
 
@@ -86,6 +96,8 @@ class OrderModel {
       namaKasir: map['nama_kasir'] ?? '',
       id: map['id']?.toInt() ?? 0,
       transactionTime: map['transaction_time'] ?? '',
+      customerName: map['customer_name'],
+      customerPhone: map['customer_phone'],
     );
   }
 
@@ -98,6 +110,8 @@ class OrderModel {
       totalQuantity: map['totalQuantity']?.toInt() ?? 0,
       totalPrice: map['totalPrice']?.toInt() ?? 0,
       idKasir: map['idKasir']?.toInt() ?? 0,
+      customerName: map['customerName'],
+      customerPhone: map['customerPhone'],
       isSync: map['isSync'] ?? false,
       namaKasir: map['namaKasir'] ?? '',
       id: map['id']?.toInt() ?? 0,

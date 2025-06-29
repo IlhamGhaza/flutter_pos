@@ -13,7 +13,14 @@ import '../../../core/constants/colors.dart';
 
 class PaymentCashDialog extends StatefulWidget {
   final int price;
-  const PaymentCashDialog({super.key, required this.price});
+  final String? customerName;
+  final String? customerPhone;
+  const PaymentCashDialog({
+    super.key, 
+    required this.price,
+    this.customerName,
+    this.customerPhone,
+  });
 
   @override
   State<PaymentCashDialog> createState() => _PaymentCashDialogState();
@@ -101,11 +108,16 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
             },
           ),
           const SpaceHeight(16.0),
-          const SpaceHeight(30.0),
+          _buildReceiptRow('Metode Pembayaran', 'Tunai'),
+          const SpaceHeight(8.0),
+          const Divider(),
+          const SpaceHeight(8.0),
           BlocConsumer<OrderBloc, OrderState>(
             listener: (context, state) {
               state.maybeWhen(
                 orElse: () {},
+                initial: () {},
+                loading: () {},
                 success: (products,
                     totalQuantity,
                     totalPrice,
@@ -116,7 +128,11 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                     nominalBayar,
                     idKasir,
                     namaKasir,
-                    customerName) {
+                    customerName,
+                    tax,
+                    taxRate,
+                    serviceCharge,
+                    serviceChargeRate) {
                   // Close the payment dialog first
                   if (context.mounted) {
                     Navigator.of(context).pop();
@@ -167,11 +183,27 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    '${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}',
+                                    DateFormat('dd/MM/yyyy HH:mm')
+                                        .format(DateTime.now()),
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(fontSize: 12),
                                   ),
                                   const Divider(height: 24),
+
+                                  // Customer information
+                                  if (widget.customerName != null || widget.customerPhone != null) ...[
+                                    _buildReceiptRow('Pelanggan', widget.customerName ?? '-'),
+                                    if (widget.customerPhone != null)
+                                      _buildReceiptRow('No. HP', widget.customerPhone!),
+                                    const SpaceHeight(8.0),
+                                    const Divider(),
+                                    const SpaceHeight(8.0),
+                                  ],
+                                  _buildReceiptRow('Tanggal',
+                                      DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())),
+                                  const SpaceHeight(8.0),
+                                  const Divider(),
+                                  const SpaceHeight(8.0),
 
                                   // Payment details
                                   _buildReceiptRow(
@@ -227,7 +259,8 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 12),
                                     ),
-                                    child: const Text('Close', style: TextStyle(color: Colors.white)),
+                                    child: const Text('Close',
+                                        style: TextStyle(color: Colors.white)),
                                   ),
                                 ),
                               ],
@@ -272,7 +305,11 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                   nominalBayar,
                   idKasir,
                   namaKasir,
-                  customerName) {
+                  customerName,
+                  tax,
+                  taxRate,
+                  serviceCharge,
+                  serviceChargeRate) {
                 return Button.filled(
                   onPressed: () {
                     if (priceController!.text.isEmpty) {

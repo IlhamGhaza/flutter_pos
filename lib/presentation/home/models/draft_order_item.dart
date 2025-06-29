@@ -27,7 +27,7 @@ class DraftOrderItem {
   Map<String, dynamic> toMapForLocal(int orderId) {
     return {
       'id_draft_order': orderId,
-      'id_product': product.productId,
+      'id_product': product.id,
       'quantity': quantity,
       'price': product.price,
     };
@@ -37,7 +37,7 @@ class DraftOrderItem {
     return OrderItemModel(
       productId: map['id_product']?.toInt() ?? 0,
       quantity: map['quantity']?.toInt() ?? 0,
-      totalPrice: map['price']?.toInt() ?? 0 * (map['quantity']?.toInt() ?? 0),
+      price: map['price']?.toInt() ?? 0 * (map['quantity']?.toInt() ?? 0) ,
     );
   }
 

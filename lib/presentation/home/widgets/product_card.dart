@@ -84,7 +84,7 @@ class ProductCard extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        data.price.currencyFormatRp,
+                        data.price.toInt().currencyFormatRp,
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                         ),

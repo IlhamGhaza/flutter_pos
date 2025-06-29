@@ -433,27 +433,27 @@ mixin _$SyncOrderState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function() success,
-    required TResult Function() successCloseChasier,
-    required TResult Function(String message) error,
+    required TResult Function(int syncedCount) success,
+    required TResult Function(int syncedCount) successCloseChasier,
+    required TResult Function(String message, String? stackTrace) error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function()? success,
-    TResult? Function()? successCloseChasier,
-    TResult? Function(String message)? error,
+    TResult? Function(int syncedCount)? success,
+    TResult? Function(int syncedCount)? successCloseChasier,
+    TResult? Function(String message, String? stackTrace)? error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function()? success,
-    TResult Function()? successCloseChasier,
-    TResult Function(String message)? error,
+    TResult Function(int syncedCount)? success,
+    TResult Function(int syncedCount)? successCloseChasier,
+    TResult Function(String message, String? stackTrace)? error,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -551,9 +551,9 @@ class _$InitialImpl implements _Initial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function() success,
-    required TResult Function() successCloseChasier,
-    required TResult Function(String message) error,
+    required TResult Function(int syncedCount) success,
+    required TResult Function(int syncedCount) successCloseChasier,
+    required TResult Function(String message, String? stackTrace) error,
   }) {
     return initial();
   }
@@ -563,9 +563,9 @@ class _$InitialImpl implements _Initial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function()? success,
-    TResult? Function()? successCloseChasier,
-    TResult? Function(String message)? error,
+    TResult? Function(int syncedCount)? success,
+    TResult? Function(int syncedCount)? successCloseChasier,
+    TResult? Function(String message, String? stackTrace)? error,
   }) {
     return initial?.call();
   }
@@ -575,9 +575,9 @@ class _$InitialImpl implements _Initial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function()? success,
-    TResult Function()? successCloseChasier,
-    TResult Function(String message)? error,
+    TResult Function(int syncedCount)? success,
+    TResult Function(int syncedCount)? successCloseChasier,
+    TResult Function(String message, String? stackTrace)? error,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -674,9 +674,9 @@ class _$LoadingImpl implements _Loading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function() success,
-    required TResult Function() successCloseChasier,
-    required TResult Function(String message) error,
+    required TResult Function(int syncedCount) success,
+    required TResult Function(int syncedCount) successCloseChasier,
+    required TResult Function(String message, String? stackTrace) error,
   }) {
     return loading();
   }
@@ -686,9 +686,9 @@ class _$LoadingImpl implements _Loading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function()? success,
-    TResult? Function()? successCloseChasier,
-    TResult? Function(String message)? error,
+    TResult? Function(int syncedCount)? success,
+    TResult? Function(int syncedCount)? successCloseChasier,
+    TResult? Function(String message, String? stackTrace)? error,
   }) {
     return loading?.call();
   }
@@ -698,9 +698,9 @@ class _$LoadingImpl implements _Loading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function()? success,
-    TResult Function()? successCloseChasier,
-    TResult Function(String message)? error,
+    TResult Function(int syncedCount)? success,
+    TResult Function(int syncedCount)? successCloseChasier,
+    TResult Function(String message, String? stackTrace)? error,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -759,6 +759,8 @@ abstract class _$$SuccessImplCopyWith<$Res> {
   factory _$$SuccessImplCopyWith(
           _$SuccessImpl value, $Res Function(_$SuccessImpl) then) =
       __$$SuccessImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({int syncedCount});
 }
 
 /// @nodoc
@@ -771,37 +773,64 @@ class __$$SuccessImplCopyWithImpl<$Res>
 
   /// Create a copy of SyncOrderState
   /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? syncedCount = null,
+  }) {
+    return _then(_$SuccessImpl(
+      syncedCount: null == syncedCount
+          ? _value.syncedCount
+          : syncedCount // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
 }
 
 /// @nodoc
 
 class _$SuccessImpl implements _Success {
-  const _$SuccessImpl();
+  const _$SuccessImpl({this.syncedCount = 0});
+
+  @override
+  @JsonKey()
+  final int syncedCount;
 
   @override
   String toString() {
-    return 'SyncOrderState.success()';
+    return 'SyncOrderState.success(syncedCount: $syncedCount)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$SuccessImpl);
+        (other.runtimeType == runtimeType &&
+            other is _$SuccessImpl &&
+            (identical(other.syncedCount, syncedCount) ||
+                other.syncedCount == syncedCount));
   }
 
   @override
-  int get hashCode => runtimeType.hashCode;
+  int get hashCode => Object.hash(runtimeType, syncedCount);
+
+  /// Create a copy of SyncOrderState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
+      __$$SuccessImplCopyWithImpl<_$SuccessImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function() success,
-    required TResult Function() successCloseChasier,
-    required TResult Function(String message) error,
+    required TResult Function(int syncedCount) success,
+    required TResult Function(int syncedCount) successCloseChasier,
+    required TResult Function(String message, String? stackTrace) error,
   }) {
-    return success();
+    return success(syncedCount);
   }
 
   @override
@@ -809,11 +838,11 @@ class _$SuccessImpl implements _Success {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function()? success,
-    TResult? Function()? successCloseChasier,
-    TResult? Function(String message)? error,
+    TResult? Function(int syncedCount)? success,
+    TResult? Function(int syncedCount)? successCloseChasier,
+    TResult? Function(String message, String? stackTrace)? error,
   }) {
-    return success?.call();
+    return success?.call(syncedCount);
   }
 
   @override
@@ -821,13 +850,13 @@ class _$SuccessImpl implements _Success {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function()? success,
-    TResult Function()? successCloseChasier,
-    TResult Function(String message)? error,
+    TResult Function(int syncedCount)? success,
+    TResult Function(int syncedCount)? successCloseChasier,
+    TResult Function(String message, String? stackTrace)? error,
     required TResult orElse(),
   }) {
     if (success != null) {
-      return success();
+      return success(syncedCount);
     }
     return orElse();
   }
@@ -874,7 +903,15 @@ class _$SuccessImpl implements _Success {
 }
 
 abstract class _Success implements SyncOrderState {
-  const factory _Success() = _$SuccessImpl;
+  const factory _Success({final int syncedCount}) = _$SuccessImpl;
+
+  int get syncedCount;
+
+  /// Create a copy of SyncOrderState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -882,6 +919,8 @@ abstract class _$$SuccessCloseChasierImplCopyWith<$Res> {
   factory _$$SuccessCloseChasierImplCopyWith(_$SuccessCloseChasierImpl value,
           $Res Function(_$SuccessCloseChasierImpl) then) =
       __$$SuccessCloseChasierImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({int syncedCount});
 }
 
 /// @nodoc
@@ -894,38 +933,65 @@ class __$$SuccessCloseChasierImplCopyWithImpl<$Res>
 
   /// Create a copy of SyncOrderState
   /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? syncedCount = null,
+  }) {
+    return _then(_$SuccessCloseChasierImpl(
+      syncedCount: null == syncedCount
+          ? _value.syncedCount
+          : syncedCount // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
 }
 
 /// @nodoc
 
 class _$SuccessCloseChasierImpl implements _SuccessCloseChasier {
-  const _$SuccessCloseChasierImpl();
+  const _$SuccessCloseChasierImpl({this.syncedCount = 0});
+
+  @override
+  @JsonKey()
+  final int syncedCount;
 
   @override
   String toString() {
-    return 'SyncOrderState.successCloseChasier()';
+    return 'SyncOrderState.successCloseChasier(syncedCount: $syncedCount)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SuccessCloseChasierImpl);
+            other is _$SuccessCloseChasierImpl &&
+            (identical(other.syncedCount, syncedCount) ||
+                other.syncedCount == syncedCount));
   }
 
   @override
-  int get hashCode => runtimeType.hashCode;
+  int get hashCode => Object.hash(runtimeType, syncedCount);
+
+  /// Create a copy of SyncOrderState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SuccessCloseChasierImplCopyWith<_$SuccessCloseChasierImpl> get copyWith =>
+      __$$SuccessCloseChasierImplCopyWithImpl<_$SuccessCloseChasierImpl>(
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function() success,
-    required TResult Function() successCloseChasier,
-    required TResult Function(String message) error,
+    required TResult Function(int syncedCount) success,
+    required TResult Function(int syncedCount) successCloseChasier,
+    required TResult Function(String message, String? stackTrace) error,
   }) {
-    return successCloseChasier();
+    return successCloseChasier(syncedCount);
   }
 
   @override
@@ -933,11 +999,11 @@ class _$SuccessCloseChasierImpl implements _SuccessCloseChasier {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function()? success,
-    TResult? Function()? successCloseChasier,
-    TResult? Function(String message)? error,
+    TResult? Function(int syncedCount)? success,
+    TResult? Function(int syncedCount)? successCloseChasier,
+    TResult? Function(String message, String? stackTrace)? error,
   }) {
-    return successCloseChasier?.call();
+    return successCloseChasier?.call(syncedCount);
   }
 
   @override
@@ -945,13 +1011,13 @@ class _$SuccessCloseChasierImpl implements _SuccessCloseChasier {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function()? success,
-    TResult Function()? successCloseChasier,
-    TResult Function(String message)? error,
+    TResult Function(int syncedCount)? success,
+    TResult Function(int syncedCount)? successCloseChasier,
+    TResult Function(String message, String? stackTrace)? error,
     required TResult orElse(),
   }) {
     if (successCloseChasier != null) {
-      return successCloseChasier();
+      return successCloseChasier(syncedCount);
     }
     return orElse();
   }
@@ -998,7 +1064,16 @@ class _$SuccessCloseChasierImpl implements _SuccessCloseChasier {
 }
 
 abstract class _SuccessCloseChasier implements SyncOrderState {
-  const factory _SuccessCloseChasier() = _$SuccessCloseChasierImpl;
+  const factory _SuccessCloseChasier({final int syncedCount}) =
+      _$SuccessCloseChasierImpl;
+
+  int get syncedCount;
+
+  /// Create a copy of SyncOrderState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SuccessCloseChasierImplCopyWith<_$SuccessCloseChasierImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1007,7 +1082,7 @@ abstract class _$$ErrorImplCopyWith<$Res> {
           _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
       __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String message});
+  $Res call({String message, String? stackTrace});
 }
 
 /// @nodoc
@@ -1024,12 +1099,17 @@ class __$$ErrorImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? message = null,
+    Object? stackTrace = freezed,
   }) {
     return _then(_$ErrorImpl(
       null == message
           ? _value.message
           : message // ignore: cast_nullable_to_non_nullable
               as String,
+      stackTrace: freezed == stackTrace
+          ? _value.stackTrace
+          : stackTrace // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -1037,14 +1117,16 @@ class __$$ErrorImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$ErrorImpl implements _Error {
-  const _$ErrorImpl(this.message);
+  const _$ErrorImpl(this.message, {this.stackTrace});
 
   @override
   final String message;
+  @override
+  final String? stackTrace;
 
   @override
   String toString() {
-    return 'SyncOrderState.error(message: $message)';
+    return 'SyncOrderState.error(message: $message, stackTrace: $stackTrace)';
   }
 
   @override
@@ -1052,11 +1134,13 @@ class _$ErrorImpl implements _Error {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ErrorImpl &&
-            (identical(other.message, message) || other.message == message));
+            (identical(other.message, message) || other.message == message) &&
+            (identical(other.stackTrace, stackTrace) ||
+                other.stackTrace == stackTrace));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, message);
+  int get hashCode => Object.hash(runtimeType, message, stackTrace);
 
   /// Create a copy of SyncOrderState
   /// with the given fields replaced by the non-null parameter values.
@@ -1071,11 +1155,11 @@ class _$ErrorImpl implements _Error {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function() success,
-    required TResult Function() successCloseChasier,
-    required TResult Function(String message) error,
+    required TResult Function(int syncedCount) success,
+    required TResult Function(int syncedCount) successCloseChasier,
+    required TResult Function(String message, String? stackTrace) error,
   }) {
-    return error(message);
+    return error(message, stackTrace);
   }
 
   @override
@@ -1083,11 +1167,11 @@ class _$ErrorImpl implements _Error {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function()? success,
-    TResult? Function()? successCloseChasier,
-    TResult? Function(String message)? error,
+    TResult? Function(int syncedCount)? success,
+    TResult? Function(int syncedCount)? successCloseChasier,
+    TResult? Function(String message, String? stackTrace)? error,
   }) {
-    return error?.call(message);
+    return error?.call(message, stackTrace);
   }
 
   @override
@@ -1095,13 +1179,13 @@ class _$ErrorImpl implements _Error {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function()? success,
-    TResult Function()? successCloseChasier,
-    TResult Function(String message)? error,
+    TResult Function(int syncedCount)? success,
+    TResult Function(int syncedCount)? successCloseChasier,
+    TResult Function(String message, String? stackTrace)? error,
     required TResult orElse(),
   }) {
     if (error != null) {
-      return error(message);
+      return error(message, stackTrace);
     }
     return orElse();
   }
@@ -1148,9 +1232,11 @@ class _$ErrorImpl implements _Error {
 }
 
 abstract class _Error implements SyncOrderState {
-  const factory _Error(final String message) = _$ErrorImpl;
+  const factory _Error(final String message, {final String? stackTrace}) =
+      _$ErrorImpl;
 
   String get message;
+  String? get stackTrace;
 
   /// Create a copy of SyncOrderState
   /// with the given fields replaced by the non-null parameter values.

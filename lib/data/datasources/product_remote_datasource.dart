@@ -1,5 +1,6 @@
+import 'dart:developer';
+
 import 'package:dartz/dartz.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_pos/core/constants/variables.dart';
 import 'package:flutter_pos/data/models/request/product_request_model.dart';
 import 'package:flutter_pos/data/models/response/add_product_response_model.dart';
@@ -20,10 +21,10 @@ class ProductRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      debugPrint('Products loaded successfully: ${response.body}');
+      log('Success to get all product response: ${response.body}');
       return right(ProductResponseModel.fromJson(response.body));
     } else {
-      debugPrint('Failed to load products: ${response.body}');
+      log('failed to get all product response: ${response.body}');
       return left(response.body);
     }
   }
@@ -59,14 +60,14 @@ class ProductRemoteDatasource {
       final String body = await response.stream.bytesToString();
 
       if (response.statusCode == 201) {
-        debugPrint('Product added successfully: $body');
+        log('Success to add product response: $body');
         return right(AddProductResponseModel.fromJson(body));
       } else {
-        debugPrint('Failed to add product: $body');
+        log('failed to add product response: $body');
         return left(body);
       }
     } catch (e) {
-      debugPrint('Failed to add product: $e');
+      log('Failed to add product: $e');
       return left(e.toString());
     }
   }
@@ -83,10 +84,10 @@ class ProductRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      debugPrint('Categories loaded successfully: ${response.body}');
+      log('Success to get all category response: ${response.body}');
       return right(CategoryResponseModel.fromJson(response.body));
     } else {
-      debugPrint('Failed to load categories: ${response.body}');
+      log('failed to get all category response: ${response.body}');
       return left(response.body);
     }
   }

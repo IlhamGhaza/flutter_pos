@@ -1,3 +1,5 @@
+import 'dart:developer';
+import 'package:flutter/material.dart';
 import 'package:flutter_pos/data/models/order_item_model.dart';
 import 'package:flutter_pos/data/models/response/product_response_model.dart';
 import 'package:flutter_pos/presentation/order/bloc/qris/models/order_model.dart';
@@ -26,7 +28,7 @@ class ProductLocalDatasource {
 
     return await openDatabase(
       path,
-      version: 15, // Naikkan versi untuk trigger migrasi
+      version: 17, // Incremented version to trigger migration for discounts table update
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         // Drop all tables and recreate
@@ -72,7 +74,10 @@ class ProductLocalDatasource {
         image TEXT,
         is_best_seller INTEGER,
         is_ready INTEGER,
-        is_sync INTEGER DEFAULT 0
+        is_sync INTEGER DEFAULT 0,
+        created_at TEXT,
+        updated_at TEXT,
+        deleted_at TEXT
       )
     ''');
 
@@ -107,21 +112,26 @@ class ProductLocalDatasource {
         type TEXT,
         value REAL,
         status TEXT,
-        min_quantity INTEGER,
-        max_quantity INTEGER,
+        min_quantity REAL,
+        max_quantity REAL,
         min_amount REAL,
+        buy_quantity INTEGER,
+        get_quantity INTEGER,
+        quantity_tiers TEXT,
         apply_to TEXT,
+        applicable_items TEXT,
         customer_type TEXT,
         valid_days TEXT,
-        start_at TEXT,
-        expired_at TEXT,
+        start_date TEXT,
+        expired_date TEXT,
         start_time TEXT,
         end_time TEXT,
         combinable INTEGER,
         usage_limit INTEGER,
         usage_count INTEGER,
         created_at TEXT,
-        updated_at TEXT
+        updated_at TEXT,
+        deleted_at TEXT
       )
     ''');
 
@@ -196,24 +206,79 @@ class ProductLocalDatasource {
     ''');
   }
 
-  //insert all categories
+  // Customer methods
+  Future<void> saveCustomer(CustomerResponseModel customer) async {
+    final db = await database;
+    await db.insert(
+      'customers',
+      customer.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> saveCustomers(List<CustomerResponseModel> customers) async {
+    final db = await database;
+    final batch = db.batch();
+    for (final customer in customers) {
+      batch.insert(
+        'customers',
+        customer.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<List<CustomerResponseModel>> getAllCustomers() async {
+    final db = await database;
+    final List<Map<String, dynamic>> results = await db.query(
+      'customers',
+      where: 'deleted_at IS NULL',
+    );
+    return results.map((e) => CustomerResponseModel.fromMap(e)).toList();
+  }
+
+  Future<CustomerResponseModel?> getCustomerById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> results = await db.query(
+      'customers',
+      where: 'id = ? AND deleted_at IS NULL',
+      whereArgs: [id],
+    );
+    if (results.isNotEmpty) {
+      return CustomerResponseModel.fromMap(results.first);
+    }
+    return null;
+  }
+
+  Future<List<CustomerResponseModel>> searchCustomers(String query) async {
+    final db = await database;
+    final List<Map<String, dynamic>> results = await db.query(
+      'customers',
+      where: '(name LIKE ? OR phone_number LIKE ?) AND deleted_at IS NULL',
+      whereArgs: ['%$query%', '%$query%'],
+    );
+    return results.map((e) => CustomerResponseModel.fromMap(e)).toList();
+  }
+
+  // Insert all categories
   Future<void> insertAllCategories(List<Category> categories) async {
     final db = await instance.database;
-    
+
     // Start a transaction to ensure atomicity
     await db.transaction((txn) async {
       try {
         // First, delete all existing categories
         await txn.delete('categories');
-        
+
         // Then insert all new categories in a batch
         final batch = txn.batch();
-        
+
         for (var category in categories) {
-          batch.insert('categories', category.toMap(), 
+          batch.insert('categories', category.toMap(),
               conflictAlgorithm: ConflictAlgorithm.replace);
         }
-        
+
         await batch.commit(noResult: true);
       } catch (e) {
         // If any error occurs, the transaction will be rolled back automatically
@@ -222,18 +287,89 @@ class ProductLocalDatasource {
     });
   }
 
-  //insert all discounts
-  Future<void> insertAllDiscount(List<DiscountResponseModel> discounts) async {
-    final db = await instance.database;
-    await db.delete('discounts');
-    final batch = db.batch();
-    for (var discount in discounts) {
-      batch.insert('discounts', _discountToMap(discount));
+  // Insert all discounts from API responses
+  Future<void> insertAllDiscount(List<DiscountResponseModel> responses) async {
+    try {
+      log('Starting to process ${responses.length} discount responses');
+      if (responses.isEmpty) {
+        log('No discount responses to process');
+        return;
+      }
+
+      // Debug log the first response structure
+      log('First response structure: ${responses.first.toMap().toString()}');
+
+      final db = await database;
+      final batch = db.batch();
+
+      // Clear existing discounts
+      await db.delete('discounts');
+
+      int totalDiscounts = 0;
+
+      // Process each response (should be just one response with all discounts in data array)
+      for (final response in responses) {
+        log('Processing response with ${response.data.length} discounts');
+        if (response.data.isEmpty) {
+          log('Warning: Response has no discount data');
+          continue;
+        }
+
+        // Process all discounts in the data array of the response
+        for (final discount in response.data) {
+          log('Processing discount: ${discount.id} - ${discount.name}');
+
+          batch.insert(
+            'discounts',
+            {
+              'id': discount.id,
+              'name': discount.name,
+              'description': discount.description ?? '',
+              'type': discount.type,
+              'value': discount.value,
+              'status': discount.status,
+              'min_quantity': discount.minQuantity,
+              'max_quantity': discount.maxQuantity,
+              'min_amount': discount.minAmount,
+              'buy_quantity': discount.buyQuantity,
+              'get_quantity': discount.getQuantity,
+              'quantity_tiers': discount.quantityTiers?.toString(),
+              'apply_to': discount.applyTo,
+              'applicable_items': discount.applicableItems?.join(','),
+              'customer_type': discount.customerType,
+              'valid_days': (discount.validDays ?? []).join(','),
+              'start_date': discount.startDate?.toIso8601String(),
+              'expired_date': discount.expiredDate?.toIso8601String(),
+              'start_time': discount.startTime,
+              'end_time': discount.endTime,
+              'combinable': discount.combinable ? 1 : 0,
+              'usage_limit': discount.usageLimit,
+              'usage_count': discount.usageCount ?? 0,
+              'created_at': discount.createdAt?.toIso8601String() ??
+                  DateTime.now().toIso8601String(),
+              'updated_at': discount.updatedAt?.toIso8601String() ??
+                  DateTime.now().toIso8601String(),
+              'deleted_at': discount.deletedAt?.toIso8601String(),
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+
+          totalDiscounts++;
+          log('Queued discount for insertion: ${discount.id} - ${discount.name}');
+        }
+      }
+
+      // Commit the batch
+      log('Committing batch of $totalDiscounts discounts to database...');
+      await batch.commit(noResult: true);
+      log('Successfully saved $totalDiscounts discounts to local database');
+    } catch (e, stackTrace) {
+      log('Error saving discounts to local database',
+          error: e, stackTrace: stackTrace);
+      rethrow;
     }
-    await batch.commit(noResult: true);
   }
 
-  //delete all discounts
   Future<void> removeAllDiscount() async {
     final db = await instance.database;
     await db.delete('discounts');
@@ -246,65 +382,56 @@ class ProductLocalDatasource {
     return result.map((e) => _discountFromMap(e)).toList();
   }
 
-  Map<String, dynamic> _discountToMap(DiscountResponseModel d) => {
-        'id': d.id,
-        'name': d.name,
-        'description': d.description,
-        'type': d.type,
-        'value': d.value,
-        'status': d.status,
-        'min_quantity': d.minQuantity,
-        'max_quantity': d.maxQuantity,
-        'min_amount': d.minAmount,
-        'apply_to': d.applyTo,
-        'customer_type': d.customerType,
-        'valid_days': d.validDays.join(','),
-        'start_at': d.startAt?.toIso8601String(),
-        'expired_at': d.expiredAt?.toIso8601String(),
-        'start_time': d.startTime,
-        'end_time': d.endTime,
-        'combinable': d.combinable ? 1 : 0,
-        'usage_limit': d.usageLimit,
-        'usage_count': d.usageCount,
-        'created_at': d.createdAt?.toIso8601String(),
-        'updated_at': d.updatedAt?.toIso8601String(),
-      };
-
   DiscountResponseModel _discountFromMap(Map<String, dynamic> map) {
     return DiscountResponseModel(
-      id: map['id'] as int,
-      name: map['name'] as String,
-      description: map['description'] as String? ?? '',
-      type: map['type'] as String? ?? 'percentage',
-      value: (map['value'] as num?)?.toDouble() ?? 0.0,
-      status: map['status'] as String? ?? 'inactive',
-      minQuantity: map['min_quantity'] as int? ?? 0,
-      maxQuantity: map['max_quantity'] as int? ?? 0,
-      minAmount: (map['min_amount'] as num?)?.toDouble() ?? 0.0,
-      applyTo: map['apply_to'] as String? ?? 'all',
-      customerType: map['customer_type'] as String? ?? 'all',
-      validDays: (map['valid_days'] as String?)
-              ?.split(',')
-              .where((e) => e.isNotEmpty)
-              .map((e) => int.tryParse(e) ?? 0)
-              .toList() ??
-          [],
-      startAt:
-          map['start_at'] != null ? DateTime.tryParse(map['start_at']) : null,
-      expiredAt: map['expired_at'] != null
-          ? DateTime.tryParse(map['expired_at'])
-          : null,
-      startTime: map['start_time'] as String?,
-      endTime: map['end_time'] as String?,
-      combinable: map['combinable'] == 1,
-      usageLimit: map['usage_limit'] as int?,
-      usageCount: map['usage_count'] as int? ?? 0,
-      createdAt: map['created_at'] != null
-          ? DateTime.tryParse(map['created_at'])
-          : null,
-      updatedAt: map['updated_at'] != null
-          ? DateTime.tryParse(map['updated_at'])
-          : null,
+      message: 'Discount loaded from local database',
+      data: [
+        DiscountModel(
+          id: map['id'] as int,
+          name: map['name'] as String? ?? 'Unknown Discount',
+          description: map['description'] as String? ?? '',
+          type: map['type'] as String? ?? 'percentage',
+          value: (map['value'] as num?)?.toDouble() ?? 0.0,
+          minQuantity: (map['min_quantity'] as num?)?.toDouble(),
+          maxQuantity: (map['max_quantity'] as num?)?.toDouble(),
+          minAmount: (map['min_amount'] as num?)?.toDouble(),
+          buyQuantity: map['buy_quantity'] as int?,
+          getQuantity: map['get_quantity'] as int?,
+          quantityTiers: map['quantity_tiers'],
+          applyTo: map['apply_to'] as String? ?? 'all',
+          applicableItems: map['applicable_items'],
+          customerType: map['customer_type'] as String? ?? 'all',
+          combinable: (map['combinable'] as int?) == 1,
+          usageLimit: map['usage_limit'] as int?,
+          usageCount: (map['usage_count'] as int?) ?? 0,
+          status: map['status'] as String? ?? 'inactive',
+          startDate: map['start_date'] != null
+              ? DateTime.parse(map['start_date'])
+              : DateTime.now(),
+          expiredDate: map['expired_date'] != null
+              ? DateTime.tryParse(map['expired_date'])
+              : null,
+          startTime: map['start_time'] as String?,
+          endTime: map['end_time'] as String?,
+          createdAt: map['created_at'] != null
+              ? DateTime.parse(map['created_at'])
+              : DateTime.now(),
+          updatedAt: map['updated_at'] != null
+              ? DateTime.parse(map['updated_at'])
+              : DateTime.now(),
+          deletedAt: map['deleted_at'] != null
+              ? DateTime.tryParse(map['deleted_at'])
+              : null,
+          validDays: (map['valid_days'] as String?)
+                  ?.split(',')
+                  .where((e) => e.isNotEmpty)
+                  .map((e) => int.tryParse(e) ?? 0)
+                  .toList() ??
+              [],
+        ),
+      ],
+      syncTime: DateTime.now().toUtc(),
+      total: 1,
     );
   }
 
@@ -377,6 +504,15 @@ class ProductLocalDatasource {
     await db.delete('draft_orders', where: 'id = ?', whereArgs: [id]);
     await db.delete('draft_order_items',
         where: 'id_draft_order = ?', whereArgs: [id]);
+  }
+
+  /// Removes a draft order by its ID.
+  /// This is a convenience method that wraps [removeDraftOrderById]
+  /// to maintain backward compatibility with existing code.
+  Future<void> removeDraftOrder(int? id) async {
+    if (id != null) {
+      await removeDraftOrderById(id);
+    }
   }
 
   //get order by isSync = 0
@@ -470,12 +606,12 @@ class ProductLocalDatasource {
 
     try {
       _database =
-          await _initDB('pos15.db'); // Ganti nama file db agar pasti recreate
+          await _initDB('pos17.db'); // Ganti nama file db agar pasti recreate
       return _database!;
     } catch (e) {
       // If there's an error, delete the database and try again
-      await deleteDatabase('${await getDatabasesPath()}pos15.db');
-      _database = await _initDB('pos15.db');
+      await deleteDatabase('${await getDatabasesPath()}pos17.db');
+      _database = await _initDB('pos17.db');
       return _database!;
     }
   }
@@ -489,10 +625,10 @@ class ProductLocalDatasource {
   Future<void> insertAllProducts(List<Product> products) async {
     final db = await instance.database;
     final batch = db.batch();
-    
+
     // First, clear existing products
     await removeAllProduct();
-    
+
     // Then insert all new products
     for (final product in products) {
       batch.insert(
@@ -510,39 +646,46 @@ class ProductLocalDatasource {
           'image': product.image,
           'is_best_seller': product.isBestSeller ? 1 : 0,
           'is_ready': product.isReady ? 1 : 0,
-          'is_sync': 1, // Mark as synced
+          'is_sync': 1,
+          'created_at': product.createdAt?.toIso8601String(),
+          'updated_at': product.updatedAt?.toIso8601String(),
+          'deleted_at': null,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-    
+
     await batch.commit(noResult: true);
   }
 
   //insert data product from list product
   Future<void> insertAllProduct(List<Product> products) async {
     final db = await instance.database;
-    
+
     // Start a transaction to ensure atomicity
     await db.transaction((txn) async {
       try {
         // First, delete all existing products
         await txn.delete(tableProducts);
-        
+
         // Then insert all new products in a batch
         final batch = txn.batch();
-        
+
         for (var product in products) {
           final map = product.toLocalMap();
           // Ensure all required fields are present
           map['product_id'] = product.id ?? 0;
           map['is_best_seller'] = product.isBestSeller ? 1 : 0;
           map['is_ready'] = product.isReady ? 1 : 0;
-          map['is_sync'] = 1; // Mark as synced
-          
-          batch.insert(tableProducts, map, conflictAlgorithm: ConflictAlgorithm.replace);
+          map['is_sync'] = 1;
+          map['created_at'] = product.createdAt?.toIso8601String();
+          map['updated_at'] = product.updatedAt?.toIso8601String();
+          map['deleted_at'] = null;
+
+          batch.insert(tableProducts, map,
+              conflictAlgorithm: ConflictAlgorithm.replace);
         }
-        
+
         await batch.commit(noResult: true);
       } catch (e) {
         // If any error occurs, the transaction will be rolled back automatically
@@ -560,6 +703,9 @@ class ProductLocalDatasource {
       map['product_id'] = product.id ?? 0;
       map['is_best_seller'] = product.isBestSeller ? 1 : 0;
       map['is_ready'] = product.isReady ? 1 : 0;
+      map['created_at'] = product.createdAt?.toIso8601String();
+      map['updated_at'] = product.updatedAt?.toIso8601String();
+      map['deleted_at'] = null;
 
       final id = await db.insert(tableProducts, map);
       return product.copyWith(id: id);
@@ -572,6 +718,9 @@ class ProductLocalDatasource {
       map['product_id'] = product.id ?? 0;
       map['is_best_seller'] = product.isBestSeller ? 1 : 0;
       map['is_ready'] = product.isReady ? 1 : 0;
+      map['created_at'] = product.createdAt?.toIso8601String();
+      map['updated_at'] = product.updatedAt?.toIso8601String();
+      map['deleted_at'] = null;
 
       final id = await db.insert(tableProducts, map);
       return product.copyWith(id: id);

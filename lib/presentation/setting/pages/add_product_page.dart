@@ -190,14 +190,18 @@ class _AddProductPageState extends State<AddProductPage> {
                               
                           final Product product = Product(
                             name: name,
-                            price: price,
-                            stock: stock,
+                            price: double.parse(priceController!.text),
+                            stock: stockController!.text.toIntegerFromText,
                             sku: '',
                             unitOfMeasure: 'pcs',
                             expiredDate: null,
                             isBestSeller: isBestSeller,
                             categoryId: category?.id ?? 1, // Provide a default category ID if null
                             image: imageFile!.path,
+                            id: 0, // Default ID for new product
+                            description: '',
+                            createdAt: DateTime.now(),
+                            updatedAt: DateTime.now(),
                           );
                           
                           context.read<ProductBloc>().add(

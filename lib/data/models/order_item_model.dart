@@ -18,7 +18,7 @@ class OrderItem extends Equatable {
     this.updatedAt,
   });
 
-  int get totalPrice => quantity * product.price;
+  int get totalPrice => quantity * product.price.toInt();
 
   @override
   List<Object?> get props => [

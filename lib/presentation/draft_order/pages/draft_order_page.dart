@@ -8,7 +8,7 @@ import '../../../core/components/spaces.dart';
 
 import '../../home/pages/dashboard_page.dart';
 import '../bloc/draft_order/draft_order_bloc.dart';
-import '../wedgets/draft_order_card.dart';
+import '../widget/draft_order_card.dart';
 
 
 

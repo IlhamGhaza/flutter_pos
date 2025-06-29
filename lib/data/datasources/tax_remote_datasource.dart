@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter_pos/core/constants/variables.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
@@ -16,12 +16,12 @@ class TaxRemoteDatasource {
       },
     );
     if (response.statusCode == 200) {
-      debugPrint('Taxes loaded successfully: ${response.body}');
+      log('Success to get all tax response: ${response.body}');
       final jsonData = json.decode(response.body);
       final List<dynamic> data = jsonData['data'] ?? jsonData;
       return TaxResponseModel.fromList(data);
     } else {
-      debugPrint('Failed to load taxes: ${response.body}');
+      log('failed to get all tax response: ${response.body}');
       throw Exception('Failed to load taxes');
     }
   }

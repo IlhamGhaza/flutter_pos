@@ -82,7 +82,7 @@ class OrderCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 8.0),
                         Text(
-                          data.product.price.currencyFormatRp,
+                          data.product.price.toInt().currencyFormatRp,
                           style: TextStyle(
                             fontSize: isSmallScreen ? 14 : 16,
                             fontWeight: FontWeight.w700,

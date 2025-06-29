@@ -9,7 +9,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file/open_file.dart' as open_file;
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:path/path.dart' as path;
 import 'package:flutter_pos/presentation/order/bloc/qris/models/order_model.dart';
 
 import '../../../core/components/spaces.dart';
@@ -17,7 +16,6 @@ import '../../../core/constants/colors.dart';
 import '../../../core/utils/connectivity_utils.dart';
 import '../../home/pages/dashboard_page.dart';
 import '../bloc/history/history_bloc.dart';
-import '../models/history_transaction_model.dart';
 import '../widgets/history_transaction_card.dart';
 
 class HistoryPage extends StatefulWidget {

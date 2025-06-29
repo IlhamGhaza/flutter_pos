@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter_pos/core/constants/variables.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
@@ -18,8 +19,10 @@ class OrderRemoteDatasource {
     );
 
     if (response.statusCode == 201) {
+      log('Success to create order response: ${response.body}');
       return json.decode(response.body);
     } else {
+      log('failed to create order response: ${response.body}');
       throw Exception('Failed to create order: ${response.body}');
     }
   }
@@ -35,9 +38,11 @@ class OrderRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
+      log('Success to get all order response: ${response.body}');
       final jsonData = json.decode(response.body);
       return List<Map<String, dynamic>>.from(jsonData['data']);
     } else {
+      log('failed to get all order response: ${response.body}');
       throw Exception('Failed to load orders');
     }
   }
@@ -53,9 +58,11 @@ class OrderRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
+      log('Success to get order by id response: ${response.body}');
       final jsonData = json.decode(response.body);
       return jsonData['data'];
     } else {
+      log('failed to get order by id response: ${response.body}');
       throw Exception('Failed to load order');
     }
   }

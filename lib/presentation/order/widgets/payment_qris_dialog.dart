@@ -20,9 +20,13 @@ import '../bloc/qris/models/order_model.dart';
 
 class PaymentQrisDialog extends StatefulWidget {
   final int price;
+  final String? customerName;
+  final String? customerPhone;
   const PaymentQrisDialog({
     super.key,
     required this.price,
+    this.customerName,
+    this.customerPhone,
   });
 
   @override
@@ -84,7 +88,11 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                   nominalBayar,
                   idKasir,
                   namaKasir,
-                  customerName) {
+                  customerName,
+                  tax,
+                  taxRate,
+                  serviceCharge,
+                  serviceChargeRate) {
                 return Container(
                   width: context.deviceWidth,
                   padding: const EdgeInsets.all(14.0),
@@ -121,7 +129,9 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                                 transactionTime:
                                     DateFormat('yyyy-MM-ddTHH:mm:ss')
                                         .format(DateTime.now()),
-                                isSync: false);
+                                isSync: false,
+                                customerName: widget.customerName,
+                                customerPhone: widget.customerPhone);
                             ProductLocalDatasource.instance
                                 .saveOrder(orderModel);
                             context.pop();
@@ -240,11 +250,48 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                           ),
                         ),
                       ),
+                      if (widget.customerName != null || widget.customerPhone != null)
+                        ...[
+                          _buildReceiptRow('Pelanggan', widget.customerName ?? '-'),
+                          if (widget.customerPhone != null)
+                            _buildReceiptRow('No. HP', widget.customerPhone!),
+                          const SpaceHeight(8.0),
+                        ],
+                      _buildReceiptRow('Tanggal',
+                          DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())),
+                      const SpaceHeight(8.0),
+                      _buildReceiptRow('Metode Pembayaran', 'QRIS'),
+                      const SpaceHeight(8.0),
                     ],
                   ),
                 );
               });
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: 14,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: 14,
+            ),
           ),
         ],
       ),

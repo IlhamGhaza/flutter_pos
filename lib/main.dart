@@ -9,6 +9,9 @@ import 'package:flutter_pos/data/datasources/report_remote_datasource.dart';
 import 'package:flutter_pos/data/datasources/discount_remote_datasource.dart';
 import 'package:flutter_pos/data/datasources/order_local_datasource.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
+import 'package:flutter_pos/data/datasources/customer_remote_datasource.dart';
+import 'package:flutter_pos/data/datasources/service_charge_remote_datasource.dart';
+import 'package:flutter_pos/data/datasources/tax_remote_datasource.dart';
 import 'package:flutter_pos/presentation/auth/pages/splash_screen_pages.dart';
 import 'package:flutter_pos/presentation/draft_order/bloc/draft_order/draft_order_bloc.dart';
 import 'package:flutter_pos/presentation/history/bloc/history/history_bloc.dart';
@@ -21,6 +24,10 @@ import 'package:flutter_pos/presentation/setting/bloc/report/close_cashier/close
 import 'package:flutter_pos/presentation/setting/bloc/report/product_sales/product_sales_bloc.dart';
 import 'package:flutter_pos/presentation/setting/bloc/report/summary/summary_bloc.dart';
 import 'package:flutter_pos/presentation/setting/bloc/sync_order/sync_order_bloc.dart';
+import 'package:flutter_pos/presentation/setting/bloc/customer/customer_bloc.dart';
+import 'package:flutter_pos/presentation/setting/bloc/sync_discount/sync_discount_bloc.dart';
+import 'package:flutter_pos/presentation/setting/bloc/sync_tax/sync_tax_bloc.dart';
+import 'package:flutter_pos/presentation/setting/bloc/sync_service_charge/sync_service_charge_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'core/constants/colors.dart';
@@ -31,33 +38,27 @@ import 'presentation/setting/bloc/discount/bloc/discount_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  
+
   final isExpired = await SessionManager.isSessionExpired();
   if (isExpired) {
-    
     final authLocalDatasource = AuthLocalDatasource();
     await authLocalDatasource.removeAuthData();
   } else {
-    
     await SessionManager.updateLastActivity();
   }
-  
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  
-  
   void _handleUserInteraction([_]) {
     SessionManager.updateLastActivity();
   }
 
   @override
   Widget build(BuildContext context) {
-    
     return GestureDetector(
       onTap: _handleUserInteraction,
       behavior: HitTestBehavior.opaque,
@@ -110,6 +111,30 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => CloseCashierBloc(ReportRemoteDatasource()),
+        ),
+        BlocProvider(
+          create: (context) => DiscountBloc(DiscountRemoteDatasource()),
+        ),
+        BlocProvider(
+          create: (context) => CustomerBloc(CustomerRemoteDatasource()),
+        ),
+        BlocProvider(
+          create: (context) => SyncDiscountBloc(DiscountRemoteDatasource()),
+        ),
+        BlocProvider(
+          create: (context) => SyncTaxBloc(TaxRemoteDatasource()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              SyncServiceChargeBloc(ServiceChargeRemoteDatasource()),
+        ),
+        BlocProvider(
+          create: (context) => OrderBloc(
+            orderRemoteDatasource: OrderRemoteDatasource(),
+            orderLocalDatasource: OrderLocalDatasource.instance,
+            discountRemoteDatasource: DiscountRemoteDatasource(),
+            authLocalDatasource: AuthLocalDatasource(),
+          )..add(const OrderEvent.started()),
         ),
         BlocProvider(
           create: (context) => DiscountBloc(DiscountRemoteDatasource()),

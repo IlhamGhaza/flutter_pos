@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter_pos/core/constants/variables.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
@@ -20,9 +20,10 @@ class DeliveryRemoteDatasource {
     );
 
     if (response.statusCode == 201) {
+      log('Success to create delivery response: ${response.body}');
       return json.decode(response.body);
     } else {
-      debugPrint('Failed to create delivery: ${response.body}');
+      log('failed to create delivery response: ${response.body}');
       throw Exception('Failed to create delivery: ${response.body}');
     }
   }
@@ -38,10 +39,11 @@ class DeliveryRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
+      log('Success to get all delivery response: ${response.body}');
       final jsonData = json.decode(response.body);
       return List<Map<String, dynamic>>.from(jsonData['data']);
     } else {
-      debugPrint('Failed to get delivery: ${response.body}');
+      log('failed to get all delivery response: ${response.body}');
       throw Exception('Failed to load deliveries');
     }
   }
@@ -57,10 +59,11 @@ class DeliveryRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
+      log('Success to get delivery by id response: ${response.body}');
       final jsonData = json.decode(response.body);
       return jsonData['data'];
     } else {
-      debugPrint('Failed to fetch deliver yby id: ${response.body}');
+      log('failed to get delivery by id response: ${response.body}');
       throw Exception('Failed to load delivery');
     }
   }
