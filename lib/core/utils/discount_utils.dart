@@ -114,7 +114,8 @@ class DiscountUtils {
   /// 'reguler' is treated as an alias for 'retail'
   static bool isValidCustomerType(
       String customerType, String discountCustomerType) {
-    if (discountCustomerType.isEmpty || discountCustomerType.toLowerCase() == 'all') {
+    if (discountCustomerType.isEmpty ||
+        discountCustomerType.toLowerCase() == 'all') {
       return true;
     }
 
@@ -150,7 +151,8 @@ class DiscountUtils {
     String? applyToValue,
   ) {
     debugPrint('Checking product applicability:');
-    debugPrint('- Product ID: ${product.id}, Category ID: ${product.categoryId}');
+    debugPrint(
+        '- Product ID: ${product.id}, Category ID: ${product.categoryId}');
     debugPrint('- Apply To: $applyTo, Apply To Value: $applyToValue');
 
     // If applyTo is 'all' or empty, discount applies to all products
@@ -175,19 +177,17 @@ class DiscountUtils {
     debugPrint('  - Parsed applyToValues: $applyToValues');
 
     bool isApplicable = false;
-    
+
     switch (applyTo.toLowerCase()) {
       case 'category':
-        isApplicable = applyToValues.any(
-          (categoryId) => product.categoryId.toString() == categoryId
-        );
+        isApplicable = applyToValues
+            .any((categoryId) => product.categoryId.toString() == categoryId);
         debugPrint('  - Category match: $isApplicable');
         break;
 
       case 'product':
-        isApplicable = applyToValues.any(
-          (productId) => product.id?.toString() == productId
-        );
+        isApplicable = applyToValues
+            .any((productId) => product.id.toString() == productId);
         debugPrint('  - Product ID match: $isApplicable');
         break;
 
@@ -348,36 +348,166 @@ class DiscountUtils {
     int totalQuantity,
     DiscountResponseModel discount,
   ) {
+    final discountData = discount.data[0];
+
     // Check minimum purchase amount
-    if (discount.data[0].minAmount != null && discount.data[0].minAmount! > 0) {
-      if (totalPrice < discount.data[0].minAmount!) {
+    if (discountData.minAmount != null && discountData.minAmount! > 0) {
+      if (totalPrice < discountData.minAmount!) {
         debugPrint(
-            'Total price $totalPrice is less than minimum amount ${discount.data[0].minAmount}');
+            'Total price $totalPrice is less than minimum amount ${discountData.minAmount}');
         return false;
       }
     }
 
     // Check minimum quantity
-    if (discount.data[0].minQuantity != null &&
-        discount.data[0].minQuantity! > 0) {
-      if (totalQuantity < discount.data[0].minQuantity!) {
+    if (discountData.minQuantity != null && discountData.minQuantity! > 0) {
+      if (totalQuantity < discountData.minQuantity!) {
         debugPrint(
-            'Quantity $totalQuantity is less than minimum ${discount.data[0].minQuantity}');
+            'Quantity $totalQuantity is less than minimum ${discountData.minQuantity}');
         return false;
       }
     }
 
     // Check maximum quantity if specified
-    if (discount.data[0].maxQuantity != null &&
-        discount.data[0].maxQuantity! > 0) {
-      if (totalQuantity > discount.data[0].maxQuantity!) {
+    if (discountData.maxQuantity != null && discountData.maxQuantity! > 0) {
+      if (totalQuantity > discountData.maxQuantity!) {
         debugPrint(
-            'Quantity $totalQuantity exceeds maximum ${discount.data[0].maxQuantity}');
+            'Quantity $totalQuantity exceeds maximum ${discountData.maxQuantity}');
+        return false;
+      }
+    }
+
+    // Check buy quantity for buy X get Y discounts
+    if (discountData.type.toLowerCase() == 'buy_x_get_y' &&
+        discountData.buyQuantity != null &&
+        discountData.buyQuantity! > 0) {
+      if (totalQuantity < discountData.buyQuantity!) {
+        debugPrint(
+            'Quantity $totalQuantity is less than buy quantity ${discountData.buyQuantity} for buy X get Y discount');
+        return false;
+      }
+    }
+
+    // Check get quantity for buy X get Y discounts
+    if (discountData.type.toLowerCase() == 'buy_x_get_y' &&
+        discountData.getQuantity != null &&
+        discountData.getQuantity! > 0) {
+      // This is more of a validation for the discount configuration
+      // The actual application logic is handled in applyDiscount method
+      debugPrint(
+          'Buy X Get Y discount: Buy ${discountData.buyQuantity}, Get ${discountData.getQuantity}');
+    }
+
+    return true;
+  }
+
+  /// Check if discount usage limit is valid
+  static bool isUsageLimitValid(DiscountResponseModel discount) {
+    final discountData = discount.data[0];
+
+    // Check usage limit if specified
+    if (discountData.usageLimit != null && discountData.usageLimit! > 0) {
+      if (discountData.usageCount >= discountData.usageLimit!) {
+        debugPrint(
+            'Discount ${discountData.id} has reached usage limit (${discountData.usageCount}/${discountData.usageLimit})');
         return false;
       }
     }
 
     return true;
+  }
+
+  /// Comprehensive discount validation for order processing
+  static DiscountValidationResult validateDiscountForOrder({
+    required DiscountResponseModel discount,
+    required double orderTotal,
+    required int orderQuantity,
+    required String customerType,
+    required List<Product> products,
+  }) {
+    final discountData = discount.data[0];
+    final validationResult = DiscountValidationResult(
+      isValid: true,
+      discount: discount,
+      errors: [],
+    );
+
+    debugPrint(
+        'Validating discount: ${discountData.name} (ID: ${discountData.id})');
+
+    // 1. Check discount status
+    if (discountData.status.toLowerCase() != 'active') {
+      validationResult.addError('Diskon tidak aktif');
+    }
+
+    // 2. Check if discount is valid for current date/time
+    if (!isDiscountValidNow(discount)) {
+      validationResult.addError('Diskon tidak berlaku untuk waktu saat ini');
+    }
+
+    // 3. Check customer type eligibility
+    if (!isValidCustomerType(customerType, discountData.customerType)) {
+      validationResult.addError('Tipe pelanggan tidak memenuhi syarat diskon');
+    }
+
+    // 4. Check minimum requirements
+    if (!meetsMinimumRequirements(orderTotal, orderQuantity, discount)) {
+      if (discountData.minAmount != null &&
+          discountData.minAmount! > 0 &&
+          orderTotal < discountData.minAmount!) {
+        validationResult.addError(
+            'Total belanja minimal Rp${discountData.minAmount!.toStringAsFixed(0)}');
+      }
+      if (discountData.minQuantity != null &&
+          discountData.minQuantity! > 0 &&
+          orderQuantity < discountData.minQuantity!) {
+        validationResult.addError(
+            'Minimal ${discountData.minQuantity!.toStringAsFixed(0)} item');
+      }
+      if (discountData.maxQuantity != null &&
+          discountData.maxQuantity! > 0 &&
+          orderQuantity > discountData.maxQuantity!) {
+        validationResult.addError(
+            'Maksimal ${discountData.maxQuantity!.toStringAsFixed(0)} item');
+      }
+      if (discountData.type.toLowerCase() == 'buy_x_get_y' &&
+          discountData.buyQuantity != null &&
+          discountData.buyQuantity! > 0 &&
+          orderQuantity < discountData.buyQuantity!) {
+        validationResult.addError(
+            'Minimal beli ${discountData.buyQuantity} item untuk diskon ini');
+      }
+    }
+
+    // 5. Check usage limit
+    if (!isUsageLimitValid(discount)) {
+      validationResult.addError('Diskon telah mencapai batas penggunaan');
+    }
+
+    // 6. Check product applicability
+    final applyTo = discountData.applyTo.toLowerCase();
+    if (applyTo != 'all') {
+      final applicableItems = (discountData.applicableItems?.toString() ?? '')
+          .split(',')
+          .map((e) => e.trim())
+          .toList();
+
+      bool hasEligibleProduct = false;
+      if (applyTo == 'product' && applicableItems.isNotEmpty) {
+        hasEligibleProduct = products
+            .any((item) => applicableItems.contains(item.id.toString()));
+      } else if (applyTo == 'category' && applicableItems.isNotEmpty) {
+        hasEligibleProduct = products.any(
+            (item) => applicableItems.contains(item.categoryId.toString()));
+      }
+
+      if (!hasEligibleProduct) {
+        validationResult
+            .addError('Tidak ada produk yang memenuhi syarat diskon');
+      }
+    }
+
+    return validationResult;
   }
 
   /// Apply discount to price based on discount type
@@ -542,11 +672,13 @@ class DiscountUtils {
       return false;
     }
 
-    debugPrint('Checking discount applicability for: ${discountData.name} (ID: ${discountData.id})');
-    
+    debugPrint(
+        'Checking discount applicability for: ${discountData.name} (ID: ${discountData.id})');
+
     // 1. Check customer type
     if (!isValidCustomerType(customerType, discountData.customerType)) {
-      debugPrint('  - Customer type "$customerType" is not eligible for this discount');
+      debugPrint(
+          '  - Customer type "$customerType" is not eligible for this discount');
       return false;
     }
 
@@ -558,7 +690,8 @@ class DiscountUtils {
     }
 
     // Check if discount has expired (only if expiredDate is not null)
-    if (discountData.expiredDate != null && now.isAfter(discountData.expiredDate!)) {
+    if (discountData.expiredDate != null &&
+        now.isAfter(discountData.expiredDate!)) {
       debugPrint('  - Discount expired on ${discountData.expiredDate}');
       return false;
     }
@@ -567,9 +700,10 @@ class DiscountUtils {
     if (discountData.startTime != null && discountData.endTime != null) {
       final startTime = _parseTime(discountData.startTime!);
       final endTime = _parseTime(discountData.endTime!);
-      
+
       if (!_isWithinTimeRange(startTime, endTime)) {
-        debugPrint('  - Current time is outside discount time window (${discountData.startTime} - ${discountData.endTime})');
+        debugPrint(
+            '  - Current time is outside discount time window (${discountData.startTime} - ${discountData.endTime})');
         return false;
       }
     }
@@ -578,7 +712,8 @@ class DiscountUtils {
     if (discountData.validDays.isNotEmpty) {
       final currentWeekday = now.weekday; // 1=Monday, 7=Sunday
       if (!discountData.validDays.contains(currentWeekday)) {
-        debugPrint('  - Today is not a valid day for this discount (valid days: ${discountData.validDays})');
+        debugPrint(
+            '  - Today is not a valid day for this discount (valid days: ${discountData.validDays})');
         return false;
       }
     }
@@ -586,29 +721,28 @@ class DiscountUtils {
     // 6. Check minimum requirements
     final minAmount = discountData.minAmount;
     if (minAmount != null && minAmount > 0 && orderTotal < minAmount) {
-      debugPrint('  - Order total ($orderTotal) is less than minimum amount ($minAmount)');
+      debugPrint(
+          '  - Order total ($orderTotal) is less than minimum amount ($minAmount)');
       return false;
     }
 
     final minQuantity = discountData.minQuantity;
     if (minQuantity != null && minQuantity > 0 && itemCount < minQuantity) {
-      debugPrint('  - Item count ($itemCount) is less than minimum quantity ($minQuantity)');
+      debugPrint(
+          '  - Item count ($itemCount) is less than minimum quantity ($minQuantity)');
       return false;
     }
 
     // 7. Check product applicability if not 'all' products
     final applyTo = discountData.applyTo.toLowerCase();
     if (applyTo != 'all') {
-      final allProductsEligible = products.every((product) => 
-        isProductApplicable(
-          product, 
-          applyTo, 
-          discountData.applicableItems.toString()
-        )
-      );
-      
+      final allProductsEligible = products.every((product) =>
+          isProductApplicable(
+              product, applyTo, discountData.applicableItems.toString()));
+
       if (!allProductsEligible) {
-        debugPrint('  - Not all products in cart are eligible for this discount');
+        debugPrint(
+            '  - Not all products in cart are eligible for this discount');
         return false;
       }
     }
@@ -640,6 +774,34 @@ class DiscountUtils {
   }
 }
 
+/// Class to hold discount validation result
+class DiscountValidationResult {
+  bool isValid;
+  final DiscountResponseModel discount;
+  final List<String> errors;
+
+  DiscountValidationResult({
+    required this.isValid,
+    required this.discount,
+    required this.errors,
+  });
+
+  void addError(String error) {
+    errors.add(error);
+    isValid = false;
+  }
+
+  String get errorMessage {
+    if (errors.isEmpty) return '';
+    return errors.join(', ');
+  }
+
+  @override
+  String toString() {
+    return 'DiscountValidationResult{\n      isValid: $isValid,\n      discount: ${discount.data[0].name},\n      errors: $errors\n    }';
+  }
+}
+
 /// Class to hold discount application result
 class DiscountResult {
   final double originalPrice;
@@ -663,7 +825,7 @@ class DiscountResult {
   /// Get discount description for display
   String get description {
     if (discount.data.isEmpty) return 'Diskon';
-    
+
     final discountData = discount.data[0];
     switch (discountData.type.toLowerCase()) {
       case 'percentage':

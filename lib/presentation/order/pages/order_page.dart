@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
@@ -10,22 +9,19 @@ import 'package:flutter_pos/core/components/spaces.dart';
 import 'package:flutter_pos/core/extensions/build_context_ext.dart';
 import 'package:flutter_pos/core/utils/connectivity_utils.dart';
 import 'package:flutter_pos/core/utils/snackbar_utils.dart';
+import 'package:flutter_pos/core/utils/discount_utils.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
-import 'package:flutter_pos/data/datasources/delivery_remote_datasource.dart';
 import 'package:flutter_pos/data/datasources/order_local_datasource.dart';
 import 'package:flutter_pos/data/datasources/product_local_datasource.dart';
 import 'package:flutter_pos/data/models/response/service_charge_response_model.dart';
 import 'package:flutter_pos/data/models/response/customer_response_model.dart';
 import 'package:flutter_pos/data/models/response/tax_response_model.dart';
+import 'package:flutter_pos/data/models/response/product_response_model.dart';
 import 'package:flutter_pos/data/models/order_item_model.dart';
-import 'package:flutter_pos/core/utils/discount_utils.dart';
-import 'package:flutter_pos/data/models/request/delivery_request_model.dart';
 import 'package:flutter_pos/data/models/request/order_request_model.dart';
 import 'package:flutter_pos/presentation/home/bloc/checkout/checkout_bloc.dart';
 import 'package:flutter_pos/presentation/home/pages/dashboard_page.dart';
 import 'package:flutter_pos/presentation/order/bloc/order/order_bloc.dart';
-import 'package:flutter_pos/presentation/order/pages/delivery/delivery_form_dialog.dart';
-import 'package:flutter_pos/presentation/order/pages/delivery/delivery_map_page.dart';
 import 'package:flutter_pos/presentation/order/widgets/order_card.dart';
 import 'package:flutter_pos/presentation/order/widgets/payment_cash_dialog.dart';
 import 'package:flutter_pos/presentation/order/widgets/payment_qris_dialog.dart';
@@ -50,11 +46,12 @@ class _OrderPageState extends State<OrderPage> {
   TaxResponseModel? _selectedTax;
   ServiceChargeResponseModel? _selectedServiceCharge;
   CustomerResponseModel? _selectedCustomer;
+  List<DiscountResponseModel> _selectedDiscounts = [];
   bool _isDiscountActive = false;
   bool _isTaxActive = false;
   bool _isServiceChargeActive = false;
   bool _isCustomerActive = false;
-  bool _isDeliveryLoading = false;
+  final bool _isDeliveryLoading = false;
   LatLng? deliveryPoint;
   String? deliveryAddress;
   List<OrderItem> orders = [];
@@ -310,7 +307,7 @@ class _OrderPageState extends State<OrderPage> {
                           final customer = customers[index];
                           return ListTile(
                             title: Text(customer.name),
-                            subtitle: Text(customer.phoneNumber!),
+                            subtitle: Text(customer.phoneNumber),
                             trailing: Text(customer.customerType),
                             onTap: () {
                               setState(() {
@@ -365,7 +362,6 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   // Track selected discounts
-  final List<DiscountResponseModel> _selectedDiscounts = [];
   bool _isDiscountLoading = false;
   // final TextEditingController _discountController = TextEditingController();
 
@@ -406,8 +402,7 @@ class _OrderPageState extends State<OrderPage> {
     }
 
     // Check date range
-    if (discount.data[0].startDate != null &&
-        now.isBefore(discount.data[0].startDate!)) {
+    if (now.isBefore(discount.data[0].startDate)) {
       return false;
     }
     if (discount.data[0].expiredDate != null &&
@@ -526,76 +521,71 @@ class _OrderPageState extends State<OrderPage> {
         debugPrint('- Apply To: ${discountData.applyTo}');
         debugPrint('- Applicable Items: ${discountData.applicableItems}');
 
-        // Check discount status
+        // Calculate order totals for validation
+        double orderTotal = 0.0;
+        int orderQuantity = 0;
+        for (final item in orderItems) {
+          orderTotal += item.product.price * item.quantity;
+          orderQuantity = (orderQuantity + item.quantity).toInt();
+        }
+        final customerType =
+            (_selectedCustomer?.customerType ?? 'reguler').toLowerCase();
+        final products =
+            orderItems.map((item) => item.product).cast<Product>().toList();
+
+        // Basic validation - only check essential criteria for showing in dialog
+        // 1. Check discount status
         if (discountData.status.toLowerCase() != 'active') {
           debugPrint('❌ Skipped: Discount is not active');
           return false;
         }
 
-        // Check if discount is valid for current date/time
+        // 2. Check if discount is valid for current date/time
         if (!_isDiscountValidNow(discount)) {
           debugPrint('❌ Skipped: Not valid for current date/time');
           return false;
         }
 
-        // Check customer type
-        final customerType =
-            (_selectedCustomer?.customerType ?? 'reguler').toLowerCase();
-        final customerTypeValid = DiscountUtils.isValidCustomerType(
-          customerType,
-          discountData.customerType,
-        );
-
-        if (!customerTypeValid) {
+        // 3. Check customer type
+        if (!DiscountUtils.isValidCustomerType(
+            customerType, discountData.customerType)) {
           debugPrint(
               '❌ Skipped: Customer type "$customerType" not eligible for this discount');
           return false;
         }
 
-        // Check if discount applies to all products
-        if (discountData.applyTo.toLowerCase() == 'all' ||
-            discountData.applyTo.isEmpty) {
-          debugPrint('✅ Included: Applies to all products');
-          return true;
+        // 4. Check usage limit
+        if (!DiscountUtils.isUsageLimitValid(discount)) {
+          debugPrint('❌ Skipped: Discount has reached usage limit');
+          return false;
         }
 
-        // Check if discount applies to specific products
-        try {
-          final applyTo = discountData.applyTo.toLowerCase();
+        // 5. Check product applicability
+        final applyTo = discountData.applyTo.toLowerCase();
+        if (applyTo != 'all') {
           final applicableItems =
               (discountData.applicableItems?.toString() ?? '')
                   .split(',')
                   .map((e) => e.trim())
                   .toList();
 
-          debugPrint('- Apply To: $applyTo');
-          debugPrint('- Applicable Items: $applicableItems');
-
-          bool isApplicable = false;
-
+          bool hasEligibleProduct = false;
           if (applyTo == 'product' && applicableItems.isNotEmpty) {
-            // Check if any product in the order matches the discount's applicable items
-            isApplicable = orderItems.any(
-                (item) => applicableItems.contains(item.product.id.toString()));
-            debugPrint('🔍 Product match: $isApplicable');
+            hasEligibleProduct = products
+                .any((item) => applicableItems.contains(item.id.toString()));
           } else if (applyTo == 'category' && applicableItems.isNotEmpty) {
-            // Check if any product's category matches the discount's applicable categories
-            isApplicable = orderItems.any((item) =>
-                applicableItems.contains(item.product.categoryId.toString()));
-            debugPrint('🔍 Category match: $isApplicable');
+            hasEligibleProduct = products.any(
+                (item) => applicableItems.contains(item.categoryId.toString()));
           }
 
-          if (isApplicable) {
-            debugPrint('✅ Included: Matches product/category criteria');
-          } else {
+          if (!hasEligibleProduct) {
             debugPrint('❌ Skipped: No matching products/categories in order');
+            return false;
           }
-
-          return isApplicable;
-        } catch (e) {
-          debugPrint('❌ Error checking product applicability: $e');
-          return false;
         }
+
+        debugPrint('✅ Included: Basic validation passed');
+        return true;
       }).toList();
 
       debugPrint('Valid discounts count: ${validDiscounts.length}');
@@ -628,35 +618,181 @@ class _OrderPageState extends State<OrderPage> {
                                   final isSelected = _selectedDiscounts.any(
                                       (d) =>
                                           d.data[0].id == discount.data[0].id);
-                                  return CheckboxListTile(
-                                    title: Text(discount.data[0].name),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                            '${discount.data[0].value}% - ${discount.data[0].description ?? ''}'),
-                                        if ((discount.data[0].minAmount ?? 0) >
-                                            0)
+
+                                  // Check if discount meets all requirements for this order
+                                  double orderTotal = 0.0;
+                                  int orderQuantity = 0;
+                                  for (final item in orderItems) {
+                                    orderTotal +=
+                                        item.product.price * item.quantity;
+                                    orderQuantity =
+                                        (orderQuantity + item.quantity).toInt();
+                                  }
+                                  final customerType =
+                                      (_selectedCustomer?.customerType ??
+                                              'reguler')
+                                          .toLowerCase();
+                                  final products = orderItems
+                                      .map((item) => item.product)
+                                      .cast<Product>()
+                                      .toList();
+
+                                  final validationResult =
+                                      DiscountUtils.validateDiscountForOrder(
+                                    discount: discount,
+                                    orderTotal: orderTotal,
+                                    orderQuantity: orderQuantity,
+                                    customerType: customerType,
+                                    products: products,
+                                  );
+
+                                  final isFullyValid = validationResult.isValid;
+
+                                  return Opacity(
+                                    opacity: isFullyValid ? 1.0 : 0.6,
+                                    child: CheckboxListTile(
+                                      title: Row(
+                                        children: [
+                                          Expanded(
+                                              child:
+                                                  Text(discount.data[0].name)),
+                                          if (!isFullyValid)
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: Colors.orange,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: const Text(
+                                                'Syarat tidak terpenuhi',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
                                           Text(
-                                            'Min. belanja: ${_formatCurrency(discount.data[0].minAmount ?? 0)}',
-                                            style:
-                                                const TextStyle(fontSize: 12),
-                                          ),
-                                      ],
+                                              '${discount.data[0].value}% - ${discount.data[0].description ?? ''}'),
+                                          if ((discount.data[0].minAmount ??
+                                                  0) >
+                                              0)
+                                            Text(
+                                              'Min. belanja: ${_formatCurrency(discount.data[0].minAmount ?? 0)}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: orderTotal <
+                                                        (discount.data[0]
+                                                                .minAmount ??
+                                                            0)
+                                                    ? Colors.orange
+                                                    : Colors.green,
+                                                fontWeight: orderTotal <
+                                                        (discount.data[0]
+                                                                .minAmount ??
+                                                            0)
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                              ),
+                                            ),
+                                          if ((discount.data[0].minQuantity ??
+                                                  0) >
+                                              0)
+                                            Text(
+                                              'Min. item: ${discount.data[0].minQuantity!.toStringAsFixed(0)}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: orderQuantity <
+                                                        (discount.data[0]
+                                                                .minQuantity ??
+                                                            0)
+                                                    ? Colors.orange
+                                                    : Colors.green,
+                                                fontWeight: orderQuantity <
+                                                        (discount.data[0]
+                                                                .minQuantity ??
+                                                            0)
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                              ),
+                                            ),
+                                          if (!isFullyValid &&
+                                              validationResult
+                                                  .errors.isNotEmpty)
+                                            Container(
+                                              margin:
+                                                  const EdgeInsets.only(top: 4),
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.orange
+                                                    .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                                border: Border.all(
+                                                    color: Colors.orange
+                                                        .withOpacity(0.3)),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  ...validationResult.errors
+                                                      .map((error) => Text(
+                                                            '• $error',
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 11,
+                                                              color:
+                                                                  Colors.orange,
+                                                            ),
+                                                          ))
+                                                      ,
+                                                  if (!isFullyValid)
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                          top: 4),
+                                                      child: Text(
+                                                        'Tidak dapat dipilih',
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          color: Colors.red,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      value: isSelected,
+                                      onChanged: isFullyValid
+                                          ? (bool? value) {
+                                              setDialogState(() {
+                                                if (value == true) {
+                                                  _selectedDiscounts
+                                                      .add(discount);
+                                                } else {
+                                                  _selectedDiscounts
+                                                      .removeWhere((d) =>
+                                                          d.data[0].id ==
+                                                          discount.data[0].id);
+                                                }
+                                              });
+                                            }
+                                          : null, // Disable selection if not fully valid
                                     ),
-                                    value: isSelected,
-                                    onChanged: (bool? value) {
-                                      setDialogState(() {
-                                        if (value == true) {
-                                          _selectedDiscounts.add(discount);
-                                        } else {
-                                          _selectedDiscounts.removeWhere((d) =>
-                                              d.data[0].id ==
-                                              discount.data[0].id);
-                                        }
-                                      });
-                                    },
                                   );
                                 }),
                               ],
@@ -682,22 +818,25 @@ class _OrderPageState extends State<OrderPage> {
       );
 
       if (selectedDiscounts != null && selectedDiscounts.isNotEmpty) {
-        // Calculate total discount percentage
-        final totalDiscount = selectedDiscounts.fold<double>(
-          0,
-          (sum, discount) => sum + discount.data[0].value,
-        );
+        // Simpan diskon yang dipilih
+        setState(() {
+          _selectedDiscounts =
+              List<DiscountResponseModel>.from(selectedDiscounts);
+          _isDiscountActive = true;
+        });
 
-        // Apply the discount
+        // Apply the discounts using the new event
         context.read<OrderBloc>().add(
-              OrderEvent.applyAutoDiscount(
-                const [1, 2, 3, 4, 5, 6, 7], // All days
-                totalDiscount.toInt(),
-              ),
+              OrderEvent.applyDiscounts(selectedDiscounts),
             );
 
         // Show success message
         if (mounted) {
+          final totalDiscount = selectedDiscounts.fold<double>(
+            0,
+            (sum, discount) => sum + discount.data[0].value,
+          );
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -706,12 +845,13 @@ class _OrderPageState extends State<OrderPage> {
               backgroundColor: Colors.green,
             ),
           );
-
-          // Update the discount active state
-          setState(() {
-            _isDiscountActive = true;
-          });
         }
+      } else {
+        // Clear discounts if none selected
+        setState(() {
+          _selectedDiscounts.clear();
+          _isDiscountActive = false;
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -846,10 +986,10 @@ class _OrderPageState extends State<OrderPage> {
           icon: const Icon(Icons.arrow_back_ios, size: 20),
         ),
         title: Text(
-          'Order Detail',
+          'Order',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
             fontSize: isSmallScreen ? 16 : 18,
+            fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
@@ -884,19 +1024,19 @@ class _OrderPageState extends State<OrderPage> {
               ],
             ),
           ),
-          if (hasOfflineOrders)
-            IconButton(
-              iconSize: isSmallScreen ? 20 : 24,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              onPressed: () {
-                context.read<OrderBloc>().add(
-                      const OrderEvent.syncOfflineOrders(),
-                    );
-              },
-              icon: const Icon(Icons.sync),
-              tooltip: 'Sinkronisasi Order Offline',
-            ),
+          // if (hasOfflineOrders)
+          //   IconButton(
+          //     iconSize: isSmallScreen ? 20 : 24,
+          //     padding: EdgeInsets.zero,
+          //     constraints: const BoxConstraints(),
+          //     onPressed: () {
+          //       context.read<OrderBloc>().add(
+          //             const OrderEvent.syncOfflineOrders(),
+          //           );
+          //     },
+          //     icon: const Icon(Icons.sync),
+          //     tooltip: 'Sinkronisasi Order Offline',
+          //   ),
           IconButton(
             iconSize: isSmallScreen ? 20 : 24,
             padding: EdgeInsets.zero,
@@ -908,86 +1048,154 @@ class _OrderPageState extends State<OrderPage> {
           SizedBox(width: isSmallScreen ? 8 : 12),
         ],
       ),
-      body: Column(
-        children: [
-          BlocBuilder<OrderBloc, OrderState>(
-            builder: (context, state) {
-              return state.maybeWhen(
-                syncing: () => Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  color: Colors.blue,
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Sinkronisasi Order Offline...',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-                error: (message) => Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  color: Colors.red,
-                  child: Text(
-                    'Error: $message',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                orElse: () => const SizedBox.shrink(),
+      body: BlocListener<CheckoutBloc, CheckoutState>(
+        listener: (context, checkoutState) {
+          checkoutState.maybeWhen(
+            success: (products, totalQuantity, totalPrice, draftName) {
+              // Update OrderBloc state when checkout changes
+              final currentOrderState = context.read<OrderBloc>().state;
+              currentOrderState.maybeWhen(
+                success: (orderProducts,
+                    orderTotalQuantity,
+                    orderTotalPrice,
+                    subTotal,
+                    discountPercentage,
+                    appliedDiscount,
+                    appliedDiscounts,
+                    paymentMethod,
+                    nominalBayar,
+                    idKasir,
+                    namaKasir,
+                    customerName,
+                    tax,
+                    taxRate,
+                    serviceCharge,
+                    serviceChargeRate) {
+                  // Recalculate with new products
+                  double subtotal = totalPrice.toDouble();
+
+                  // Apply discounts
+                  double afterDiscount = subtotal;
+                  double totalDiscountAmount = 0;
+                  for (final discount in appliedDiscounts) {
+                    final result = DiscountUtils.applyDiscount(
+                      originalPrice: afterDiscount,
+                      discount: discount,
+                      quantity: totalQuantity,
+                    );
+                    totalDiscountAmount += result.discountAmount;
+                    afterDiscount = result.finalPrice;
+                  }
+
+                  // Apply tax and service charge
+                  final taxAmount = afterDiscount * (taxRate ?? 0) / 100;
+                  final serviceChargeAmount =
+                      afterDiscount * (serviceChargeRate ?? 0) / 100;
+                  final finalTotal =
+                      afterDiscount + taxAmount + serviceChargeAmount;
+
+                  // Update OrderBloc state
+                  context.read<OrderBloc>().add(OrderEvent.addPaymentMethod(
+                        paymentMethod,
+                        products,
+                        customerName,
+                      ));
+                },
+                orElse: () {
+                  // Initialize OrderBloc state if not exists
+                  context.read<OrderBloc>().add(OrderEvent.addPaymentMethod(
+                        'cash',
+                        products,
+                        'Walk-in Customer',
+                      ));
+                },
               );
             },
-          ),
-          Expanded(
-            child: BlocBuilder<CheckoutBloc, CheckoutState>(
+            orElse: () {},
+          );
+        },
+        child: Column(
+          children: [
+            BlocBuilder<OrderBloc, OrderState>(
               builder: (context, state) {
-                return state.maybeWhen(orElse: () {
-                  return const Center(
-                    child: Text('No Data'),
-                  );
-                }, success: (data, qty, total, draftName) {
-                  if (data.isEmpty) {
+                return state.maybeWhen(
+                  syncing: () => Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    color: Colors.blue,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Sinkronisasi Order Offline...',
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  error: (message) => Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    color: Colors.red,
+                    child: Text(
+                      'Error: $message',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  orElse: () => const SizedBox.shrink(),
+                );
+              },
+            ),
+            Expanded(
+              child: BlocBuilder<CheckoutBloc, CheckoutState>(
+                builder: (context, state) {
+                  return state.maybeWhen(orElse: () {
                     return const Center(
                       child: Text('No Data'),
                     );
-                  }
+                  }, success: (data, qty, total, draftName) {
+                    if (data.isEmpty) {
+                      return const Center(
+                        child: Text('No Data'),
+                      );
+                    }
 
-                  totalPrice = total;
-                  return ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    itemCount: data.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 20.0),
-                    itemBuilder: (context, index) => OrderCard(
-                      padding: paddingHorizontal,
-                      data: data[index],
-                      onDeleteTap: () {
-                        context.read<CheckoutBloc>().add(
-                              CheckoutEvent.removeProduct(data[index].product),
-                            );
-                      },
-                    ),
-                  );
-                });
-              },
+                    totalPrice = total;
+                    return ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      itemCount: data.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 20.0),
+                      itemBuilder: (context, index) => OrderCard(
+                        padding: paddingHorizontal,
+                        data: data[index],
+                        onDeleteTap: () {
+                          context.read<CheckoutBloc>().add(
+                                CheckoutEvent.removeProduct(
+                                    data[index].product),
+                              );
+                        },
+                      ),
+                    );
+                  });
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: Container(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -1103,201 +1311,6 @@ class _OrderPageState extends State<OrderPage> {
                             ),
                             const SpaceWidth(16.0),
                             const SizedBox(height: 12.0),
-                            // Container(
-                            //   padding: const EdgeInsets.symmetric(
-                            //       horizontal: 8.0, vertical: 4.0),
-                            //   decoration: BoxDecoration(
-                            //     color: Colors.grey.shade100,
-                            //     borderRadius: BorderRadius.circular(8.0),
-                            //   ),
-                            //   child: Row(
-                            //     children: [
-                            //       Flexible(
-                            //         child: MenuButton(
-                            //           iconPath: Assets.icons.cash.path,
-                            //           label: 'Pilih Lokasi',
-                            //           isActive: false,
-                            //           onPressed: () async {
-                            //             final result = await Navigator.push(
-                            //               context,
-                            //               MaterialPageRoute(
-                            //                 builder: (context) =>
-                            //                     const DeliveryMapPage(),
-                            //               ),
-                            //             );
-                            //             if (result != null &&
-                            //                 result is LatLng) {
-                            //               setState(() {
-                            //                 deliveryPoint = result;
-                            //                 deliveryAddress = null;
-                            //               });
-                            //               // Ambil alamat dari koordinat
-                            //               try {
-                            //                 List<Placemark> placemarks =
-                            //                     await placemarkFromCoordinates(
-                            //                         result.latitude,
-                            //                         result.longitude);
-                            //                 if (placemarks.isNotEmpty) {
-                            //                   final placemark =
-                            //                       placemarks.first;
-                            //                   String address = '';
-                            //                   if (placemark.street != null &&
-                            //                       placemark
-                            //                           .street!.isNotEmpty) {
-                            //                     address += placemark.street!;
-                            //                   }
-                            //                   if (placemark.subLocality !=
-                            //                           null &&
-                            //                       placemark.subLocality!
-                            //                           .isNotEmpty) {
-                            //                     address +=
-                            //                         ', ${placemark.subLocality!}';
-                            //                   }
-                            //                   if (placemark.locality != null &&
-                            //                       placemark
-                            //                           .locality!.isNotEmpty) {
-                            //                     address +=
-                            //                         ', ${placemark.locality!}';
-                            //                   }
-                            //                   if (placemark
-                            //                               .administrativeArea !=
-                            //                           null &&
-                            //                       placemark.administrativeArea!
-                            //                           .isNotEmpty) {
-                            //                     address +=
-                            //                         ', ${placemark.administrativeArea!}';
-                            //                   }
-                            //                   if (placemark.postalCode !=
-                            //                           null &&
-                            //                       placemark
-                            //                           .postalCode!.isNotEmpty) {
-                            //                     address +=
-                            //                         ', ${placemark.postalCode!}';
-                            //                   }
-                            //                   if (placemark.country != null &&
-                            //                       placemark
-                            //                           .country!.isNotEmpty) {
-                            //                     address +=
-                            //                         ', ${placemark.country!}';
-                            //                   }
-                            //                   setState(() {
-                            //                     deliveryAddress = address;
-                            //                   });
-                            //                 } else {
-                            //                   setState(() {
-                            //                     deliveryAddress =
-                            //                         '${result.latitude}, ${result.longitude}';
-                            //                   });
-                            //                 }
-                            //               } catch (e) {
-                            //                 setState(() {
-                            //                   deliveryAddress =
-                            //                       '${result.latitude}, ${result.longitude}';
-                            //                 });
-                            //               }
-                            //             }
-                            //           },
-                            //         ),
-                            //       ),
-                            //       const SpaceWidth(12.0),
-                            //       Flexible(
-                            //         child: _isDeliveryLoading
-                            //             ? const Center(
-                            //                 child: SizedBox(
-                            //                   width: 24,
-                            //                   height: 24,
-                            //                   child: CircularProgressIndicator(
-                            //                     strokeWidth: 2,
-                            //                     valueColor:
-                            //                         AlwaysStoppedAnimation<
-                            //                             Color>(Colors.blue),
-                            //                   ),
-                            //                 ),
-                            //               )
-                            //             : MenuButton(
-                            //                 iconPath: Assets.icons.cash.path,
-                            //                 label: 'Delivery',
-                            //                 isActive: false,
-                            //                 onPressed: () async {
-                            //                   if (deliveryPoint == null) {
-                            //                     ScaffoldMessenger.of(context)
-                            //                         .showSnackBar(
-                            //                       const SnackBar(
-                            //                         content: Text(
-                            //                             'Pilih lokasi pengiriman terlebih dahulu'),
-                            //                         backgroundColor:
-                            //                             Colors.orange,
-                            //                       ),
-                            //                     );
-                            //                     return;
-                            //                   }
-                            //                   if (_isDeliveryLoading) return;
-                            //                   setState(() {
-                            //                     _isDeliveryLoading = true;
-                            //                   });
-                            //                   try {
-                            //                     final orderId = DateTime.now()
-                            //                         .millisecondsSinceEpoch;
-                            //                     final deliveryRequest =
-                            //                         await showDialog<
-                            //                             DeliveryRequestModel>(
-                            //                       context: context,
-                            //                       builder: (context) =>
-                            //                           DeliveryFormDialog(
-                            //                         orderId: orderId,
-                            //                         selectedLocation:
-                            //                             deliveryPoint,
-                            //                       ),
-                            //                     );
-                            //                     if (deliveryRequest != null) {
-                            //                       final response =
-                            //                           await DeliveryRemoteDatasource()
-                            //                               .createDelivery(
-                            //                                   deliveryRequest);
-                            //                       if (!mounted) return;
-                            //                       setState(() {
-                            //                         deliveryPoint = null;
-                            //                       });
-                            //                       ScaffoldMessenger.of(context)
-                            //                           .showSnackBar(
-                            //                         SnackBar(
-                            //                           content: Text(
-                            //                             'Pengiriman berhasil dibuat: ${response['data']['tracking_number']}',
-                            //                             style: const TextStyle(
-                            //                                 color:
-                            //                                     Colors.white),
-                            //                           ),
-                            //                           backgroundColor:
-                            //                               Colors.green,
-                            //                           behavior: SnackBarBehavior
-                            //                               .floating,
-                            //                           duration: const Duration(
-                            //                               seconds: 3),
-                            //                         ),
-                            //                       );
-                            //                     }
-                            //                   } catch (e) {
-                            //                     if (!mounted) return;
-                            //                     SnackbarUtils(
-                            //                             text:
-                            //                                 'Gagal membuat pengiriman',
-                            //                             backgroundColor:
-                            //                                 Colors.red)
-                            //                         .showErrorSnackBar(context);
-                            //                   } finally {
-                            //                     if (mounted) {
-                            //                       setState(() {
-                            //                         _isDeliveryLoading = false;
-                            //                       });
-                            //                     }
-                            //                   }
-                            //                 },
-                            //               ),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
-                            // const SizedBox(height: 8.0),
                           ],
                         );
                       },
@@ -1306,7 +1319,31 @@ class _OrderPageState extends State<OrderPage> {
                 ),
                 const SpaceHeight(20.0),
                 ProcessButton(
-                  price: 0,
+                  price: context.select<OrderBloc, int>((bloc) {
+                    final state = bloc.state;
+                    return state.maybeWhen(
+                      success: (
+                        products,
+                        totalQuantity,
+                        totalPrice,
+                        subTotal,
+                        discountPercentage,
+                        appliedDiscount,
+                        appliedDiscounts,
+                        paymentMethod,
+                        nominalBayar,
+                        idKasir,
+                        namaKasir,
+                        customerName,
+                        tax,
+                        taxRate,
+                        serviceCharge,
+                        serviceChargeRate,
+                      ) =>
+                          totalPrice,
+                      orElse: () => 0,
+                    );
+                  }),
                   onPressed: () async {
                     // Check if customer is selected
                     if (!_isCustomerActive || _selectedCustomer == null) {
@@ -1322,6 +1359,118 @@ class _OrderPageState extends State<OrderPage> {
                       return;
                     }
 
+                    // Enhanced discount validation
+                    if (_isDiscountActive && _selectedDiscounts.isNotEmpty) {
+                      final currentState = context.read<OrderBloc>().state;
+                      final orderData = currentState.maybeWhen(
+                        success: (products,
+                            totalQuantity,
+                            totalPrice,
+                            subTotal,
+                            discountPercentage,
+                            appliedDiscount,
+                            appliedDiscounts,
+                            paymentMethod,
+                            nominalBayar,
+                            idKasir,
+                            namaKasir,
+                            customerName,
+                            tax,
+                            taxRate,
+                            serviceCharge,
+                            serviceChargeRate) {
+                          return {
+                            'products': products,
+                            'totalQuantity': totalQuantity,
+                            'subTotal': subTotal,
+                          };
+                        },
+                        orElse: () => null,
+                      );
+
+                      if (orderData != null) {
+                        final products =
+                            orderData['products'] as List<OrderItem>;
+                        final totalQuantity = orderData['totalQuantity'] as int;
+                        final subTotal = orderData['subTotal'] as int;
+                        final customerType =
+                            _selectedCustomer?.customerType ?? 'reguler';
+
+                        // Validate each selected discount
+                        List<String> validationErrors = [];
+                        List<String> invalidDiscountNames = [];
+
+                        for (final discount in _selectedDiscounts) {
+                          final validationResult =
+                              DiscountUtils.validateDiscountForOrder(
+                            discount: discount,
+                            orderTotal: subTotal.toDouble(),
+                            orderQuantity: totalQuantity,
+                            customerType: customerType,
+                            products:
+                                products.map((item) => item.product).toList(),
+                          );
+
+                          if (!validationResult.isValid) {
+                            invalidDiscountNames.add(discount.data[0].name);
+                            validationErrors.add(
+                                '${discount.data[0].name}: ${validationResult.errorMessage}');
+                          }
+                        }
+
+                        // If there are validation errors, show them and prevent checkout
+                        if (validationErrors.isNotEmpty) {
+                          if (mounted) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title:
+                                    const Text('Diskon Tidak Dapat Diterapkan'),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Diskon berikut tidak dapat diterapkan karena tidak memenuhi syarat:',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    ...validationErrors
+                                        .map((error) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8),
+                                              child: Text(
+                                                '• $error',
+                                                style: const TextStyle(
+                                                    fontSize: 14),
+                                              ),
+                                            ))
+                                        ,
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Silakan tambahkan item atau pilih diskon lain yang sesuai.',
+                                      style: TextStyle(
+                                        fontStyle: FontStyle.italic,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return;
+                        }
+                      }
+                    }
+
                     final isConnected = await ConnectivityUtils.isConnected();
 
                     if (!isConnected) {
@@ -1330,30 +1479,54 @@ class _OrderPageState extends State<OrderPage> {
                         orElse: () => null,
                       );
                       if (successData != null) {
+                        // Ambil diskon yang dipilih
+                        List<DiscountResponseModel> selectedDiscounts = [];
+                        if (_isDiscountActive &&
+                            _selectedDiscounts.isNotEmpty) {
+                          selectedDiscounts = _selectedDiscounts;
+                        }
+
+                        // Hitung total dengan diskon, tax, service charge
+                        double subtotal =
+                            (successData['subTotal'] as int).toDouble();
+
+                        // Stack diskon
+                        double afterDiscount = subtotal;
+                        double totalDiscountAmount = 0;
+                        for (final discount in selectedDiscounts) {
+                          final result = DiscountUtils.applyDiscount(
+                            originalPrice: afterDiscount,
+                            discount: discount,
+                            quantity: successData['totalQuantity'] as int,
+                          );
+                          totalDiscountAmount += result.discountAmount;
+                          afterDiscount = result.finalPrice;
+                        }
+
+                        // Tax & Service Charge
+                        final taxAmount =
+                            afterDiscount * (successData['taxRate'] ?? 0) / 100;
+                        final serviceChargeAmount = afterDiscount *
+                            (successData['serviceChargeRate'] ?? 0) /
+                            100;
+                        final totalPrice =
+                            afterDiscount + taxAmount + serviceChargeAmount;
+
                         final orderRequest = OrderRequestModel(
                           transactionTime: DateTime.now().toIso8601String(),
                           kasirId: successData['idKasir'] as int,
                           paymentMethod: successData['paymentMethod'] as String,
-                          paymentAmount:
-                              (successData['totalPrice'] as int).toDouble(),
+                          paymentAmount: totalPrice,
                           customerId: _selectedCustomer!.id,
-                          subTotal:
-                              (successData['totalPrice'] as int).toDouble(),
+                          subTotal: subtotal,
                           taxId: _isTaxActive ? _selectedTax?.id : null,
-                          taxRate: _isTaxActive
-                              ? _selectedTax?.rate.toDouble() ?? 0.0
-                              : 0.0,
                           serviceChargeId: _isServiceChargeActive
                               ? _selectedServiceCharge?.id
                               : null,
-                          serviceChargeRate: _isServiceChargeActive
-                              ? _selectedServiceCharge?.rate.toDouble() ?? 0.0
-                              : 0.0,
-                          discountId: _isDiscountActive
-                              ? 1
-                              : null, // Assuming discount ID 1 as default
-                          totalPrice:
-                              (successData['totalPrice'] as int).toDouble(),
+                          discountId: selectedDiscounts.isNotEmpty
+                              ? selectedDiscounts.first.data.first.id
+                              : null,
+                          totalPrice: totalPrice,
                           totalItem: successData['totalQuantity'] as int,
                           changeAmount:
                               0.0, // Will be calculated based on payment
@@ -1362,7 +1535,7 @@ class _OrderPageState extends State<OrderPage> {
                           orderItems:
                               (successData['products'] as List<OrderItem>)
                                   .map((item) => OrderItemModel(
-                                        productId: item.product.id!,
+                                        productId: item.product.id,
                                         quantity: item.quantity,
                                         price: item.product.price.toDouble(),
                                       ))
@@ -1397,24 +1570,258 @@ class _OrderPageState extends State<OrderPage> {
                     }
 
                     if (indexValue.value == 0) {
+                      // Process order online
+                      final currentState = context.read<OrderBloc>().state;
+                      currentState.maybeWhen(
+                        success: (products,
+                            totalQuantity,
+                            totalPrice,
+                            subTotal,
+                            discountPercentage,
+                            appliedDiscount,
+                            appliedDiscounts,
+                            paymentMethod,
+                            nominalBayar,
+                            idKasir,
+                            namaKasir,
+                            customerName,
+                            tax,
+                            taxRate,
+                            serviceCharge,
+                            serviceChargeRate) {
+                          // Ambil diskon yang dipilih
+                          List<DiscountResponseModel> selectedDiscounts = [];
+                          if (_isDiscountActive &&
+                              _selectedDiscounts.isNotEmpty) {
+                            selectedDiscounts = _selectedDiscounts;
+                          }
+
+                          // Hitung total dengan diskon, tax, service charge
+                          double subtotal = subTotal.toDouble();
+
+                          // Stack diskon
+                          double afterDiscount = subtotal;
+                          double totalDiscountAmount = 0;
+                          for (final discount in selectedDiscounts) {
+                            final result = DiscountUtils.applyDiscount(
+                              originalPrice: afterDiscount,
+                              discount: discount,
+                              quantity: totalQuantity,
+                            );
+                            totalDiscountAmount += result.discountAmount;
+                            afterDiscount = result.finalPrice;
+                          }
+
+                          // Tax & Service Charge
+                          final taxAmount =
+                              afterDiscount * (taxRate ?? 0) / 100;
+                          final serviceChargeAmount =
+                              afterDiscount * (serviceChargeRate ?? 0) / 100;
+                          final totalPrice =
+                              afterDiscount + taxAmount + serviceChargeAmount;
+
+                          // Update state dengan perhitungan yang benar
+                          context
+                              .read<OrderBloc>()
+                              .add(OrderEvent.addPaymentMethod(
+                                paymentMethod,
+                                products,
+                                customerName,
+                              ));
+
+                          // Process order
+                          context.read<OrderBloc>().add(OrderEvent.processOrder(
+                                customerId: _selectedCustomer!.id,
+                                customerName: _selectedCustomer!.name,
+                                paymentMethod: paymentMethod,
+                                paymentAmount: totalPrice,
+                                orderType: 'in-person',
+                                customerOrderNotes: null,
+                                taxId: _isTaxActive ? _selectedTax?.id : null,
+                                taxRate: _isTaxActive
+                                    ? _selectedTax?.rate.toDouble()
+                                    : null,
+                                serviceChargeId: _isServiceChargeActive
+                                    ? _selectedServiceCharge?.id
+                                    : null,
+                                serviceChargeRate: _isServiceChargeActive
+                                    ? _selectedServiceCharge?.rate.toDouble()
+                                    : null,
+                                discountId: selectedDiscounts.isNotEmpty
+                                    ? selectedDiscounts.first.data.first.id
+                                    : null,
+                              ));
+                        },
+                        orElse: () {
+                          // Handle case when state is not success
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Tidak ada data order yang valid'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        },
+                      );
                     } else if (indexValue.value == 1) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => PaymentCashDialog(
-                          price: totalPrice,
-                          customerName: _selectedCustomer?.name,
-                          customerPhone: _selectedCustomer?.phoneNumber,
-                        ),
+                      // Cash payment
+                      final currentState = context.read<OrderBloc>().state;
+                      currentState.maybeWhen(
+                        success: (products,
+                            totalQuantity,
+                            totalPrice,
+                            subTotal,
+                            discountPercentage,
+                            appliedDiscount,
+                            appliedDiscounts,
+                            paymentMethod,
+                            nominalBayar,
+                            idKasir,
+                            namaKasir,
+                            customerName,
+                            tax,
+                            taxRate,
+                            serviceCharge,
+                            serviceChargeRate) {
+                          // Ambil diskon yang dipilih
+                          List<DiscountResponseModel> selectedDiscounts = [];
+                          if (_isDiscountActive &&
+                              _selectedDiscounts.isNotEmpty) {
+                            selectedDiscounts = _selectedDiscounts;
+                          }
+
+                          // Hitung total dengan diskon, tax, service charge
+                          double subtotal = subTotal.toDouble();
+
+                          // Stack diskon
+                          double afterDiscount = subtotal;
+                          double totalDiscountAmount = 0;
+                          for (final discount in selectedDiscounts) {
+                            final result = DiscountUtils.applyDiscount(
+                              originalPrice: afterDiscount,
+                              discount: discount,
+                              quantity: totalQuantity,
+                            );
+                            totalDiscountAmount += result.discountAmount;
+                            afterDiscount = result.finalPrice;
+                          }
+
+                          // Tax & Service Charge
+                          final taxAmount =
+                              afterDiscount * (taxRate ?? 0) / 100;
+                          final serviceChargeAmount =
+                              afterDiscount * (serviceChargeRate ?? 0) / 100;
+                          final totalPrice =
+                              afterDiscount + taxAmount + serviceChargeAmount;
+
+                          // Validate that customer is selected and has valid ID
+                          if (_selectedCustomer == null ||
+                              _selectedCustomer!.id <= 0) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Silakan pilih pelanggan terlebih dahulu'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            }
+                            return;
+                          }
+
+                          debugPrint(
+                              '[OrderPage] Selected customer: ${_selectedCustomer?.name} (ID: ${_selectedCustomer?.id})');
+
+                          showDialog(
+                            context: context,
+                            builder: (context) => PaymentCashDialog(
+                              price: totalPrice.toInt(),
+                              customerName: _selectedCustomer?.name,
+                              customerPhone: _selectedCustomer?.phoneNumber,
+                              customerId: _selectedCustomer!
+                                  .id, // Now we know it's not null
+                            ),
+                          );
+                        },
+                        orElse: () {
+                          // Handle case when state is not success
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Tidak ada data order yang valid'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        },
                       );
                     } else if (indexValue.value == 2) {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) => PaymentQrisDialog(
-                          price: totalPrice,
-                          customerName: _selectedCustomer?.name,
-                          customerPhone: _selectedCustomer?.phoneNumber,
-                        ),
+                      // QRIS payment
+                      final currentState = context.read<OrderBloc>().state;
+                      currentState.maybeWhen(
+                        success: (products,
+                            totalQuantity,
+                            totalPrice,
+                            subTotal,
+                            discountPercentage,
+                            appliedDiscount,
+                            appliedDiscounts,
+                            paymentMethod,
+                            nominalBayar,
+                            idKasir,
+                            namaKasir,
+                            customerName,
+                            tax,
+                            taxRate,
+                            serviceCharge,
+                            serviceChargeRate) {
+                          // Ambil diskon yang dipilih
+                          List<DiscountResponseModel> selectedDiscounts = [];
+                          if (_isDiscountActive &&
+                              _selectedDiscounts.isNotEmpty) {
+                            selectedDiscounts = _selectedDiscounts;
+                          }
+
+                          // Hitung total dengan diskon, tax, service charge
+                          double subtotal = subTotal.toDouble();
+
+                          // Stack diskon
+                          double afterDiscount = subtotal;
+                          double totalDiscountAmount = 0;
+                          for (final discount in selectedDiscounts) {
+                            final result = DiscountUtils.applyDiscount(
+                              originalPrice: afterDiscount,
+                              discount: discount,
+                              quantity: totalQuantity,
+                            );
+                            totalDiscountAmount += result.discountAmount;
+                            afterDiscount = result.finalPrice;
+                          }
+
+                          // Tax & Service Charge
+                          final taxAmount =
+                              afterDiscount * (taxRate ?? 0) / 100;
+                          final serviceChargeAmount =
+                              afterDiscount * (serviceChargeRate ?? 0) / 100;
+                          final totalPrice =
+                              afterDiscount + taxAmount + serviceChargeAmount;
+
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => PaymentQrisDialog(
+                              price: totalPrice.toInt(),
+                              customerName: _selectedCustomer?.name,
+                              customerPhone: _selectedCustomer?.phoneNumber,
+                            ),
+                          );
+                        },
+                        orElse: () {
+                          // Handle case when state is not success
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Tidak ada data order yang valid'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        },
                       );
                     }
                   },

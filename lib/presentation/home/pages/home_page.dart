@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> {
           SearchInput(
             controller: searchController,
             onChanged: (value) {
-              if (value.length >= 1) {  // Reduced minimum length for better UX
+              if (value.isNotEmpty) {  // Reduced minimum length for better UX
                 context
                     .read<ProductBloc>()
                     .add(ProductEvent.searchProduct(value));

@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'package:flutter/material.dart';
 import 'package:flutter_pos/data/models/order_item_model.dart';
 import 'package:flutter_pos/data/models/response/product_response_model.dart';
 import 'package:flutter_pos/presentation/order/bloc/qris/models/order_model.dart';
@@ -12,6 +11,7 @@ import '../models/response/discount_response_model.dart';
 import '../models/response/tax_response_model.dart';
 import '../models/response/service_charge_response_model.dart';
 import '../models/response/customer_response_model.dart';
+import 'package:flutter_pos/core/constants/db_config.dart';
 
 class ProductLocalDatasource {
   ProductLocalDatasource._init();
@@ -28,7 +28,7 @@ class ProductLocalDatasource {
 
     return await openDatabase(
       path,
-      version: 17, // Incremented version to trigger migration for discounts table update
+      version: kDatabaseVersion, // Ambil dari config
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         // Drop all tables and recreate
@@ -338,16 +338,16 @@ class ProductLocalDatasource {
               'applicable_items': discount.applicableItems?.join(','),
               'customer_type': discount.customerType,
               'valid_days': (discount.validDays ?? []).join(','),
-              'start_date': discount.startDate?.toIso8601String(),
+              'start_date': discount.startDate.toIso8601String(),
               'expired_date': discount.expiredDate?.toIso8601String(),
               'start_time': discount.startTime,
               'end_time': discount.endTime,
               'combinable': discount.combinable ? 1 : 0,
               'usage_limit': discount.usageLimit,
               'usage_count': discount.usageCount ?? 0,
-              'created_at': discount.createdAt?.toIso8601String() ??
+              'created_at': discount.createdAt.toIso8601String() ??
                   DateTime.now().toIso8601String(),
-              'updated_at': discount.updatedAt?.toIso8601String() ??
+              'updated_at': discount.updatedAt.toIso8601String() ??
                   DateTime.now().toIso8601String(),
               'deleted_at': discount.deletedAt?.toIso8601String(),
             },
@@ -605,13 +605,13 @@ class ProductLocalDatasource {
     if (_database != null) return _database!;
 
     try {
-      _database =
-          await _initDB('pos17.db'); // Ganti nama file db agar pasti recreate
+      _database = await _initDB(
+          kDatabaseName); // Ganti nama file db agar pasti recreate
       return _database!;
     } catch (e) {
       // If there's an error, delete the database and try again
-      await deleteDatabase('${await getDatabasesPath()}pos17.db');
-      _database = await _initDB('pos17.db');
+      await deleteDatabase(kDatabaseName);
+      _database = await _initDB(kDatabaseName);
       return _database!;
     }
   }
@@ -647,8 +647,8 @@ class ProductLocalDatasource {
           'is_best_seller': product.isBestSeller ? 1 : 0,
           'is_ready': product.isReady ? 1 : 0,
           'is_sync': 1,
-          'created_at': product.createdAt?.toIso8601String(),
-          'updated_at': product.updatedAt?.toIso8601String(),
+          'created_at': product.createdAt.toIso8601String(),
+          'updated_at': product.updatedAt.toIso8601String(),
           'deleted_at': null,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
@@ -678,8 +678,8 @@ class ProductLocalDatasource {
           map['is_best_seller'] = product.isBestSeller ? 1 : 0;
           map['is_ready'] = product.isReady ? 1 : 0;
           map['is_sync'] = 1;
-          map['created_at'] = product.createdAt?.toIso8601String();
-          map['updated_at'] = product.updatedAt?.toIso8601String();
+          map['created_at'] = product.createdAt.toIso8601String();
+          map['updated_at'] = product.updatedAt.toIso8601String();
           map['deleted_at'] = null;
 
           batch.insert(tableProducts, map,
@@ -703,8 +703,8 @@ class ProductLocalDatasource {
       map['product_id'] = product.id ?? 0;
       map['is_best_seller'] = product.isBestSeller ? 1 : 0;
       map['is_ready'] = product.isReady ? 1 : 0;
-      map['created_at'] = product.createdAt?.toIso8601String();
-      map['updated_at'] = product.updatedAt?.toIso8601String();
+      map['created_at'] = product.createdAt.toIso8601String();
+      map['updated_at'] = product.updatedAt.toIso8601String();
       map['deleted_at'] = null;
 
       final id = await db.insert(tableProducts, map);
@@ -718,8 +718,8 @@ class ProductLocalDatasource {
       map['product_id'] = product.id ?? 0;
       map['is_best_seller'] = product.isBestSeller ? 1 : 0;
       map['is_ready'] = product.isReady ? 1 : 0;
-      map['created_at'] = product.createdAt?.toIso8601String();
-      map['updated_at'] = product.updatedAt?.toIso8601String();
+      map['created_at'] = product.createdAt.toIso8601String();
+      map['updated_at'] = product.updatedAt.toIso8601String();
       map['deleted_at'] = null;
 
       final id = await db.insert(tableProducts, map);
@@ -933,6 +933,18 @@ class ProductLocalDatasource {
       deletedAt: map['deleted_at'] != null
           ? DateTime.tryParse(map['deleted_at'])
           : null,
+    );
+  }
+
+  // Update discount usage count
+  Future<void> updateDiscountUsageCount(
+      int discountId, int newUsageCount) async {
+    final db = await instance.database;
+    await db.update(
+      'discounts',
+      {'usage_count': newUsageCount},
+      where: 'id = ?',
+      whereArgs: [discountId],
     );
   }
 }

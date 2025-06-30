@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_pos/core/extensions/int_ext.dart';
-import 'package:flutter_pos/presentation/home/bloc/checkout/checkout_bloc.dart';
+import 'package:flutter_pos/presentation/order/bloc/order/order_bloc.dart';
 
 import '../../../core/components/spaces.dart';
 import '../../../core/constants/colors.dart';
@@ -28,9 +28,12 @@ class ProcessButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            BlocBuilder<CheckoutBloc, CheckoutState>(
-              builder: (context, state) {
-                return state.maybeWhen(
+            BlocBuilder<OrderBloc, OrderState>(
+              builder: (context, orderState) {
+                // Tambahkan log untuk debugging
+                debugPrint(
+                    '[ProcessButton] OrderState: $orderState');
+                return orderState.maybeWhen(
                   orElse: () {
                     return const Text(
                       '0',
@@ -41,9 +44,26 @@ class ProcessButton extends StatelessWidget {
                       ),
                     );
                   },
-                  success: (data, qty, total, _) {
+                  success: (orderProducts,
+                      orderTotalQuantity,
+                      orderTotalPrice,
+                      subTotal,
+                      discountPercentage,
+                      appliedDiscount,
+                      appliedDiscounts,
+                      paymentMethod,
+                      nominalBayar,
+                      idKasir,
+                      namaKasir,
+                      customerName,
+                      tax,
+                      taxRate,
+                      serviceCharge,
+                      serviceChargeRate) {
+                    // Hanya tampilkan total harga akhir dari OrderBloc
+                    debugPrint('[ProcessButton] Final Total: $orderTotalPrice');
                     return Text(
-                      total.currencyFormatRp,
+                      orderTotalPrice.currencyFormatRp,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,

@@ -1,28 +1,51 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_pos/data/models/request/order_request_model.dart';
-import 'package:flutter_pos/data/models/response/order_response_model.dart';
+import 'package:flutter_pos/core/constants/db_config.dart';
+import 'dart:developer';
 
 class OrderLocalDatasource {
   OrderLocalDatasource._init();
   static final OrderLocalDatasource instance = OrderLocalDatasource._init();
 
   static Database? _database;
+  bool _isFirstRun = true;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('orders.db');
+    _database = await _initDB(kDatabaseName);
     return _database!;
   }
 
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = dbPath + filePath;
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+    try {
+      final dbPath = await getDatabasesPath();
+      final path = dbPath + filePath;
+      
+      // Delete existing database if it exists to force recreation
+      // await deleteDatabase(path);
+      
+      final db = await openDatabase(
+        path,
+        version: kDatabaseVersion,
+        onCreate: _createDB,
+        onOpen: (db) async {
+          // Verify tables exist, if not create them
+          try {
+            await db.execute('SELECT 1 FROM offline_orders LIMIT 1');
+          } catch (e) {
+            await _createDB(db, kDatabaseVersion);
+          }
+        },
+        onUpgrade: (db, oldVersion, newVersion) async {
+          await _createDB(db, newVersion);
+        },
+      );
+      
+      return db;
+    } catch (e) {
+      log('Error initializing database: $e');
+      rethrow;
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -84,25 +107,37 @@ class OrderLocalDatasource {
       )
     ''');
 
-    // Create indexes for better query performance
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_offline_orders_sync ON offline_orders(is_sync)');
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_offline_orders_customer ON offline_orders(customer_id)');
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_offline_order_items_order ON offline_order_items(order_id)');
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_offline_order_items_sync ON offline_order_items(is_synced)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_offline_orders_sync ON offline_orders(is_sync)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_offline_orders_customer ON offline_orders(customer_id)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_offline_order_items_order ON offline_order_items(order_id)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_offline_order_items_sync ON offline_order_items(is_synced)');
   }
 
-  /// Save order to local database
-  Future<int> saveOfflineOrder(OrderRequestModel order, {
+  Future<int> saveOfflineOrder(
+    OrderRequestModel order, {
     required String kasirName,
     required String customerName,
   }) async {
     final db = await database;
+    
+    // Only verify tables if this is the first run
+    if (_isFirstRun) {
+      try {
+        await db.execute('SELECT 1 FROM offline_orders LIMIT 1');
+      } catch (e) {
+        log('Tables do not exist, creating...');
+        await _createDB(db, kDatabaseVersion);
+      }
+      _isFirstRun = false;
+    }
     final now = DateTime.now().toIso8601String();
     final orderNumber = 'OFFLINE-${DateTime.now().millisecondsSinceEpoch}';
 
-    // Start a transaction
     return await db.transaction((txn) async {
-      // Insert order
       final orderId = await txn.insert('offline_orders', {
         'order_number': orderNumber,
         'transaction_time': order.transactionTime,
@@ -115,11 +150,11 @@ class OrderLocalDatasource {
         'total_price': order.totalPrice,
         'total_item': order.totalItem,
         'tax_id': order.taxId,
-        'tax_rate': order.taxRate,
+        // 'tax_rate': order.taxRate,
         'service_charge_id': order.serviceChargeId,
-        'service_charge_rate': order.serviceChargeRate,
+        // 'service_charge_rate': order.serviceChargeRate,
         'discount_id': order.discountId,
-        'discount_amount': 0, // Will be calculated based on discount type
+        'discount_amount': 0,
         'payment_method': order.paymentMethod,
         'payment_amount': order.paymentAmount,
         'change_amount': order.changeAmount,
@@ -130,12 +165,11 @@ class OrderLocalDatasource {
         'updated_at': now,
       });
 
-      // Insert order items
       for (var item in order.orderItems) {
         await txn.insert('offline_order_items', {
           'order_id': orderId,
           'product_id': item.productId,
-          'product_name': 'Product ${item.productId}', // Should be fetched from product table
+          'product_name': 'Product ${item.productId}',
           'quantity': item.quantity,
           'price': item.price,
           'total_price': item.price * item.quantity,
@@ -148,11 +182,9 @@ class OrderLocalDatasource {
     });
   }
 
-  /// Get all unsynced orders with their items
   Future<List<Map<String, dynamic>>> getUnsyncedOrders() async {
     final db = await database;
-    
-    // Get all unsynced orders
+
     final orders = await db.query(
       'offline_orders',
       where: 'is_sync = ?',
@@ -161,16 +193,14 @@ class OrderLocalDatasource {
     );
 
     final List<Map<String, dynamic>> result = [];
-    
+
     for (final order in orders) {
-      // Get order items
       final items = await db.query(
         'offline_order_items',
         where: 'order_id = ? AND is_synced = ?',
         whereArgs: [order['id'], 0],
       );
 
-      // Only include orders with unsynced items
       if (items.isNotEmpty) {
         result.add({
           'order': order,
@@ -182,13 +212,42 @@ class OrderLocalDatasource {
     return result;
   }
 
-  /// Update sync status for an order and its items
+  Future<List<Map<String, dynamic>>> getOrderHistory() async {
+    final db = await database;
+    
+    try {
+      final orders = await db.query(
+        'offline_orders',
+        orderBy: 'created_at DESC',
+      );
+
+      final List<Map<String, dynamic>> result = [];
+
+      for (final order in orders) {
+        final items = await db.query(
+          'offline_order_items',
+          where: 'order_id = ?',
+          whereArgs: [order['id']],
+        );
+
+        result.add({
+          'order': order,
+          'items': items,
+        });
+      }
+
+      return result;
+    } catch (e) {
+      log('Error getting order history: $e');
+      return [];
+    }
+  }
+
   Future<void> updateSyncStatus(int orderId, bool isSynced) async {
     final db = await database;
     final now = DateTime.now().toIso8601String();
-    
+
     await db.transaction((txn) async {
-      // Update order sync status
       await txn.update(
         'offline_orders',
         {
@@ -200,7 +259,6 @@ class OrderLocalDatasource {
         whereArgs: [orderId],
       );
 
-      // Update order items sync status
       if (isSynced) {
         await txn.update(
           'offline_order_items',
@@ -215,11 +273,9 @@ class OrderLocalDatasource {
     });
   }
 
-  /// Delete orders that have been synced
   Future<int> deleteSyncedOrders() async {
     final db = await database;
-    
-    // First get the IDs of orders to be deleted
+
     final ordersToDelete = await db.query(
       'offline_orders',
       columns: ['id'],
@@ -230,16 +286,14 @@ class OrderLocalDatasource {
     if (ordersToDelete.isEmpty) return 0;
 
     final orderIds = ordersToDelete.map((e) => e['id'] as int).toList();
-    
+
     return await db.transaction((txn) async {
-      // Delete order items first due to foreign key constraint
       await txn.delete(
         'offline_order_items',
         where: 'order_id IN (${List.filled(orderIds.length, '?').join(',')})',
         whereArgs: orderIds,
       );
-      
-      // Delete the orders
+
       return await txn.delete(
         'offline_orders',
         where: 'id IN (${List.filled(orderIds.length, '?').join(',')})',
@@ -248,18 +302,15 @@ class OrderLocalDatasource {
     });
   }
 
-  /// Check if there are any unsynced orders
   Future<bool> hasUnsyncedOrders() async {
     final db = await database;
-    
-    // First check if there are any unsynced orders
+
     final orderCount = Sqflite.firstIntValue(await db.rawQuery(
       'SELECT COUNT(*) FROM offline_orders WHERE is_sync = 0',
     ));
 
     if ((orderCount ?? 0) > 0) return true;
-    
-    // Also check for unsynced order items
+
     final itemCount = Sqflite.firstIntValue(await db.rawQuery(
       'SELECT COUNT(*) FROM offline_order_items WHERE is_synced = 0',
     ));
@@ -267,11 +318,9 @@ class OrderLocalDatasource {
     return (itemCount ?? 0) > 0;
   }
 
-  /// Get order by ID with its items
   Future<Map<String, dynamic>?> getOrderById(int orderId) async {
     final db = await database;
-    
-    // Get the order
+
     final orders = await db.query(
       'offline_orders',
       where: 'id = ?',
@@ -281,7 +330,6 @@ class OrderLocalDatasource {
 
     if (orders.isEmpty) return null;
 
-    // Get order items
     final items = await db.query(
       'offline_order_items',
       where: 'order_id = ?',
@@ -294,17 +342,31 @@ class OrderLocalDatasource {
     };
   }
 
-  /// Update order status
-  Future<int> updateOrderStatus(int orderId, String status) async {
+  /// Get all offline orders with their items
+  Future<List<Map<String, dynamic>>> getAllOfflineOrders() async {
     final db = await database;
-    return await db.update(
+
+    // Get all orders
+    final orders = await db.query(
       'offline_orders',
-      {
-        'status': status,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      where: 'id = ?',
-      whereArgs: [orderId],
+      orderBy: 'created_at DESC',
     );
+
+    final List<Map<String, dynamic>> result = [];
+
+    for (final order in orders) {
+      // Get order items
+      final items = await db.query(
+        'offline_order_items',
+        where: 'order_id = ?',
+        whereArgs: [order['id']],
+      );
+      result.add({
+        'order': order,
+        'items': items,
+      });
+    }
+
+    return result;
   }
 }

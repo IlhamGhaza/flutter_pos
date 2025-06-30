@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_pos/core/constants/colors.dart';
 import 'package:flutter_pos/core/utils/snackbar_utils.dart';
 import 'package:flutter_pos/core/utils/connectivity_utils.dart';
+import 'package:flutter_pos/data/datasources/product_local_datasource.dart';
 
 // Home Blocs
 import 'package:flutter_pos/presentation/home/bloc/category/category_bloc.dart';
@@ -35,11 +36,23 @@ class SyncDataPage extends StatefulWidget {
 
 class _SyncDataPageState extends State<SyncDataPage> {
   bool _isOnline = true;
+  Map<String, bool> _syncStatus = {};
+  bool _isLoadingStatus = true;
 
   @override
   void initState() {
     super.initState();
     _checkConnectivity();
+    _checkSyncStatus();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh sync status when page is revisited
+    if (!_isLoadingStatus) {
+      _checkSyncStatus();
+    }
   }
 
   Future<void> _checkConnectivity() async {
@@ -48,6 +61,50 @@ class _SyncDataPageState extends State<SyncDataPage> {
       setState(() {
         _isOnline = connected;
       });
+    }
+  }
+
+  Future<void> _checkSyncStatus() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoadingStatus = true;
+    });
+
+    try {
+      final localDataSource = ProductLocalDatasource.instance;
+
+      // Check each data type's sync status
+      final products = await localDataSource.getAllProduct();
+      final categories = await localDataSource.getAllCategories();
+      final customers = await localDataSource.getAllCustomer();
+      final discounts = await localDataSource.getAllDiscount();
+      final taxes = await localDataSource.getAllTax();
+      final serviceCharges = await localDataSource.getAllServiceCharge();
+      final pendingOrders = await localDataSource.getOrderByIsSync();
+
+      if (mounted) {
+        setState(() {
+          _syncStatus = {
+            'products': products.isNotEmpty,
+            'categories': categories.isNotEmpty,
+            'customers': customers.isNotEmpty,
+            'discounts': discounts.isNotEmpty,
+            'taxes': taxes.isNotEmpty,
+            'service_charges': serviceCharges.isNotEmpty,
+            'orders': pendingOrders
+                .isEmpty, // Orders are synced when no pending orders
+          };
+          _isLoadingStatus = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _syncStatus = {};
+          _isLoadingStatus = false;
+        });
+      }
     }
   }
 
@@ -64,12 +121,20 @@ class _SyncDataPageState extends State<SyncDataPage> {
       context
           .read<SyncServiceChargeBloc>()
           .add(const SyncServiceChargeEvent.sync());
+      context.read<SyncOrderBloc>().add(const SyncOrderEvent.sendOrder());
 
       if (mounted) {
         SnackbarUtils(
           text: 'Sync started for all data',
           backgroundColor: AppColors.primary,
         ).showSuccessSnackBar(context);
+
+        // Refresh sync status after a delay to allow sync operations to complete
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            _checkSyncStatus();
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -122,164 +187,290 @@ class _SyncDataPageState extends State<SyncDataPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Sync All Button
-            _buildSyncAllButton(
-              context: context,
-              onPressed: _isOnline ? _syncAllData : null,
-              icon: Icons.sync,
-              label: 'SYNC ALL DATA',
-              color: AppColors.primary,
-            ),
-            const SizedBox(height: 24),
+      body: RefreshIndicator(
+        onRefresh: _checkSyncStatus,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Sync All Button
+              _buildSyncAllButton(
+                context: context,
+                onPressed: _isOnline ? _syncAllData : null,
+                icon: Icons.sync,
+                label: 'SYNC ALL DATA',
+                color: AppColors.primary,
+              ),
+              const SizedBox(height: 24),
 
-            // Master Data Section
-            _buildSectionHeader('Master Data'),
-            const SizedBox(height: 8),
+              // Master Data Section
+              _buildSectionHeader('Master Data'),
+              const SizedBox(height: 8),
 
-            // Products
-            BlocBuilder<ProductBloc, ProductState>(
-              builder: (context, state) {
-                return _buildSyncStatusCard(
-                  title: 'Products',
-                  state: state,
-                  onSync: _isOnline
-                      ? () => context
-                          .read<ProductBloc>()
-                          .add(const ProductEvent.fetch())
-                      : null,
-                );
-              },
-            ),
-            const SizedBox(height: 8),
+              // Products
+              BlocConsumer<ProductBloc, ProductState>(
+                listener: (context, state) {
+                  state.when(
+                    initial: () {},
+                    loading: () {},
+                    success: (products) {
+                      if (mounted) {
+                        _checkSyncStatus();
+                      }
+                    },
+                    error: (message) {},
+                  );
+                },
+                builder: (context, state) {
+                  return _buildSyncStatusCard(
+                    title: 'Products',
+                    state: state,
+                    onSync: _isOnline
+                        ? () => context
+                            .read<ProductBloc>()
+                            .add(const ProductEvent.fetch())
+                        : null,
+                    onRetry: _isOnline
+                        ? () => context
+                            .read<ProductBloc>()
+                            .add(const ProductEvent.fetch())
+                        : null,
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
 
-            // Categories
-            BlocBuilder<CategoryBloc, CategoryState>(
-              builder: (context, state) {
-                return _buildSyncStatusCard(
-                  title: 'Categories',
-                  state: state,
-                  onSync: _isOnline
-                      ? () => context
-                          .read<CategoryBloc>()
-                          .add(const CategoryEvent.getCategories())
-                      : null,
-                );
-              },
-            ),
-            const SizedBox(height: 8),
+              // Categories
+              BlocConsumer<CategoryBloc, CategoryState>(
+                listener: (context, state) {
+                  state.when(
+                    initial: () {},
+                    loading: () {},
+                    loaded: (categories) {
+                      if (mounted) {
+                        // Update sync status when category is loaded from remote
+                        setState(() {
+                          _syncStatus['categories'] = true;
+                        });
+                        _checkSyncStatus();
+                      }
+                    },
+                    loadedLocal: (categories) {
+                      if (mounted) {
+                        // Update sync status when category is loaded from local
+                        setState(() {
+                          _syncStatus['categories'] = categories.isNotEmpty;
+                        });
+                      }
+                    },
+                    error: (message) {},
+                  );
+                },
+                builder: (context, state) {
+                  return _buildSyncStatusCard(
+                    title: 'Categories',
+                    state: state,
+                    onSync: _isOnline
+                        ? () => context
+                            .read<CategoryBloc>()
+                            .add(const CategoryEvent.getCategories())
+                        : null,
+                    onRetry: _isOnline
+                        ? () => context
+                            .read<CategoryBloc>()
+                            .add(const CategoryEvent.getCategories())
+                        : null,
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
 
-            // Customers
-            BlocBuilder<CustomerBloc, CustomerState>(
-              builder: (context, state) {
-                return _buildSyncStatusCard(
-                  title: 'Customers',
-                  state: state,
-                  onSync: _isOnline
-                      ? () => context
-                          .read<CustomerBloc>()
-                          .add(const CustomerEvent.fetch())
-                      : null,
-                );
-              },
-            ),
+              // Customers
+              BlocConsumer<CustomerBloc, CustomerState>(
+                listener: (context, state) {
+                  state.when(
+                    initial: () {},
+                    loading: () {},
+                    success: () {
+                      if (mounted) {
+                        _checkSyncStatus();
+                      }
+                    },
+                    error: (message) {},
+                  );
+                },
+                builder: (context, state) {
+                  return _buildSyncStatusCard(
+                    title: 'Customers',
+                    state: state,
+                    onSync: _isOnline
+                        ? () => context
+                            .read<CustomerBloc>()
+                            .add(const CustomerEvent.fetch())
+                        : null,
+                    onRetry: _isOnline
+                        ? () => context
+                            .read<CustomerBloc>()
+                            .add(const CustomerEvent.fetch())
+                        : null,
+                  );
+                },
+              ),
 
-            const SizedBox(height: 16),
-            _buildSectionHeader('Settings'),
-            const SizedBox(height: 8),
+              const SizedBox(height: 16),
+              _buildSectionHeader('Settings'),
+              const SizedBox(height: 8),
 
-            // Discounts
-            BlocBuilder<SyncDiscountBloc, SyncDiscountState>(
-              builder: (context, state) {
-                return _buildSyncStatusCard(
-                  title: 'Discounts',
-                  state: state,
-                  onSync: _isOnline
-                      ? () => context
-                          .read<SyncDiscountBloc>()
-                          .add(const SyncDiscountEvent.sync())
-                      : null,
-                );
-              },
-            ),
-            const SizedBox(height: 8),
+              // Discounts
+              BlocConsumer<SyncDiscountBloc, SyncDiscountState>(
+                listener: (context, state) {
+                  state.when(
+                    initial: () {},
+                    loading: () {},
+                    success: () {
+                      if (mounted) {
+                        _checkSyncStatus();
+                      }
+                    },
+                    error: (message) {},
+                  );
+                },
+                builder: (context, state) {
+                  return _buildSyncStatusCard(
+                    title: 'Discounts',
+                    state: state,
+                    onSync: _isOnline
+                        ? () => context
+                            .read<SyncDiscountBloc>()
+                            .add(const SyncDiscountEvent.sync())
+                        : null,
+                    onRetry: _isOnline
+                        ? () => context
+                            .read<SyncDiscountBloc>()
+                            .add(const SyncDiscountEvent.sync())
+                        : null,
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
 
-            // Taxes
-            BlocBuilder<SyncTaxBloc, SyncTaxState>(
-              builder: (context, state) {
-                return _buildSyncStatusCard(
-                  title: 'Taxes',
-                  state: state,
-                  onSync: _isOnline
-                      ? () => context
-                          .read<SyncTaxBloc>()
-                          .add(const SyncTaxEvent.sync())
-                      : null,
-                );
-              },
-            ),
-            const SizedBox(height: 8),
+              // Taxes
+              BlocConsumer<SyncTaxBloc, SyncTaxState>(
+                listener: (context, state) {
+                  state.when(
+                    initial: () {},
+                    loading: () {},
+                    success: () {
+                      if (mounted) {
+                        _checkSyncStatus();
+                      }
+                    },
+                    error: (message) {},
+                  );
+                },
+                builder: (context, state) {
+                  return _buildSyncStatusCard(
+                    title: 'Taxes',
+                    state: state,
+                    onSync: _isOnline
+                        ? () => context
+                            .read<SyncTaxBloc>()
+                            .add(const SyncTaxEvent.sync())
+                        : null,
+                    onRetry: _isOnline
+                        ? () => context
+                            .read<SyncTaxBloc>()
+                            .add(const SyncTaxEvent.sync())
+                        : null,
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
 
-            // Service Charges
-            BlocBuilder<SyncServiceChargeBloc, SyncServiceChargeState>(
-              builder: (context, state) {
-                return _buildSyncStatusCard(
-                  title: 'Service Charges',
-                  state: state,
-                  onSync: _isOnline
-                      ? () => context
-                          .read<SyncServiceChargeBloc>()
-                          .add(const SyncServiceChargeEvent.sync())
-                      : null,
-                );
-              },
-            ),
+              // Service Charges
+              BlocConsumer<SyncServiceChargeBloc, SyncServiceChargeState>(
+                listener: (context, state) {
+                  state.when(
+                    initial: () {},
+                    loading: () {},
+                    success: () {
+                      if (mounted) {
+                        _checkSyncStatus();
+                      }
+                    },
+                    error: (message) {},
+                  );
+                },
+                builder: (context, state) {
+                  return _buildSyncStatusCard(
+                    title: 'Service Charges',
+                    state: state,
+                    onSync: _isOnline
+                        ? () => context
+                            .read<SyncServiceChargeBloc>()
+                            .add(const SyncServiceChargeEvent.sync())
+                        : null,
+                    onRetry: _isOnline
+                        ? () => context
+                            .read<SyncServiceChargeBloc>()
+                            .add(const SyncServiceChargeEvent.sync())
+                        : null,
+                  );
+                },
+              ),
 
-            const SizedBox(height: 24),
-            // Sync Orders Section
-            _buildSectionHeader('Orders'),
-            const SizedBox(height: 8),
+              const SizedBox(height: 24),
+              // Sync Orders Section
+              _buildSectionHeader('Orders'),
+              const SizedBox(height: 8),
 
-            // Orders
-            BlocConsumer<SyncOrderBloc, SyncOrderState>(
-              listener: (context, state) {
-                state.maybeWhen(
-                  success: (syncedCount) {
-                    if (mounted) {
-                      SnackbarUtils(
-                        text: 'Successfully synced $syncedCount order${syncedCount != 1 ? 's' : ''}',
-                        backgroundColor: Colors.green,
-                      ).showSuccessSnackBar(context);
-                    }
-                  },
-                  error: (message, _) {
-                    if (mounted) {
-                      SnackbarUtils(
-                        text: message,
-                        backgroundColor: Colors.red,
-                      ).showErrorSnackBar(context);
-                    }
-                  },
-                  orElse: () {},
-                );
-              },
-              builder: (context, state) {
-                return _buildSyncStatusCard(
-                  title: 'Send Pending Orders',
-                  state: state,
-                  onSync: _isOnline
-                      ? () => context
-                          .read<SyncOrderBloc>()
-                          .add(const SyncOrderEvent.sendOrder())
-                      : null,
-                );
-              },
-            ),
-          ],
+              // Orders
+              BlocConsumer<SyncOrderBloc, SyncOrderState>(
+                listener: (context, state) {
+                  state.maybeWhen(
+                    success: (syncedCount) {
+                      if (mounted) {
+                        SnackbarUtils(
+                          text:
+                              'Successfully synced $syncedCount order${syncedCount != 1 ? 's' : ''}',
+                          backgroundColor: Colors.green,
+                        ).showSuccessSnackBar(context);
+                        // Refresh sync status after successful sync
+                        _checkSyncStatus();
+                      }
+                    },
+                    error: (message, _) {
+                      if (mounted) {
+                        SnackbarUtils(
+                          text: message,
+                          backgroundColor: Colors.red,
+                        ).showErrorSnackBar(context);
+                      }
+                    },
+                    orElse: () {},
+                  );
+                },
+                builder: (context, state) {
+                  return _buildSyncStatusCard(
+                    title: 'Send Pending Orders',
+                    state: state,
+                    onSync: _isOnline
+                        ? () => context
+                            .read<SyncOrderBloc>()
+                            .add(const SyncOrderEvent.sendOrder())
+                        : null,
+                    onRetry: _isOnline
+                        ? () => context
+                            .read<SyncOrderBloc>()
+                            .add(const SyncOrderEvent.sendOrder())
+                        : null,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -305,13 +496,15 @@ class _SyncDataPageState extends State<SyncDataPage> {
     required String title,
     required T state,
     required VoidCallback? onSync,
+    required VoidCallback? onRetry,
   }) {
     bool isLoading = false;
     bool hasError = false;
     bool isSynced = false;
+    bool hasLocalData = false;
     String? errorMessage;
 
-      // Handle different state types
+    // Handle different state types
     if (state is ProductState) {
       state.when(
         initial: () {},
@@ -327,7 +520,11 @@ class _SyncDataPageState extends State<SyncDataPage> {
         initial: () {},
         loading: () => isLoading = true,
         loaded: (categories) => isSynced = true,
-        loadedLocal: (categories) => isSynced = true,
+        loadedLocal: (categories) {
+          hasLocalData = categories.isNotEmpty;
+          // For categories, we only consider it synced if it came from remote
+          // Local data means it was loaded from cache, not fresh sync
+        },
         error: (message) {
           hasError = true;
           errorMessage = message;
@@ -387,6 +584,31 @@ class _SyncDataPageState extends State<SyncDataPage> {
       );
     }
 
+    // Check persistent sync status if not currently syncing/error
+    if (!isLoading && !hasError && !isSynced) {
+      final statusKey = _getStatusKey(title);
+      final persistentStatus = _syncStatus[statusKey] ?? false;
+
+      // For categories, we need to be more careful about sync status
+      if (title.toLowerCase() == 'categories') {
+        if (hasLocalData) {
+          // If we have local data but not synced, show sync button
+          isSynced = false;
+        } else {
+          isSynced = persistentStatus;
+        }
+      } else {
+        isSynced = persistentStatus;
+      }
+    }
+
+    // For categories, if we have persistent sync status, override the local data check
+    if (title.toLowerCase() == 'categories' &&
+        _syncStatus['categories'] == true) {
+      isSynced = true;
+      hasLocalData = false; // Don't show local data message if we're synced
+    }
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -410,7 +632,14 @@ class _SyncDataPageState extends State<SyncDataPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 else if (hasError)
-                  const Icon(Icons.error, color: Colors.red, size: 24)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error, color: Colors.red, size: 24),
+                      const SizedBox(width: 8),
+                      if (onRetry != null) _buildRetryButton(onRetry),
+                    ],
+                  )
                 else if (isSynced)
                   const Icon(Icons.check_circle, color: Colors.green, size: 24)
                 else if (onSync != null)
@@ -426,9 +655,61 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 overflow: TextOverflow.ellipsis,
               ),
             ],
+            // Show info for categories with local data but not synced
+            if (title.toLowerCase() == 'categories' &&
+                hasLocalData &&
+                !isSynced &&
+                !isLoading &&
+                !hasError) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Local data available, sync to update from server',
+                style: const TextStyle(color: Colors.orange, fontSize: 11),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  // Helper to get status key for persistent sync status
+  String _getStatusKey(String title) {
+    switch (title.toLowerCase()) {
+      case 'products':
+        return 'products';
+      case 'categories':
+        return 'categories';
+      case 'customers':
+        return 'customers';
+      case 'discounts':
+        return 'discounts';
+      case 'taxes':
+        return 'taxes';
+      case 'service charges':
+        return 'service_charges';
+      case 'send pending orders':
+        return 'orders';
+      default:
+        return title.toLowerCase().replaceAll(' ', '_');
+    }
+  }
+
+  // Helper to build a retry button
+  Widget _buildRetryButton(VoidCallback onRetry) {
+    return ElevatedButton(
+      onPressed: onRetry,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+        ),
+      ),
+      child: const Text('Retry', style: TextStyle(fontSize: 12)),
     );
   }
 

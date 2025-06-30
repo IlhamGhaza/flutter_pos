@@ -5,7 +5,6 @@ import 'package:flutter_pos/core/components/buttons.dart';
 import 'package:flutter_pos/core/components/custom_text_field.dart';
 import 'package:flutter_pos/core/components/image_picker_widget.dart';
 import 'package:flutter_pos/core/components/spaces.dart';
-import 'package:flutter_pos/core/extensions/string_ext.dart';
 import 'package:flutter_pos/data/models/response/product_response_model.dart';
 
 class EditProductPage extends StatefulWidget {

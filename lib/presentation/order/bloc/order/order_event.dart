@@ -12,8 +12,24 @@ class OrderEvent with _$OrderEvent {
       List<int> validDays, int percentage) = _ApplyAutoDiscount;
   const factory OrderEvent.applyManualDiscount(int percentage) =
       _ApplyManualDiscount;
+  const factory OrderEvent.applyDiscounts(
+      List<DiscountResponseModel> discounts) = _ApplyDiscounts;
   const factory OrderEvent.applyTax(TaxResponseModel tax) = _ApplyTax;
-  const factory OrderEvent.applyServiceCharge(ServiceChargeResponseModel serviceCharge) = _ApplyServiceCharge;
+  const factory OrderEvent.applyServiceCharge(
+      ServiceChargeResponseModel serviceCharge) = _ApplyServiceCharge;
   const factory OrderEvent.updateSyncStatus(int orderId, bool isSynced) =
       _UpdateSyncStatus;
+  const factory OrderEvent.processOrder({
+    required int customerId,
+    required String customerName,
+    required String paymentMethod,
+    required double paymentAmount,
+    required String orderType,
+    String? customerOrderNotes,
+    int? taxId,
+    double? taxRate,
+    int? serviceChargeId,
+    double? serviceChargeRate,
+    int? discountId,
+  }) = _ProcessOrder;
 }

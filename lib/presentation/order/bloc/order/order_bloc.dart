@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
-import 'package:flutter_pos/data/datasources/discount_remote_datasource.dart';
 import 'package:flutter_pos/data/datasources/order_local_datasource.dart';
-import 'package:flutter_pos/data/datasources/order_remote_datasource.dart';
+import 'package:flutter_pos/data/datasources/product_local_datasource.dart';
 import 'package:flutter_pos/data/models/order_item_model.dart';
 import 'package:flutter_pos/data/models/response/discount_response_model.dart';
 import 'package:flutter_pos/data/models/response/service_charge_response_model.dart';
 import 'package:flutter_pos/data/models/response/tax_response_model.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+import '../../../../data/models/request/order_request_model.dart';
+import '../../../../core/utils/discount_utils.dart';
 
 part 'order_event.dart';
 part 'order_state.dart';
@@ -19,17 +21,17 @@ part 'order_bloc.freezed.dart';
 class OrderBloc extends Bloc<OrderEvent, OrderState> {
   // Data sources will be used in future implementations
   @visibleForTesting
-  final OrderRemoteDatasource orderRemoteDatasource;
+  // final OrderRemoteDatasource orderRemoteDatasource;
   @visibleForTesting
   final OrderLocalDatasource orderLocalDatasource;
   @visibleForTesting
-  final DiscountRemoteDatasource discountRemoteDatasource;
+  // final DiscountRemoteDatasource discountRemoteDatasource;
   final AuthLocalDatasource _authLocalDatasource;
 
   OrderBloc({
-    required this.orderRemoteDatasource,
+    // required this.orderRemoteDatasource,
     required this.orderLocalDatasource,
-    required this.discountRemoteDatasource,
+    // required this.discountRemoteDatasource,
     required AuthLocalDatasource authLocalDatasource,
   })  : _authLocalDatasource = authLocalDatasource,
         super(const OrderState.initial()) {
@@ -52,6 +54,10 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         await _onApplyServiceCharge(event, emit);
       } else if (event is _UpdateSyncStatus) {
         await _onUpdateSyncStatus(event, emit);
+      } else if (event is _ProcessOrder) {
+        await _onProcessOrder(event, emit);
+      } else if (event is _ApplyDiscounts) {
+        await _onApplyDiscounts(event, emit);
       }
     });
   }
@@ -69,18 +75,54 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       final subTotal = event.orders.fold(
           0, (sum, item) => sum + (item.product.price.toInt() * item.quantity));
 
+      // Ambil diskon yang aktif dari event/orders (implementasi UI harus supply list diskon)
+      // Untuk contoh, kita asumsikan tidak ada diskon aktif di sini
+      final List<DiscountResponseModel> appliedDiscounts = [];
+
+      // Stack diskon
+      double afterDiscount = subTotal.toDouble();
+      double totalDiscountAmount = 0;
+      for (final discount in appliedDiscounts) {
+        final result = DiscountUtils.applyDiscount(
+          originalPrice: afterDiscount,
+          discount: discount,
+          quantity: totalQuantity,
+        );
+        totalDiscountAmount += result.discountAmount;
+        afterDiscount = result.finalPrice;
+      }
+
+      // Tax & Service Charge (ambil dari event atau state jika ada)
+      double taxRate = 0;
+      double serviceChargeRate = 0;
+      int? taxId;
+      int? serviceChargeId;
+      // TODO: Ambil tax/service charge dari event atau state jika ada
+
+      final taxAmount = afterDiscount * (taxRate / 100);
+      final serviceChargeAmount = afterDiscount * (serviceChargeRate / 100);
+      final totalPrice = afterDiscount + taxAmount + serviceChargeAmount;
+
       emit(OrderState.success(
         event.orders,
         totalQuantity,
-        subTotal, // totalPrice
+        totalPrice.toInt(),
         subTotal: subTotal,
-        discountPercentage: 0.0,
-        appliedDiscount: null,
+        discountPercentage: totalDiscountAmount > 0
+            ? (totalDiscountAmount / subTotal) * 100
+            : 0.0,
+        appliedDiscount:
+            appliedDiscounts.isNotEmpty ? appliedDiscounts.last : null,
+        appliedDiscounts: appliedDiscounts,
         paymentMethod: event.paymentMethod,
         nominalBayar: 0,
         idKasir: user.user.id ?? 0,
         namaKasir: user.user.name ?? 'Kasir',
         customerName: event.customerName,
+        tax: taxAmount.toInt(),
+        taxRate: taxRate,
+        serviceCharge: serviceChargeAmount.toInt(),
+        serviceChargeRate: serviceChargeRate,
       ));
     } catch (e) {
       emit(OrderState.error('Failed to add payment method: $e'));
@@ -181,6 +223,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           subTotal: 0,
           discountPercentage: 0,
           appliedDiscount: null,
+          appliedDiscounts: [],
           paymentMethod: '',
           nominalBayar: 0,
           idKasir: 0,
@@ -233,6 +276,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           subTotal: 0,
           discountPercentage: 0,
           appliedDiscount: null,
+          appliedDiscounts: [],
           paymentMethod: '',
           nominalBayar: 0,
           idKasir: 0,
@@ -284,8 +328,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       }
 
       // Calculate new subtotal
-      final newSubTotal = state.products
-          .fold(0, (sum, item) => sum + (item.product.price.toInt() * item.quantity));
+      final newSubTotal = state.products.fold(
+          0, (sum, item) => sum + (item.product.price.toInt() * item.quantity));
       final discountAmount = (newSubTotal * event.percentage / 100).round();
 
       // Create a temporary discount model for manual discount
@@ -336,5 +380,146 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   Future<void> _onUpdateSyncStatus(
       _UpdateSyncStatus event, Emitter<OrderState> emit) async {
     emit(OrderState.syncStatusUpdated(event.orderId, event.isSynced));
+  }
+
+  Future<void> _onProcessOrder(
+      _ProcessOrder event, Emitter<OrderState> emit) async {
+    try {
+      final state = this.state;
+      if (state is! _Success) {
+        emit(const OrderState.error('No order data available'));
+        return;
+      }
+
+      final user = await _authLocalDatasource.getAuthData();
+
+      // Calculate discount
+      double afterDiscount = state.subTotal.toDouble();
+      double totalDiscountAmount = 0;
+      for (final discount in state.appliedDiscounts) {
+        final result = DiscountUtils.applyDiscount(
+          originalPrice: afterDiscount,
+          discount: discount,
+          quantity: state.totalQuantity,
+        );
+        totalDiscountAmount += result.discountAmount;
+        afterDiscount = result.finalPrice;
+      }
+
+      // Calculate tax and service charge (default to 1 for both IDs)
+      final taxId = state.tax != null ? 1 : null;
+      final serviceChargeId = state.serviceCharge != null ? 1 : null;
+
+      final taxAmount =
+          state.tax != null ? (afterDiscount * (state.taxRate ?? 0) / 100) : 0;
+      final serviceChargeAmount = state.serviceCharge != null
+          ? (afterDiscount * (state.serviceChargeRate ?? 0) / 100)
+          : 0;
+
+      final totalPrice = afterDiscount + taxAmount + serviceChargeAmount;
+
+      // Ensure payment amount is at least the total price
+      final paymentAmount =
+          event.paymentAmount >= totalPrice ? event.paymentAmount : totalPrice;
+      final changeAmount = paymentAmount - totalPrice;
+
+      // Create order request with fixed values
+      final orderRequest = OrderRequestModel(
+        transactionTime: DateTime.now()
+            .toLocal()
+            .toString()
+            .substring(0, 19), // Format: YYYY-MM-DD HH:MM:SS
+        kasirId: user.user.id ?? 0,
+        customerId: event.customerId,
+        subTotal: afterDiscount,
+        taxId: taxId, // Will be 1 if tax is applied
+        serviceChargeId:
+            serviceChargeId, // Will be 1 if service charge is applied
+        discountId: event.discountId,
+        totalPrice: totalPrice,
+        totalItem: state.totalQuantity,
+        paymentMethod: event.paymentMethod,
+        paymentAmount: paymentAmount,
+        changeAmount: changeAmount,
+        orderType: 'in-person', // Fixed value as requested
+        customerOrderNotes: event.customerOrderNotes,
+        orderItems: state.products
+            .map((item) => OrderItemModel(
+                  productId: item.product.id,
+                  quantity: item.quantity,
+                  price: item.product.price.toDouble(),
+                ))
+            .toList(),
+      );
+
+      // Save order locally
+      final orderId = await orderLocalDatasource.saveOfflineOrder(
+        orderRequest,
+        kasirName: user.user.name ?? 'Kasir',
+        customerName: event.customerName,
+      );
+
+      // Update usage count for applied discounts
+      if (state.appliedDiscounts.isNotEmpty) {
+        try {
+          final productLocalDatasource = ProductLocalDatasource.instance;
+          for (final discount in state.appliedDiscounts) {
+            // Update usage count in local database
+            await productLocalDatasource.updateDiscountUsageCount(
+              discount.data[0].id,
+              discount.data[0].usageCount + 1,
+            );
+          }
+        } catch (e) {
+          // Log error but don't fail the order
+          debugPrint('Failed to update discount usage count: $e');
+        }
+      }
+
+      emit(OrderState.orderProcessed(orderId));
+    } catch (e) {
+      emit(OrderState.error('Failed to process order: $e'));
+    }
+  }
+
+  Future<void> _onApplyDiscounts(
+      _ApplyDiscounts event, Emitter<OrderState> emit) async {
+    try {
+      final state = this.state;
+      if (state is! _Success) return;
+
+      // Stack diskon
+      double afterDiscount = state.subTotal.toDouble();
+      double totalDiscountAmount = 0;
+      for (final discount in event.discounts) {
+        final result = DiscountUtils.applyDiscount(
+          originalPrice: afterDiscount,
+          discount: discount,
+          quantity: state.totalQuantity,
+        );
+        totalDiscountAmount += result.discountAmount;
+        afterDiscount = result.finalPrice;
+      }
+
+      // Tax & Service Charge
+      final taxAmount = afterDiscount * (state.taxRate ?? 0) / 100;
+      final serviceChargeAmount =
+          afterDiscount * (state.serviceChargeRate ?? 0) / 100;
+      final totalPrice = afterDiscount + taxAmount + serviceChargeAmount;
+
+      emit(state.copyWith(
+        totalPrice: totalPrice.toInt(),
+        discountPercentage: totalDiscountAmount > 0
+            ? (totalDiscountAmount / state.subTotal) * 100
+            : 0.0,
+        appliedDiscount:
+            event.discounts.isNotEmpty ? event.discounts.last : null,
+        appliedDiscounts: event.discounts,
+        tax: taxAmount.toInt(),
+        serviceCharge: serviceChargeAmount.toInt(),
+      ));
+    } catch (e) {
+      emit(OrderState.error('Failed to apply discounts: $e'));
+    }
   }
 }

@@ -45,6 +45,7 @@ class PaymentSuccessDialog extends StatelessWidget {
                 subTotal,
                 discountPercentage,
                 appliedDiscount,
+                appliedDiscounts,
                 paymentMethod,
                 nominalBayar,
                 idKasir,
@@ -53,7 +54,7 @@ class PaymentSuccessDialog extends StatelessWidget {
                 tax,
                 taxRate,
                 serviceCharge,
-                serviceChargeRate)  {
+                serviceChargeRate) {
               context.read<CheckoutBloc>().add(const CheckoutEvent.started());
 
               // Use the correct variables that match the state
@@ -113,8 +114,14 @@ class PaymentSuccessDialog extends StatelessWidget {
                         child: Button.outlined(
                           onPressed: () async {
                             final printValue = await CwbPrint.instance
-                                .printOrderV2(products, qty, total, paymentMethod,
-                                    nominalBayar, namaKasir, customerName);
+                                .printOrderV2(
+                                    products,
+                                    qty,
+                                    total,
+                                    paymentMethod,
+                                    nominalBayar,
+                                    namaKasir,
+                                    customerName);
                             await PrintBluetoothThermal.writeBytes(printValue);
                           },
                           label: 'Print',

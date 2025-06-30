@@ -82,9 +82,9 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => CheckoutBloc()),
         BlocProvider(
           create: (context) => OrderBloc(
-            orderRemoteDatasource: OrderRemoteDatasource(),
+            // orderRemoteDatasource: OrderRemoteDatasource(),
             orderLocalDatasource: OrderLocalDatasource.instance,
-            discountRemoteDatasource: DiscountRemoteDatasource(),
+            // discountRemoteDatasource: DiscountRemoteDatasource(),
             authLocalDatasource: AuthLocalDatasource(),
           ),
         ),
@@ -130,9 +130,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => OrderBloc(
-            orderRemoteDatasource: OrderRemoteDatasource(),
+            // orderRemoteDatasource: OrderRemoteDatasource(),
             orderLocalDatasource: OrderLocalDatasource.instance,
-            discountRemoteDatasource: DiscountRemoteDatasource(),
+            // discountRemoteDatasource: DiscountRemoteDatasource(),
             authLocalDatasource: AuthLocalDatasource(),
           )..add(const OrderEvent.started()),
         ),

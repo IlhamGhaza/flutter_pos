@@ -33,6 +33,14 @@ migrate_working_dir/
 .pub/
 /build/
 
+# IDE specific files
+.idea
+.dart_tool
+.vscode
+
+# Keystore file
+key.properties
+
 # Symbolication related
 app.*.symbols
 

@@ -11,6 +11,7 @@ class OrderState with _$OrderState {
     required int subTotal,
     required double discountPercentage,
     required DiscountResponseModel? appliedDiscount,
+    required List<DiscountResponseModel> appliedDiscounts,
     required String paymentMethod,
     required int nominalBayar,
     required int idKasir,
@@ -27,4 +28,5 @@ class OrderState with _$OrderState {
       double discountPercentage, int totalAfterDiscount) = _DiscountApplied;
   const factory OrderState.syncStatusUpdated(int orderId, bool isSynced) =
       _SyncStatusUpdated;
+  const factory OrderState.orderProcessed(int orderId) = _OrderProcessed;
 }

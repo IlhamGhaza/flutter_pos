@@ -34,9 +34,9 @@ class OrderRequestModel {
   final int customerId;
   final double subTotal;
   final int? taxId;
-  final double? taxRate;
+  // final double? taxRate;
   final int? serviceChargeId;
-  final double? serviceChargeRate;
+  // final double? serviceChargeRate;
   final int? discountId;
   final double totalPrice;
   final int totalItem;
@@ -53,9 +53,9 @@ class OrderRequestModel {
     required this.customerId,
     required this.subTotal,
     this.taxId,
-    this.taxRate,
+    // this.taxRate,
     this.serviceChargeId,
-    this.serviceChargeRate,
+    // this.serviceChargeRate,
     this.discountId,
     required this.totalPrice,
     required this.totalItem,
@@ -77,9 +77,9 @@ class OrderRequestModel {
         customerId: json["customer_id"] as int,
         subTotal: (json["sub_total"] as num).toDouble(),
         taxId: json["tax_id"],
-        taxRate: json["tax_rate"]?.toDouble(),
+        // taxRate: json["tax_rate"]?.toDouble(),
         serviceChargeId: json["service_charge_id"],
-        serviceChargeRate: json["service_charge_rate"]?.toDouble(),
+        // serviceChargeRate: json["service_charge_rate"]?.toDouble(),
         discountId: json["discount_id"],
         totalPrice: (json["total_price"] as num).toDouble(),
         totalItem: json["total_item"] as int,
@@ -98,9 +98,9 @@ class OrderRequestModel {
         'customer_id': customerId,
         'sub_total': subTotal,
         if (taxId != null) 'tax_id': taxId,
-        if (taxRate != null) 'tax_rate': taxRate,
+        // if (taxRate != null) 'tax_rate': taxRate,
         if (serviceChargeId != null) 'service_charge_id': serviceChargeId,
-        if (serviceChargeRate != null) 'service_charge_rate': serviceChargeRate,
+        // if (serviceChargeRate != null) 'service_charge_rate': serviceChargeRate,
         if (discountId != null) 'discount_id': discountId,
         'total_price': totalPrice,
         'total_item': totalItem,

@@ -30,6 +30,7 @@ class SnackbarUtils {
 
             Expanded(
               child: Text(
+                maxLines: 1,
                 text,
                 style: const TextStyle(color: Colors.white),
                 overflow: TextOverflow.ellipsis,
@@ -41,7 +42,7 @@ class SnackbarUtils {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(12),
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 3),
         action: snackBarAction,
       ),
     );

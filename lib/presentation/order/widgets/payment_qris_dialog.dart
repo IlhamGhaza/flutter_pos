@@ -84,6 +84,7 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                   subTotal,
                   discountPercentage,
                   appliedDiscount,
+                  appliedDiscounts,
                   paymentMethod,
                   nominalBayar,
                   idKasir,
@@ -250,15 +251,18 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                           ),
                         ),
                       ),
-                      if (widget.customerName != null || widget.customerPhone != null)
-                        ...[
-                          _buildReceiptRow('Pelanggan', widget.customerName ?? '-'),
-                          if (widget.customerPhone != null)
-                            _buildReceiptRow('No. HP', widget.customerPhone!),
-                          const SpaceHeight(8.0),
-                        ],
-                      _buildReceiptRow('Tanggal',
-                          DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())),
+                      if (widget.customerName != null ||
+                          widget.customerPhone != null) ...[
+                        _buildReceiptRow(
+                            'Pelanggan', widget.customerName ?? '-'),
+                        if (widget.customerPhone != null)
+                          _buildReceiptRow('No. HP', widget.customerPhone!),
+                        const SpaceHeight(8.0),
+                      ],
+                      _buildReceiptRow(
+                          'Tanggal',
+                          DateFormat('dd/MM/yyyy HH:mm')
+                              .format(DateTime.now())),
                       const SpaceHeight(8.0),
                       _buildReceiptRow('Metode Pembayaran', 'QRIS'),
                       const SpaceHeight(8.0),
