@@ -28,6 +28,9 @@ import 'package:flutter_pos/presentation/order/widgets/payment_qris_dialog.dart'
 import 'package:flutter_pos/presentation/order/widgets/process_button.dart';
 
 import '../../../data/models/response/discount_response_model.dart';
+import 'package:flutter_pos/data/models/request/customer_request_model.dart';
+
+import '../../../l10n/app_localizations.dart';
 
 class OrderPage extends StatefulWidget {
   const OrderPage({super.key});
@@ -63,7 +66,7 @@ class _OrderPageState extends State<OrderPage> {
     return orders.fold(
       0,
       (previousValue, element) =>
-          previousValue + element.product.price.toInt() * element.quantity,
+          previousValue + element.product.price.round() * element.quantity,
     );
   }
 
@@ -105,12 +108,10 @@ class _OrderPageState extends State<OrderPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memuat data pajak dan service charge: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils(
+          text: AppLocalizations.of(context)!.failedToLoadTaxAndServiceCharge,
+          backgroundColor: Colors.red,
+        ).showSuccessSnackBar(context);
       }
     }
   }
@@ -129,13 +130,11 @@ class _OrderPageState extends State<OrderPage> {
       context.read<OrderBloc>().add(OrderEvent.applyTax(_selectedTax!));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Pajak ${_selectedTax!.name} (${_selectedTax!.rate}%) berhasil diterapkan'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        SnackbarUtils(
+          text:
+              'Pajak ${_selectedTax!.name} (${_selectedTax!.rate}%) berhasil diterapkan',
+          backgroundColor: Colors.green,
+        ).showSuccessSnackBar(context);
       }
     } else {
       // Remove tax if being deactivated
@@ -165,13 +164,11 @@ class _OrderPageState extends State<OrderPage> {
           .add(OrderEvent.applyServiceCharge(_selectedServiceCharge!));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Service charge ${_selectedServiceCharge!.name} (${_selectedServiceCharge!.rate}%) berhasil diterapkan'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        SnackbarUtils(
+          text:
+              'Service charge ${_selectedServiceCharge!.name} (${_selectedServiceCharge!.rate}%) berhasil diterapkan',
+          backgroundColor: Colors.green,
+        ).showSuccessSnackBar(context);
       }
     } else {
       // Remove service charge if being deactivated
@@ -194,19 +191,21 @@ class _OrderPageState extends State<OrderPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Info Pajak'),
+        title: Text(AppLocalizations.of(context)!.taxInfo),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nama: ${_selectedTax!.name}'),
-            Text('Rate: ${_selectedTax!.rate}%'),
+            Text(
+                '${AppLocalizations.of(context)!.taxName}: ${_selectedTax!.name}'),
+            Text(
+                '${AppLocalizations.of(context)!.taxRate}: ${_selectedTax!.rate}%'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
+            child: Text(AppLocalizations.of(context)!.close),
           ),
         ],
       ),
@@ -220,19 +219,21 @@ class _OrderPageState extends State<OrderPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Info Service Charge'),
+        title: Text(AppLocalizations.of(context)!.serviceChargeInfo),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nama: ${_selectedServiceCharge!.name}'),
-            Text('Rate: ${_selectedServiceCharge!.rate}%'),
+            Text(
+                '${AppLocalizations.of(context)!.serviceChargeName}: ${_selectedServiceCharge!.name}'),
+            Text(
+                '${AppLocalizations.of(context)!.serviceChargeRate}: ${_selectedServiceCharge!.rate}%'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
+            child: Text(AppLocalizations.of(context)!.close),
           ),
         ],
       ),
@@ -250,23 +251,192 @@ class _OrderPageState extends State<OrderPage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
           return Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 50),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Pilih Pelanggan',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.customerSelection,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.person_add),
+                      label: Text(AppLocalizations.of(context)!.add),
+                      onPressed: () async {
+                        final newCustomer =
+                            await showDialog<CustomerResponseModel>(
+                          context: context,
+                          builder: (context) {
+                            final nameController = TextEditingController();
+                            final phoneController = TextEditingController();
+                            final emailController = TextEditingController();
+                            final addressController = TextEditingController();
+                            final cityController = TextEditingController();
+                            final stateController = TextEditingController();
+                            final postalCodeController =
+                                TextEditingController();
+                            String customerType = 'regular';
+                            return AlertDialog(
+                              title: Text(
+                                  AppLocalizations.of(context)!.addCustomer),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextField(
+                                      controller: nameController,
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .name),
+                                    ),
+                                    TextField(
+                                      controller: phoneController,
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .phone),
+                                    ),
+                                    TextField(
+                                      controller: emailController,
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .email),
+                                    ),
+                                    TextField(
+                                      controller: addressController,
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .address),
+                                    ),
+                                    TextField(
+                                      controller: cityController,
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .city),
+                                    ),
+                                    TextField(
+                                      controller: stateController,
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .state),
+                                    ),
+                                    TextField(
+                                      controller: postalCodeController,
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .postalCode),
+                                    ),
+                                    DropdownButtonFormField<String>(
+                                      value: customerType,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 'regular',
+                                            child: Text('Reguler')),
+                                        DropdownMenuItem(
+                                            value: 'non-member',
+                                            child: Text('Non Member')),
+                                        DropdownMenuItem(
+                                            value: 'wholesale',
+                                            child: Text('Wholesale')),
+                                        DropdownMenuItem(
+                                            value: 'reseller',
+                                            child: Text('Reseller')),
+                                      ],
+                                      onChanged: (val) {
+                                        if (val != null) customerType = val;
+                                      },
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .customerType),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(
+                                      AppLocalizations.of(context)!.cancel),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    if (nameController.text.isEmpty) return;
+                                    final newCustomer = CustomerResponseModel(
+                                      id: DateTime.now()
+                                          .millisecondsSinceEpoch, // temp id
+                                      name: nameController.text,
+                                      phoneNumber: phoneController.text,
+                                      email: emailController.text,
+                                      address: addressController.text,
+                                      city: cityController.text,
+                                      state: stateController.text,
+                                      postalCode: postalCodeController.text,
+                                      customerType: customerType,
+                                      createdAt: DateTime.now(),
+                                      updatedAt: DateTime.now(),
+                                      deletedAt: null,
+                                    );
+                                    // Simpan CustomerRequestModel untuk sync
+                                    final customerRequest =
+                                        CustomerRequestModel(
+                                      name: nameController.text,
+                                      phoneNumber: phoneController.text,
+                                      email: emailController.text,
+                                      address: addressController.text,
+                                      city: cityController.text,
+                                      state: stateController.text,
+                                      postalCode: postalCodeController.text,
+                                      customerType: customerType,
+                                    );
+                                    // Simpan ke database lokal dengan flag isSynced: false (tambahkan field jika perlu)
+                                    await productLocalDatasource
+                                        .saveCustomerWithSyncFlag(newCustomer,
+                                            isSynced: false,
+                                            request: customerRequest);
+                                    Navigator.pop(context, newCustomer);
+                                  },
+                                  child:
+                                      Text(AppLocalizations.of(context)!.save),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        if (newCustomer != null) {
+                          setState(() {
+                            _selectedCustomer = newCustomer;
+                            _isCustomerActive = true;
+                          });
+                          Navigator.pop(context);
+                          SnackbarUtils(
+                            text:
+                                '${AppLocalizations.of(context)!.customer} ${newCustomer.name} ${AppLocalizations.of(context)!.addedAndSelected}',
+                            backgroundColor: Colors.green,
+                          ).showSuccessSnackBar(context);
+                        }
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: searchController,
                   decoration: InputDecoration(
-                    hintText: 'Cari pelanggan...',
+                    hintText: AppLocalizations.of(context)!.searchCustomer,
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -288,15 +458,16 @@ class _OrderPageState extends State<OrderPage> {
                     }
 
                     if (snapshot.hasError) {
-                      return const Center(
-                          child: Text('Gagal memuat data pelanggan'));
+                      return Center(
+                          child: Text(
+                              AppLocalizations.of(context)!.failedToLoadData));
                     }
 
                     final customers = snapshot.data ?? [];
 
                     if (customers.isEmpty) {
-                      return const Center(
-                          child: Text('Tidak ada data pelanggan'));
+                      return Center(
+                          child: Text(AppLocalizations.of(context)!.noData));
                     }
 
                     return Expanded(
@@ -317,7 +488,7 @@ class _OrderPageState extends State<OrderPage> {
                               Navigator.pop(context);
                               SnackbarUtils(
                                       text:
-                                          'Pelanggan ${customer.name} dipilih',
+                                          '${AppLocalizations.of(context)!.customer} ${customer.name} ${AppLocalizations.of(context)!.selected}',
                                       backgroundColor: Colors.green)
                                   .showSuccessSnackBar(context);
                             },
@@ -498,8 +669,7 @@ class _OrderPageState extends State<OrderPage> {
         // Show a message that discounts can't be applied to an empty order
         if (!mounted) return;
         SnackbarUtils(
-          text:
-              'Tidak ada produk dalam pesanan. Silakan tambahkan produk terlebih dahulu.',
+          text: AppLocalizations.of(context)!.noProductInOrder,
           backgroundColor: Colors.red,
         ).showErrorSnackBar(context);
         return;
@@ -529,7 +699,7 @@ class _OrderPageState extends State<OrderPage> {
           orderQuantity = (orderQuantity + item.quantity).toInt();
         }
         final customerType =
-            (_selectedCustomer?.customerType ?? 'reguler').toLowerCase();
+            (_selectedCustomer?.customerType ?? 'regular').toLowerCase();
         final products =
             orderItems.map((item) => item.product).cast<Product>().toList();
 
@@ -602,14 +772,14 @@ class _OrderPageState extends State<OrderPage> {
         builder: (context) => StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Pilih Diskon'),
+              title: Text(AppLocalizations.of(context)!.selectDiscount),
               content: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: _isDiscountLoading
                     ? const Center(child: CircularProgressIndicator())
                     : validDiscounts.isEmpty
-                        ? const Text(
-                            'Tidak ada diskon yang tersedia untuk saat ini')
+                        ? Text(
+                            AppLocalizations.of(context)!.noDiscountAvailable)
                         : SingleChildScrollView(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -630,7 +800,7 @@ class _OrderPageState extends State<OrderPage> {
                                   }
                                   final customerType =
                                       (_selectedCustomer?.customerType ??
-                                              'reguler')
+                                              'regular')
                                           .toLowerCase();
                                   final products = orderItems
                                       .map((item) => item.product)
@@ -667,8 +837,9 @@ class _OrderPageState extends State<OrderPage> {
                                                 borderRadius:
                                                     BorderRadius.circular(12),
                                               ),
-                                              child: const Text(
-                                                'Syarat tidak terpenuhi',
+                                              child: Text(
+                                                AppLocalizations.of(context)!
+                                                    .conditionNotMet,
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 10,
@@ -683,12 +854,12 @@ class _OrderPageState extends State<OrderPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                              '${discount.data[0].value}% - ${discount.data[0].description ?? ''}'),
+                                              '${discount.data[0].value}% - ${discount.data[0].description}'),
                                           if ((discount.data[0].minAmount ??
                                                   0) >
                                               0)
                                             Text(
-                                              'Min. belanja: ${_formatCurrency(discount.data[0].minAmount ?? 0)}',
+                                              '${AppLocalizations.of(context)!.minPurchase}: ${_formatCurrency(discount.data[0].minAmount ?? 0)}',
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: orderTotal <
@@ -709,7 +880,7 @@ class _OrderPageState extends State<OrderPage> {
                                                   0) >
                                               0)
                                             Text(
-                                              'Min. item: ${discount.data[0].minQuantity!.toStringAsFixed(0)}',
+                                              '${AppLocalizations.of(context)!.minItem}: ${discount.data[0].minQuantity!.toStringAsFixed(0)}',
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: orderQuantity <
@@ -755,14 +926,15 @@ class _OrderPageState extends State<OrderPage> {
                                                               color:
                                                                   Colors.orange,
                                                             ),
-                                                          ))
-                                                      ,
+                                                          )),
                                                   if (!isFullyValid)
-                                                    const Padding(
+                                                    Padding(
                                                       padding: EdgeInsets.only(
                                                           top: 4),
                                                       child: Text(
-                                                        'Tidak dapat dipilih',
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .discountCannotBeApplied,
                                                         style: TextStyle(
                                                           fontSize: 11,
                                                           color: Colors.red,
@@ -802,14 +974,14 @@ class _OrderPageState extends State<OrderPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, null),
-                  child: const Text('Batal'),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 TextButton(
                   onPressed: _selectedDiscounts.isEmpty
                       ? null
                       : () => Navigator.pop(context,
                           List<DiscountResponseModel>.from(_selectedDiscounts)),
-                  child: const Text('Terapkan'),
+                  child: Text(AppLocalizations.of(context)!.confirm),
                 ),
               ],
             );
@@ -836,15 +1008,11 @@ class _OrderPageState extends State<OrderPage> {
             0,
             (sum, discount) => sum + discount.data[0].value,
           );
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Diskon berhasil diterapkan (${totalDiscount.toStringAsFixed(0)}%)',
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
+          SnackbarUtils(
+            text:
+                '${AppLocalizations.of(context)!.discountApplied} (${totalDiscount.toStringAsFixed(0)}%)',
+            backgroundColor: Colors.green,
+          ).showSuccessSnackBar(context);
         }
       } else {
         // Clear discounts if none selected
@@ -855,12 +1023,11 @@ class _OrderPageState extends State<OrderPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memuat diskon: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils(
+          text: AppLocalizations.of(context)!.failedToLoadDiscount,
+          backgroundColor: Colors.red,
+        ).showSuccessSnackBar(context);
+        debugPrint('${AppLocalizations.of(context)!.failedToLoadDiscount}: $e');
       }
     } finally {
       if (mounted) {
@@ -919,12 +1086,16 @@ class _OrderPageState extends State<OrderPage> {
                       onPressed: () async {
                         if (tableNumberController.text.isEmpty ||
                             orderNameController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please fill in all fields'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
+                          SnackbarUtils(
+                            text: 'Please fill in all fields',
+                            backgroundColor: Colors.red,
+                          ).showErrorSnackBar(context);
+                          // ScaffoldMessenger.of(context).showSnackBar(
+                          //   const SnackBar(
+                          //     content: Text('Please fill in all fields'),
+                          //     backgroundColor: Colors.orange,
+                          //   ),
+                          // );
                           return;
                         }
 
@@ -941,22 +1112,18 @@ class _OrderPageState extends State<OrderPage> {
 
                           if (mounted) {
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Order saved successfully'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
+                            SnackbarUtils(
+                              text: 'Order saved successfully',
+                              backgroundColor: Colors.green,
+                            ).showSuccessSnackBar(context);
                           }
                         } catch (e) {
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text('Error saving order: ${e.toString()}'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                            SnackbarUtils(
+                              text: 'Error saving order',
+                              backgroundColor: Colors.red,
+                            ).showErrorSnackBar(context);
+                            debugPrint('Error saving order: ${e.toString()}');
                           }
                         }
                       },
@@ -986,67 +1153,67 @@ class _OrderPageState extends State<OrderPage> {
           icon: const Icon(Icons.arrow_back_ios, size: 20),
         ),
         title: Text(
-          'Order',
+          AppLocalizations.of(context)!.order,
           style: TextStyle(
             fontSize: isSmallScreen ? 16 : 18,
             fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
-        actions: [
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isSmallScreen ? 6 : 8,
-              vertical: 2,
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: isOnline ? Colors.green : Colors.red,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isOnline ? Icons.wifi : Icons.wifi_off,
-                  color: Colors.white,
-                  size: isSmallScreen ? 12 : 14,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  isOnline ? 'Online' : 'Offline',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isSmallScreen ? 10 : 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // if (hasOfflineOrders)
-          //   IconButton(
-          //     iconSize: isSmallScreen ? 20 : 24,
-          //     padding: EdgeInsets.zero,
-          //     constraints: const BoxConstraints(),
-          //     onPressed: () {
-          //       context.read<OrderBloc>().add(
-          //             const OrderEvent.syncOfflineOrders(),
-          //           );
-          //     },
-          //     icon: const Icon(Icons.sync),
-          //     tooltip: 'Sinkronisasi Order Offline',
-          //   ),
-          IconButton(
-            iconSize: isSmallScreen ? 20 : 24,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () => _showOpenBillDialog(context),
-            icon: const Icon(Icons.save_as_outlined),
-            tooltip: 'Open Bill',
-          ),
-          SizedBox(width: isSmallScreen ? 8 : 12),
-        ],
+        // actions: [
+        //   Container(
+        //     padding: EdgeInsets.symmetric(
+        //       horizontal: isSmallScreen ? 6 : 8,
+        //       vertical: 2,
+        //     ),
+        //     margin: const EdgeInsets.symmetric(vertical: 8),
+        //     decoration: BoxDecoration(
+        //       color: isOnline ? Colors.green : Colors.red,
+        //       borderRadius: BorderRadius.circular(12),
+        //     ),
+        //     child: Row(
+        //       mainAxisSize: MainAxisSize.min,
+        //       children: [
+        //         Icon(
+        //           isOnline ? Icons.wifi : Icons.wifi_off,
+        //           color: Colors.white,
+        //           size: isSmallScreen ? 12 : 14,
+        //         ),
+        //         const SizedBox(width: 4),
+        //         Text(
+        //           isOnline ? 'Online' : 'Offline',
+        //           style: TextStyle(
+        //             color: Colors.white,
+        //             fontSize: isSmallScreen ? 10 : 12,
+        //             fontWeight: FontWeight.bold,
+        //           ),
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        //   // if (hasOfflineOrders)
+        //   //   IconButton(
+        //   //     iconSize: isSmallScreen ? 20 : 24,
+        //   //     padding: EdgeInsets.zero,
+        //   //     constraints: const BoxConstraints(),
+        //   //     onPressed: () {
+        //   //       context.read<OrderBloc>().add(
+        //   //             const OrderEvent.syncOfflineOrders(),
+        //   //           );
+        //   //     },
+        //   //     icon: const Icon(Icons.sync),
+        //   //     tooltip: 'Sinkronisasi Order Offline',
+        //   //   ),
+        //   IconButton(
+        //     iconSize: isSmallScreen ? 20 : 24,
+        //     padding: EdgeInsets.zero,
+        //     constraints: const BoxConstraints(),
+        //     onPressed: () => _showOpenBillDialog(context),
+        //     icon: const Icon(Icons.save_as_outlined),
+        //     tooltip: 'Open Bill',
+        //   ),
+        //   SizedBox(width: isSmallScreen ? 8 : 12),
+        // ],
       ),
       body: BlocListener<CheckoutBloc, CheckoutState>(
         listener: (context, checkoutState) {
@@ -1163,13 +1330,13 @@ class _OrderPageState extends State<OrderPage> {
               child: BlocBuilder<CheckoutBloc, CheckoutState>(
                 builder: (context, state) {
                   return state.maybeWhen(orElse: () {
-                    return const Center(
-                      child: Text('No Data'),
+                    return Center(
+                      child: Text(AppLocalizations.of(context)!.noData),
                     );
                   }, success: (data, qty, total, draftName) {
                     if (data.isEmpty) {
-                      return const Center(
-                        child: Text('No Data'),
+                      return Center(
+                        child: Text(AppLocalizations.of(context)!.noData),
                       );
                     }
 
@@ -1223,7 +1390,8 @@ class _OrderPageState extends State<OrderPage> {
                                 Flexible(
                                   child: MenuButton(
                                     iconPath: Assets.icons.cash.path,
-                                    label: 'Pelanggan',
+                                    label:
+                                        AppLocalizations.of(context)!.customer,
                                     isActive: _isCustomerActive,
                                     onPressed: _showCustomerSelection,
                                   ),
@@ -1232,7 +1400,8 @@ class _OrderPageState extends State<OrderPage> {
                                 Flexible(
                                   child: MenuButton(
                                     iconPath: Assets.icons.cash.path,
-                                    label: 'Diskon',
+                                    label:
+                                        AppLocalizations.of(context)!.discount,
                                     isActive: _isDiscountActive,
                                     onPressed: _showDiscountDialog,
                                   ),
@@ -1243,7 +1412,7 @@ class _OrderPageState extends State<OrderPage> {
                                     onLongPress: _showTaxInfo,
                                     child: MenuButton(
                                       iconPath: Assets.icons.cash.path,
-                                      label: 'Tax',
+                                      label: AppLocalizations.of(context)!.tax,
                                       isActive: _isTaxActive,
                                       onPressed: _onTaxPressed,
                                     ),
@@ -1255,7 +1424,8 @@ class _OrderPageState extends State<OrderPage> {
                                     onLongPress: _showServiceChargeInfo,
                                     child: MenuButton(
                                       iconPath: Assets.icons.cash.path,
-                                      label: 'Service Charge',
+                                      label: AppLocalizations.of(context)!
+                                          .serviceCharge,
                                       isActive: _isServiceChargeActive,
                                       onPressed: _onServiceChargePressed,
                                     ),
@@ -1271,7 +1441,7 @@ class _OrderPageState extends State<OrderPage> {
                                   Flexible(
                                     child: MenuButton(
                                       iconPath: Assets.icons.cash.path,
-                                      label: 'CASH',
+                                      label: AppLocalizations.of(context)!.cash,
                                       isActive: value == 1,
                                       onPressed: () {
                                         indexValue.value = 1;
@@ -1285,7 +1455,7 @@ class _OrderPageState extends State<OrderPage> {
                                   Flexible(
                                     child: MenuButton(
                                       iconPath: Assets.icons.qrCode.path,
-                                      label: 'QR',
+                                      label: AppLocalizations.of(context)!.qr,
                                       isActive: value == 2,
                                       onPressed: () {
                                         indexValue.value = 2;
@@ -1299,7 +1469,8 @@ class _OrderPageState extends State<OrderPage> {
                                   Flexible(
                                     child: MenuButton(
                                       iconPath: Assets.icons.debit.path,
-                                      label: 'TRANSFER',
+                                      label: AppLocalizations.of(context)!
+                                          .transfer,
                                       isActive: value == 3,
                                       onPressed: () {
                                         indexValue.value = 3;
@@ -1348,13 +1519,11 @@ class _OrderPageState extends State<OrderPage> {
                     // Check if customer is selected
                     if (!_isCustomerActive || _selectedCustomer == null) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text('Silakan pilih pelanggan terlebih dahulu'),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
+                        SnackbarUtils(
+                          text:
+                              AppLocalizations.of(context)!.selectCustomerFirst,
+                          backgroundColor: Colors.red,
+                        ).showErrorSnackBar(context);
                       }
                       return;
                     }
@@ -1394,7 +1563,7 @@ class _OrderPageState extends State<OrderPage> {
                         final totalQuantity = orderData['totalQuantity'] as int;
                         final subTotal = orderData['subTotal'] as int;
                         final customerType =
-                            _selectedCustomer?.customerType ?? 'reguler';
+                            _selectedCustomer?.customerType ?? 'regular';
 
                         // Validate each selected discount
                         List<String> validationErrors = [];
@@ -1424,32 +1593,32 @@ class _OrderPageState extends State<OrderPage> {
                             showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
-                                title:
-                                    const Text('Diskon Tidak Dapat Diterapkan'),
+                                title: Text(AppLocalizations.of(context)!
+                                    .discountCannotBeApplied),
                                 content: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Diskon berikut tidak dapat diterapkan karena tidak memenuhi syarat:',
+                                      AppLocalizations.of(context)!
+                                          .discountCannotBeApplied,
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),
                                     const SizedBox(height: 12),
-                                    ...validationErrors
-                                        .map((error) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                  bottom: 8),
-                                              child: Text(
-                                                '• $error',
-                                                style: const TextStyle(
-                                                    fontSize: 14),
-                                              ),
-                                            ))
-                                        ,
+                                    ...validationErrors.map((error) => Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 8),
+                                          child: Text(
+                                            '• $error',
+                                            style:
+                                                const TextStyle(fontSize: 14),
+                                          ),
+                                        )),
                                     const SizedBox(height: 12),
                                     Text(
-                                      'Silakan tambahkan item atau pilih diskon lain yang sesuai.',
+                                      AppLocalizations.of(context)!
+                                          .addItemsOrSelectOtherDiscount,
                                       style: TextStyle(
                                         fontStyle: FontStyle.italic,
                                         color: Colors.grey[600],
@@ -1460,7 +1629,8 @@ class _OrderPageState extends State<OrderPage> {
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
-                                    child: const Text('OK'),
+                                    child:
+                                        Text(AppLocalizations.of(context)!.ok),
                                   ),
                                 ],
                               ),
@@ -1562,7 +1732,7 @@ class _OrderPageState extends State<OrderPage> {
                         });
 
                         SnackbarUtils(
-                          text: 'Order disimpan offline',
+                          text: AppLocalizations.of(context)!.orderSavedOffline,
                           backgroundColor: Colors.orange,
                         ).showSuccessSnackBar(context);
                       }
@@ -1654,12 +1824,11 @@ class _OrderPageState extends State<OrderPage> {
                         },
                         orElse: () {
                           // Handle case when state is not success
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Tidak ada data order yang valid'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          SnackbarUtils(
+                            text: AppLocalizations.of(context)!
+                                .noInvalidOrderData,
+                            backgroundColor: Colors.red,
+                          ).showErrorSnackBar(context);
                         },
                       );
                     } else if (indexValue.value == 1) {
@@ -1717,13 +1886,11 @@ class _OrderPageState extends State<OrderPage> {
                           if (_selectedCustomer == null ||
                               _selectedCustomer!.id <= 0) {
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Silakan pilih pelanggan terlebih dahulu'),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
+                              SnackbarUtils(
+                                text: AppLocalizations.of(context)!
+                                    .selectCustomerFirst,
+                                backgroundColor: Colors.red,
+                              ).showErrorSnackBar(context);
                             }
                             return;
                           }
@@ -1734,7 +1901,7 @@ class _OrderPageState extends State<OrderPage> {
                           showDialog(
                             context: context,
                             builder: (context) => PaymentCashDialog(
-                              price: totalPrice.toInt(),
+                              price: totalPrice.round(),
                               customerName: _selectedCustomer?.name,
                               customerPhone: _selectedCustomer?.phoneNumber,
                               customerId: _selectedCustomer!
@@ -1744,12 +1911,11 @@ class _OrderPageState extends State<OrderPage> {
                         },
                         orElse: () {
                           // Handle case when state is not success
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Tidak ada data order yang valid'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          SnackbarUtils(
+                            text: AppLocalizations.of(context)!
+                                .noInvalidOrderData,
+                            backgroundColor: Colors.red,
+                          ).showErrorSnackBar(context);
                         },
                       );
                     } else if (indexValue.value == 2) {
@@ -1807,7 +1973,7 @@ class _OrderPageState extends State<OrderPage> {
                             context: context,
                             barrierDismissible: false,
                             builder: (context) => PaymentQrisDialog(
-                              price: totalPrice.toInt(),
+                              price: totalPrice.round(),
                               customerName: _selectedCustomer?.name,
                               customerPhone: _selectedCustomer?.phoneNumber,
                             ),
@@ -1815,12 +1981,11 @@ class _OrderPageState extends State<OrderPage> {
                         },
                         orElse: () {
                           // Handle case when state is not success
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Tidak ada data order yang valid'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          SnackbarUtils(
+                            text:
+                                AppLocalizations.of(context)!.noValidOrderData,
+                            backgroundColor: Colors.red,
+                          ).showErrorSnackBar(context);
                         },
                       );
                     }
@@ -1833,7 +1998,11 @@ class _OrderPageState extends State<OrderPage> {
                           Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
-                          'Diskon: $discount% | Total setelah diskon: Rp$totalAfterDiscount',
+                          // 'Discount: $discount% | Total After Discount: Rp$totalAfterDiscount',
+                          AppLocalizations.of(context)!.discount +
+                              ' $discount% | ' +
+                              AppLocalizations.of(context)!.totalAfterDiscount +
+                              'RP$totalAfterDiscount',
                           style: const TextStyle(
                               color: Colors.green, fontWeight: FontWeight.bold),
                         ),

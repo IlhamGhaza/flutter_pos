@@ -15,9 +15,12 @@ import '../../../core/assets/assets.gen.dart';
 import '../../../core/components/menu_button.dart';
 import '../../../core/components/spaces.dart';
 import '../../../core/utils/connectivity_utils.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../home/bloc/logout/logout_bloc.dart';
 import '../bloc/sync_order/sync_order_bloc.dart';
-import 'manage_product_page.dart';
+import '../widgets/theme_selector.dart';
+import '../widgets/language_selector.dart';
+// import 'manage_product_page.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -27,7 +30,7 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-   bool isOnline = true;
+  bool isOnline = true;
   @override
   void initState() {
     _checkConnectivity();
@@ -40,6 +43,7 @@ class _SettingPageState extends State<SettingPage> {
       isOnline = connected;
     });
   }
+
   @override
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 360;
@@ -51,9 +55,9 @@ class _SettingPageState extends State<SettingPage> {
               context.push(const DashboardPage());
             },
           ),
-          title: const Text(
-            'Settings',
-            style: TextStyle(
+          title: Text(
+            AppLocalizations.of(context)!.menuSetting,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -98,16 +102,16 @@ class _SettingPageState extends State<SettingPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Row(
                   children: [
-                    Flexible(
-                      child: MenuButton(
-                        iconPath: Assets.images.manageProduct.path,
-                        label: 'Setting Product',
-                        onPressed: () =>
-                            context.push(const ManageProductPage()),
-                        isImage: true,
-                      ),
-                    ),
-                    const SpaceWidth(15.0),
+                    // Flexible(
+                    //   child: MenuButton(
+                    //     iconPath: Assets.images.manageProduct.path,
+                    //     label: 'Setting Product',
+                    //     onPressed: () =>
+                    //         context.push(const ManageProductPage()),
+                    //     isImage: true,
+                    //   ),
+                    // ),
+                    // const SpaceWidth(15.0),
                     Flexible(
                       child: MenuButton(
                         iconPath: Assets.images.managePrinter.path,
@@ -129,7 +133,7 @@ class _SettingPageState extends State<SettingPage> {
                     Flexible(
                       child: MenuButton(
                         iconPath: Assets.images.manageQr.path,
-                        label: 'QRIS Server Key',
+                        label: AppLocalizations.of(context)!.qrServerKey,
                         onPressed: () =>
                             context.push(const SaveServerKeyPage()),
                         isImage: true,
@@ -139,7 +143,7 @@ class _SettingPageState extends State<SettingPage> {
                     Flexible(
                       child: MenuButton(
                         iconPath: Assets.images.sync.path,
-                        label: 'Sync Data',
+                        label: AppLocalizations.of(context)!.syncData,
                         onPressed: () {
                           Navigator.push(
                               context,
@@ -160,7 +164,7 @@ class _SettingPageState extends State<SettingPage> {
                     Flexible(
                       child: MenuButton(
                         iconPath: Assets.images.report.path,
-                        label: 'Report',
+                        label: AppLocalizations.of(context)!.report,
                         onPressed: () => context.push(const ReportPage()),
                         isImage: true,
                       ),
@@ -178,7 +182,7 @@ class _SettingPageState extends State<SettingPage> {
 
                               context.pushReplacement(const LoginPage());
                               SnackbarUtils(
-                                text: 'Close Kasir Success',
+                                text: AppLocalizations.of(context)!.closeKasirSuccess,
                                 backgroundColor: Colors.green,
                               ).showSuccessSnackBar(context);
                             },
@@ -186,21 +190,21 @@ class _SettingPageState extends State<SettingPage> {
                         },
                         child: MenuButton(
                           iconPath: Assets.images.close.path,
-                          label: 'Close Kasir',
+                          label: AppLocalizations.of(context)!.closeKasir,
                           onPressed: () async {
                             showDialog(
                                 context: context,
                                 builder: (context) {
                                   return AlertDialog(
-                                    title: const Text('Close Kasir'),
-                                    content: const Text(
-                                        'Are you sure want to close kasir?'),
+                                    title: Text(AppLocalizations.of(context)!.closeKasir),
+                                    content: Text(
+                                        AppLocalizations.of(context)!.areYouSureWantToCloseKasir),
                                     actions: [
                                       TextButton(
                                         onPressed: () {
                                           Navigator.pop(context);
                                         },
-                                        child: const Text('Cancel'),
+                                        child: Text(AppLocalizations.of(context)!.cancel),
                                       ),
                                       TextButton(
                                         onPressed: () {
@@ -210,7 +214,7 @@ class _SettingPageState extends State<SettingPage> {
                                               );
                                           Navigator.pop(context);
                                         },
-                                        child: const Text('Yes'),
+                                        child: Text(AppLocalizations.of(context)!.yes),
                                       ),
                                     ],
                                   );
@@ -223,7 +227,12 @@ class _SettingPageState extends State<SettingPage> {
                   ],
                 ),
               ),
-              const SpaceHeight(60),
+              const SpaceHeight(10.0),
+              // Theme Selector
+              const ThemeSelector(),
+              // const SpaceHeight(10),
+              const LanguageSelector(),
+              const SpaceHeight(10),
               BlocConsumer<LogoutBloc, LogoutState>(
                 listener: (context, state) {
                   state.maybeWhen(
@@ -244,9 +253,10 @@ class _SettingPageState extends State<SettingPage> {
                             builder: (context) => const LoginPage()),
                         (route) => false,
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(message)),
-                      );
+                      SnackbarUtils(
+                        text: message,
+                        backgroundColor: Colors.red,
+                      ).showErrorSnackBar(context);
                     },
                     orElse: () {},
                   );
@@ -257,13 +267,12 @@ class _SettingPageState extends State<SettingPage> {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Konfirmasi Logout'),
-                          content: const Text(
-                              'Apakah Anda yakin ingin keluar dari aplikasi?'),
+                          title: Text(AppLocalizations.of(context)!.logout),
+                          content: Text(AppLocalizations.of(context)!.confirm),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('Batal'),
+                              child: Text(AppLocalizations.of(context)!.cancel),
                             ),
                             TextButton(
                               onPressed: () {
@@ -272,7 +281,7 @@ class _SettingPageState extends State<SettingPage> {
                                     .read<LogoutBloc>()
                                     .add(const LogoutEvent.logout());
                               },
-                              child: const Text('Ya, Logout'),
+                              child: Text(AppLocalizations.of(context)!.logout),
                             ),
                           ],
                         ),
@@ -287,7 +296,7 @@ class _SettingPageState extends State<SettingPage> {
                           color: Colors.white,
                         ),
                       ),
-                      orElse: () => const Text('Logout'),
+                      orElse: () => Text(AppLocalizations.of(context)!.logout),
                     ),
                   );
                 },

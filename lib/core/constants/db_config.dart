@@ -1,2 +1,2 @@
-const String kDatabaseName = 'posPupuk.db';
-const int kDatabaseVersion = 7;
+const String kDatabaseName = 'PPupuk.db';
+const int kDatabaseVersion = 4;

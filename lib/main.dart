@@ -28,16 +28,32 @@ import 'package:flutter_pos/presentation/setting/bloc/customer/customer_bloc.dar
 import 'package:flutter_pos/presentation/setting/bloc/sync_discount/sync_discount_bloc.dart';
 import 'package:flutter_pos/presentation/setting/bloc/sync_tax/sync_tax_bloc.dart';
 import 'package:flutter_pos/presentation/setting/bloc/sync_service_charge/sync_service_charge_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'core/constants/colors.dart';
+import 'package:flutter_pos/presentation/setting/bloc/theme/theme_bloc.dart';
+import 'core/theme/app_theme.dart';
 import 'core/utils/session_manager.dart';
+import 'core/utils/theme_manager.dart';
+import 'core/utils/db_initializer.dart';
+import 'l10n/app_localizations.dart';
 import 'presentation/auth/bloc/login/login_bloc.dart';
 import 'presentation/home/bloc/logout/logout_bloc.dart';
 import 'presentation/setting/bloc/discount/bloc/discount_bloc.dart';
+import 'presentation/setting/bloc/sync_customer/sync_customer_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await initializeDatabase();
+  } catch (e) {
+    // Try force recreate if failed
+    try {
+      await initializeDatabase(forceRecreate: true);
+    } catch (e) {
+      // Show error to user or log, jangan infinite loop
+      debugPrint('Database initialization failed: ' + e.toString());
+    }
+  }
 
   final isExpired = await SessionManager.isSessionExpired();
   if (isExpired) {
@@ -50,8 +66,62 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  static void setLocale(BuildContext context, Locale? newLocale) {
+    final _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
+    state?.setLocale(newLocale);
+  }
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  AppThemeMode _currentThemeMode = AppThemeMode.system;
+  Locale? _locale;
+
+  void setLocale(Locale? locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadLocale();
+  }
+
+  Future<void> _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final langCode = prefs.getString('locale');
+    setState(() {
+      if (langCode == null || langCode == 'system') {
+        _locale = null;
+      } else {
+        _locale = Locale(langCode);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+    // Notify theme bloc about system theme change
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final themeBloc = context.read<ThemeBloc>();
+      themeBloc.add(const ThemeEvent.systemThemeChanged());
+    });
+  }
 
   void _handleUserInteraction([_]) {
     SessionManager.updateLastActivity();
@@ -104,10 +174,10 @@ class MyApp extends StatelessWidget {
           create: (context) => DraftOrderBloc(ProductLocalDatasource.instance),
         ),
         BlocProvider(
-          create: (context) => SummaryBloc(ReportRemoteDatasource()),
+          create: (context) => SummaryBloc(),
         ),
         BlocProvider(
-          create: (context) => ProductSalesBloc(ReportRemoteDatasource()),
+          create: (context) => ProductSalesBloc(),
         ),
         BlocProvider(
           create: (context) => CloseCashierBloc(ReportRemoteDatasource()),
@@ -128,43 +198,71 @@ class MyApp extends StatelessWidget {
           create: (context) =>
               SyncServiceChargeBloc(ServiceChargeRemoteDatasource()),
         ),
-        BlocProvider(
-          create: (context) => OrderBloc(
-            // orderRemoteDatasource: OrderRemoteDatasource(),
-            orderLocalDatasource: OrderLocalDatasource.instance,
-            // discountRemoteDatasource: DiscountRemoteDatasource(),
-            authLocalDatasource: AuthLocalDatasource(),
-          )..add(const OrderEvent.started()),
-        ),
+        // BlocProvider(
+        //   create: (context) => OrderBloc(
+        //     // orderRemoteDatasource: OrderRemoteDatasource(),
+        //     orderLocalDatasource: OrderLocalDatasource.instance,
+        //     // discountRemoteDatasource: DiscountRemoteDatasource(),
+        //     authLocalDatasource: AuthLocalDatasource(),
+        //   )..add(const OrderEvent.started()),
+        // ),
         BlocProvider(
           create: (context) => DiscountBloc(DiscountRemoteDatasource()),
         ),
+        BlocProvider(
+          create: (context) => SyncCustomerBloc(CustomerRemoteDatasource()),
+        ),
+        BlocProvider(
+          create: (context) => ThemeBloc()..add(const ThemeEvent.started()),
+        ),
       ],
-      child: Listener(
-        onPointerDown: (_) => _handleUserInteraction(),
+      child: BlocListener<ThemeBloc, ThemeState>(
+        listener: (context, state) {
+          state.map(
+            initial: (_) {},
+            loading: (_) {},
+            loaded: (loadedState) {
+              if (loadedState.currentTheme != _currentThemeMode) {
+                setState(() {
+                  _currentThemeMode = loadedState.currentTheme;
+                });
+              }
+            },
+            error: (_) {},
+          );
+        },
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'POS App',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-            useMaterial3: true,
-            textTheme: GoogleFonts.quicksandTextTheme(
-              Theme.of(context).textTheme,
-            ),
-            appBarTheme: AppBarTheme(
-              color: AppColors.white,
-              elevation: 0,
-              titleTextStyle: GoogleFonts.quicksand(
-                color: AppColors.primary,
-                fontSize: 16.0,
-                fontWeight: FontWeight.w500,
-              ),
-              iconTheme: const IconThemeData(
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-          home: SplashScreenPages(),
+          title: 'POS',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: _currentThemeMode == AppThemeMode.system
+              ? ThemeMode.system
+              : (_currentThemeMode == AppThemeMode.dark
+                  ? ThemeMode.dark
+                  : ThemeMode.light),
+          locale: _locale,
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: [
+            const Locale('en'),
+            const Locale('id'),
+          ],
+          localeResolutionCallback: (locale, supportedLocales) {
+            if (locale == null) return supportedLocales.first;
+            for (var supportedLocale in supportedLocales) {
+              if (supportedLocale.languageCode == locale.languageCode) {
+                return supportedLocale;
+              }
+            }
+            return supportedLocales.first;
+          },
+          onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+          home: const SplashScreenPages(),
         ),
       ),
     );

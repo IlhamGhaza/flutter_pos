@@ -13,6 +13,7 @@ class CustomerResponseModel {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
+  final String? requestJson;
 
   CustomerResponseModel({
     required this.id,
@@ -27,6 +28,7 @@ class CustomerResponseModel {
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
+    this.requestJson,
   });
 
   factory CustomerResponseModel.fromMap(Map<String, dynamic> map) {
@@ -49,6 +51,7 @@ class CustomerResponseModel {
       deletedAt: map['deleted_at'] != null
           ? DateTime.tryParse(map['deleted_at'])
           : null,
+      requestJson: map['request_json'] as String?,
     );
   }
 
@@ -68,6 +71,7 @@ class CustomerResponseModel {
         'created_at': createdAt?.toIso8601String(),
         'updated_at': updatedAt?.toIso8601String(),
         'deleted_at': deletedAt?.toIso8601String(),
+        'request_json': requestJson,
       };
 
   String toJson() => json.encode(toMap());

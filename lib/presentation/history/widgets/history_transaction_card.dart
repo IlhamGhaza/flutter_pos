@@ -92,10 +92,12 @@ class HistoryTransactionCard extends StatelessWidget {
                 return ListTile(
                   title: Text(item.product.name),
                   subtitle: Text(
-                    '${item.quantity} x ${item.product.price}'.currencyFormatRp,
+                    'Rp. ${item.product.price.toInt().currencyFormatRp}',
                   ),
                   trailing: Text(
-                    '${item.quantity * item.product.price}'.currencyFormatRp,
+                    item.quantity > 1
+                        ? 'x${item.quantity}  ${(item.quantity * item.product.price).toInt().currencyFormatRp}'
+                        : item.product.price.toInt().currencyFormatRp,
                     style: const TextStyle(
                       color: AppColors.green,
                       fontSize: 16,

@@ -13,6 +13,7 @@ import '../../../core/assets/assets.gen.dart';
 import '../../../core/components/buttons.dart';
 import '../../../core/components/spaces.dart';
 import '../../../data/dataoutputs/cwb_print.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PaymentSuccessDialog extends StatelessWidget {
   const PaymentSuccessDialog({super.key});
@@ -25,12 +26,12 @@ class PaymentSuccessDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Center(child: Assets.icons.done.svg()),
-          const SpaceHeight(24.0),
-          const Text(
-            'Payment has been successfully',
+          const SpaceHeight(20.0),
+          Text(
+            AppLocalizations.of(context)!.paymentSuccess,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 16,
             ),
           ),
         ],
@@ -66,27 +67,27 @@ class PaymentSuccessDialog extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   LabelValue(
-                    label: 'Payment Method',
+                    label: AppLocalizations.of(context)!.paymentMethod,
                     value: paymentMethod == 'QRIS' ? 'QRIS' : paymentMethod,
                   ),
                   const Divider(height: 16.0),
                   LabelValue(
-                    label: 'Total Quantity',
+                    label: AppLocalizations.of(context)!.totalQuantity,
                     value: qty.toString(),
                   ),
                   const Divider(height: 16.0),
                   LabelValue(
-                    label: 'Total Bill',
+                    label: AppLocalizations.of(context)!.totalBill,
                     value: total.currencyFormatRp,
                   ),
                   const Divider(height: 16.0),
                   LabelValue(
-                    label: 'Cashier Name',
+                    label: AppLocalizations.of(context)!.cashierName,
                     value: namaKasir,
                   ),
                   const Divider(height: 16.0),
                   LabelValue(
-                    label: 'Transaction Date',
+                    label: AppLocalizations.of(context)!.transactionDate,
                     value: DateTime.now().toFormattedTime(),
                   ),
                   const SpaceHeight(20.0),
@@ -105,7 +106,7 @@ class PaymentSuccessDialog extends StatelessWidget {
                                 .add(const OrderEvent.started());
                             context.pushReplacement(const DashboardPage());
                           },
-                          label: 'Done',
+                          label: AppLocalizations.of(context)!.done,
                           fontSize: 12,
                         ),
                       ),
@@ -124,7 +125,7 @@ class PaymentSuccessDialog extends StatelessWidget {
                                     customerName);
                             await PrintBluetoothThermal.writeBytes(printValue);
                           },
-                          label: 'Print',
+                          label: AppLocalizations.of(context)!.print,
                           icon: Assets.icons.print.svg(),
                           fontSize: 12,
                         ),

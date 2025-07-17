@@ -143,12 +143,13 @@
 								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/",
+									"raw": "{{baseUrl}}/api/logout",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
-										""
+										"api",
+										"logout"
 									]
 								}
 							},
@@ -2409,7 +2410,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Holiday Sale\",\n    \"description\": \"Special holiday discount\",\n    \"type\": \"percentage\",\n    \"value\": 15,\n    \"min_quantity\": 1,\n    \"max_quantity\": 10,\n    \"min_amount\": 50.00,\n    \"apply_to\": \"all\",\n    \"customer_type\": \"all\",\n    \"combinable\": false,\n    \"status\": \"active\",\n    \"start_date\": \"2025-07-01\",\n    \"expired_date\": \"2025-07-31\",\n    \"start_time\": \"09:00:00\",\n    \"end_time\": \"17:00:00\",\n    \"valid_days\": [1, 2, 3, 4, 5]\n}",
+									"raw": "{\n    \"name\": \"Holiday Sale\",\n    \"description\": \"Special holiday discount\",\n    \"type\": \"percentage\",\n    \"value\": 15,\n    \"min_quantity\": 1,\n    \"max_quantity\": 10,\n    \"min_amount\": 50.00,\n    \"apply_to\": \"all\",\n    \"customer_type\": \"all\",\n    \"combinable\": false,\n    \"status\": \"active\",\n    \"start_date\": \"2025-07-15\",\n    \"expired_date\": \"2025-07-31\",\n    \"start_time\": \"09:00:00\",\n    \"end_time\": \"17:00:00\",\n    \"valid_days\": [1, 2, 3, 4, 5]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5272,6 +5273,12 @@
 			"key": "baseUrl",
 			"value": "http://localhost:8000",
 			"type": "string"
+		},
+		{
+			"key": "baseUrl",
+			"value": "https://myposs.ilhamghazali.my.id",
+			"type": "string",
+			"disabled": true
 		},
 		{
 			"key": "token",

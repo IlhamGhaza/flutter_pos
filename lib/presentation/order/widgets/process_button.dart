@@ -5,6 +5,7 @@ import 'package:flutter_pos/presentation/order/bloc/order/order_bloc.dart';
 
 import '../../../core/components/spaces.dart';
 import '../../../core/constants/colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProcessButton extends StatelessWidget {
   final int price;
@@ -75,8 +76,8 @@ class ProcessButton extends StatelessWidget {
               },
             ),
             const Spacer(),
-            const Text(
-              'Process',
+            Text(
+              AppLocalizations.of(context)!.process,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,

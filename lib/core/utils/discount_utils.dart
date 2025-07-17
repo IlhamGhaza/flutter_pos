@@ -111,7 +111,7 @@ class DiscountUtils {
   }
 
   /// Check if customer type matches discount criteria
-  /// 'reguler' is treated as an alias for 'retail'
+  /// Only supports: 'regular', 'wholesale', 'reseller', 'non-member'
   static bool isValidCustomerType(
       String customerType, String discountCustomerType) {
     if (discountCustomerType.isEmpty ||
@@ -119,27 +119,16 @@ class DiscountUtils {
       return true;
     }
 
-    // Handle multiple customer types (comma-separated)
+    // Directly use customerType from database, lowercase and trimmed
+    final normalizedCustomerType = customerType.toLowerCase().trim();
+
     final allowedTypes = discountCustomerType
         .toLowerCase()
         .split(',')
         .map((e) => e.trim())
         .toList();
 
-    // Map 'reguler' and 'regular' to 'retail' for backward compatibility
-    final normalizedCustomerType = customerType.toLowerCase() == 'reguler' ||
-            customerType.toLowerCase() == 'regular'
-        ? 'retail'
-        : customerType.toLowerCase();
-
-    // Check if any of the allowed types match the customer type
-    return allowedTypes.any((type) {
-      final match = normalizedCustomerType == type;
-      if (!match) {
-        debugPrint('Customer type mismatch: $normalizedCustomerType vs $type');
-      }
-      return match;
-    });
+    return allowedTypes.any((type) => normalizedCustomerType == type);
   }
 
   /// Check if discount applies to product based on apply_to and apply_to_value

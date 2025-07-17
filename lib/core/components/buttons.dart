@@ -10,8 +10,8 @@ class Button extends StatelessWidget {
     required this.onPressed,
     required this.label,
     this.style = ButtonStyle.filled,
-    this.color = AppColors.primary,
-    this.textColor = Colors.white,
+    this.color,
+    this.textColor,
     this.width = double.infinity,
     this.height = 50.0,
     this.borderRadius = 16.0,
@@ -25,8 +25,8 @@ class Button extends StatelessWidget {
     required this.onPressed,
     required this.label,
     this.style = ButtonStyle.outlined,
-    this.color = AppColors.white,
-    this.textColor = AppColors.primary,
+    this.color,
+    this.textColor,
     this.width = double.infinity,
     this.height = 50.0,
     this.borderRadius = 16.0,
@@ -38,8 +38,8 @@ class Button extends StatelessWidget {
   final Function() onPressed;
   final String label;
   final ButtonStyle style;
-  final Color color;
-  final Color textColor;
+  final Color? color;
+  final Color? textColor;
   final double width;
   final double height;
   final double borderRadius;
@@ -49,59 +49,45 @@ class Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isFilled = style == ButtonStyle.filled;
+    
+    final backgroundColor = color ?? (isFilled ? AppColors.primary : Colors.transparent);
+    final foregroundColor = textColor ?? (isFilled ? Colors.white : AppColors.primary);
+    final borderColor = isFilled ? Colors.transparent : AppColors.primary;
+
     return SizedBox(
-      height: height,
       width: width,
-      child: style == ButtonStyle.filled
-          ? ElevatedButton(
-              onPressed: disabled ? null : onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(borderRadius),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  icon ?? const SizedBox.shrink(),
-                  if (icon != null) const SizedBox(width: 10.0),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : OutlinedButton(
-              onPressed: disabled ? null : onPressed,
-              style: OutlinedButton.styleFrom(
-                backgroundColor: color,
-                side: const BorderSide(color: Colors.grey),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(borderRadius),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  icon ?? const SizedBox.shrink(),
-                  if (icon != null) const SizedBox(width: 10.0),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+      height: height,
+      child: ElevatedButton(
+        onPressed: disabled ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
+          elevation: isFilled ? 2 : 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            side: BorderSide(
+              color: borderColor,
+              width: isFilled ? 0 : 1.5      ),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[ if (icon != null) ...[
+              icon!,
+              const SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,             color: foregroundColor,
               ),
             ),
+          
+          ],),
+      ),
     );
   }
 }

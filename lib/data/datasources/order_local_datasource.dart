@@ -2,16 +2,16 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter_pos/data/models/request/order_request_model.dart';
 import 'package:flutter_pos/core/constants/db_config.dart';
 import 'dart:developer';
+import '../../core/utils/db_initializer.dart';
 
 class OrderLocalDatasource {
   OrderLocalDatasource._init();
   static final OrderLocalDatasource instance = OrderLocalDatasource._init();
 
   static Database? _database;
-  bool _isFirstRun = true;
 
   Future<Database> get database async {
-    if (_database != null) return _database!;
+    if (_database != null && _database!.isOpen) return _database!;
     _database = await _initDB(kDatabaseName);
     return _database!;
   }
@@ -20,27 +20,17 @@ class OrderLocalDatasource {
     try {
       final dbPath = await getDatabasesPath();
       final path = dbPath + filePath;
-      
-      // Delete existing database if it exists to force recreation
-      // await deleteDatabase(path);
-      
+
       final db = await openDatabase(
         path,
         version: kDatabaseVersion,
-        onCreate: _createDB,
-        onOpen: (db) async {
-          // Verify tables exist, if not create them
-          try {
-            await db.execute('SELECT 1 FROM offline_orders LIMIT 1');
-          } catch (e) {
-            await _createDB(db, kDatabaseVersion);
-          }
+        onCreate: (db, version) async {
+          await createAllTables(db, version);
         },
         onUpgrade: (db, oldVersion, newVersion) async {
-          await _createDB(db, newVersion);
+          await createAllTables(db, newVersion);
         },
       );
-      
       return db;
     } catch (e) {
       log('Error initializing database: $e');
@@ -49,72 +39,7 @@ class OrderLocalDatasource {
   }
 
   Future<void> _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS offline_orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_number TEXT,
-        transaction_time TEXT NOT NULL,
-        kasir_id INTEGER NOT NULL,
-        kasir_name TEXT NOT NULL,
-        customer_id INTEGER NOT NULL,
-        customer_name TEXT NOT NULL,
-        customer_order_notes TEXT,
-        sub_total REAL NOT NULL,
-        total_price REAL NOT NULL,
-        total_item INTEGER NOT NULL,
-        tax_id INTEGER,
-        tax_rate REAL DEFAULT 0,
-        tax_amount REAL DEFAULT 0,
-        service_charge_id INTEGER,
-        service_charge_rate REAL DEFAULT 0,
-        service_charge REAL DEFAULT 0,
-        discount_id INTEGER,
-        discount_amount REAL DEFAULT 0,
-        discount_type TEXT,
-        discount_value REAL,
-        payment_method TEXT NOT NULL,
-        payment_amount REAL NOT NULL,
-        change_amount REAL NOT NULL,
-        order_type TEXT NOT NULL,
-        status TEXT DEFAULT 'pending',
-        is_sync INTEGER DEFAULT 0,
-        created_at TEXT NOT NULL,
-        updated_at TEXT,
-        paid_at TEXT,
-        midtrans_transaction_id TEXT,
-        midtrans_order_id TEXT,
-        payment_gateway_response TEXT,
-        is_synced_from_mobile INTEGER DEFAULT 0,
-        mobile_sync_validation_status TEXT,
-        mobile_sync_notes TEXT,
-        mobile_synced_at TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS offline_order_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_id INTEGER NOT NULL,
-        product_id INTEGER NOT NULL,
-        product_name TEXT NOT NULL,
-        quantity INTEGER NOT NULL,
-        price REAL NOT NULL,
-        total_price REAL NOT NULL,
-        is_synced INTEGER DEFAULT 0,
-        created_at TEXT NOT NULL,
-        updated_at TEXT,
-        FOREIGN KEY (order_id) REFERENCES offline_orders (id) ON DELETE CASCADE
-      )
-    ''');
-
-    await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_offline_orders_sync ON offline_orders(is_sync)');
-    await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_offline_orders_customer ON offline_orders(customer_id)');
-    await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_offline_order_items_order ON offline_order_items(order_id)');
-    await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_offline_order_items_sync ON offline_order_items(is_synced)');
+    // Tidak perlu lagi, sudah digantikan oleh createAllTables
   }
 
   Future<int> saveOfflineOrder(
@@ -123,17 +48,6 @@ class OrderLocalDatasource {
     required String customerName,
   }) async {
     final db = await database;
-    
-    // Only verify tables if this is the first run
-    if (_isFirstRun) {
-      try {
-        await db.execute('SELECT 1 FROM offline_orders LIMIT 1');
-      } catch (e) {
-        log('Tables do not exist, creating...');
-        await _createDB(db, kDatabaseVersion);
-      }
-      _isFirstRun = false;
-    }
     final now = DateTime.now().toIso8601String();
     final orderNumber = 'OFFLINE-${DateTime.now().millisecondsSinceEpoch}';
 
@@ -214,7 +128,7 @@ class OrderLocalDatasource {
 
   Future<List<Map<String, dynamic>>> getOrderHistory() async {
     final db = await database;
-    
+
     try {
       final orders = await db.query(
         'offline_orders',
@@ -361,6 +275,35 @@ class OrderLocalDatasource {
         where: 'order_id = ?',
         whereArgs: [order['id']],
       );
+      result.add({
+        'order': order,
+        'items': items,
+      });
+    }
+
+    return result;
+  }
+
+  /// Get all offline orders with their items and product details (JOIN)
+  Future<List<Map<String, dynamic>>>
+      getAllOfflineOrdersWithProductJoin() async {
+    final db = await database;
+
+    // Get all orders
+    final orders = await db.query(
+      'offline_orders',
+      orderBy: 'created_at DESC',
+    );
+
+    final List<Map<String, dynamic>> result = [];
+
+    for (final order in orders) {
+      // Join order items with products
+      final items = await db.rawQuery('''
+        SELECT oi.*, p.* FROM offline_order_items oi
+        LEFT JOIN products p ON oi.product_id = p.product_id
+        WHERE oi.order_id = ?
+      ''', [order['id']]);
       result.add({
         'order': order,
         'items': items,

@@ -20,30 +20,39 @@ class MenuButton extends StatelessWidget {
     this.isActive = false,
     required this.onPressed,
     this.isImage = false,
-    this.size = 90,
+    this.size = 24.0,
   });
 
   @override
   Widget build(BuildContext context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    
     return InkWell(
       onTap: onPressed,
-      borderRadius: const BorderRadius.all(Radius.circular(6.0)),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
         width: context.deviceWidth,
         padding: const EdgeInsets.all(8.0),
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary : AppColors.white,
+          color: isActive ? AppColors.primary : theme.cardTheme.color,
           borderRadius: const BorderRadius.all(Radius.circular(6.0)),
           boxShadow: [
             BoxShadow(
-              offset: const Offset(0, 4),
-              blurRadius: 20.0,
+              offset: const Offset(0,4),
+              blurRadius: 20,
               blurStyle: BlurStyle.outer,
               spreadRadius: 0,
               color: AppColors.black.withValues(alpha: 0.1),
             ),
           ],
+           border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.4)
+                : Colors.white,
+            width: isDark ? 2 : 1,
+          ),
         ),
         child: Column(
           children: [
@@ -68,7 +77,9 @@ class MenuButton extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isActive ? AppColors.white : AppColors.primary,
+                color: isActive ? Colors.white : Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),

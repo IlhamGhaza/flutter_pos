@@ -4,6 +4,8 @@ import 'package:latlong2/latlong.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../../../../l10n/app_localizations.dart';
+
 class DeliveryMapPage extends StatefulWidget {
   const DeliveryMapPage({super.key});
 
@@ -67,7 +69,7 @@ class _DeliveryMapPageState extends State<DeliveryMapPage> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Cari alamat/lokasi...',
+                hintText: AppLocalizations.of(context)!.searchAddress,
                 suffixIcon: _isSearching
                     ? const Padding(
                         padding: EdgeInsets.all(12.0),
@@ -152,7 +154,7 @@ class _DeliveryMapPageState extends State<DeliveryMapPage> {
           ? Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                'Lokasi: ${selectedPoint!.latitude}, ${selectedPoint!.longitude}',
+                '${AppLocalizations.of(context)!.location} : ${selectedPoint!.latitude}, ${selectedPoint!.longitude}',
                 textAlign: TextAlign.center,
               ),
             )

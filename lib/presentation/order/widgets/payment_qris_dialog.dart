@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_pos/core/extensions/build_context_ext.dart';
 import 'package:flutter_pos/core/extensions/int_ext.dart';
+import 'package:flutter_pos/core/utils/snackbar_utils.dart';
 import 'package:flutter_pos/presentation/order/bloc/qris/qris_bloc.dart';
 import 'package:flutter_pos/presentation/order/widgets/payment_success_dialog.dart';
 import 'package:intl/intl.dart';
@@ -14,9 +14,10 @@ import 'package:widgets_to_image/widgets_to_image.dart';
 import '../../../core/components/spaces.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/dataoutputs/cwb_print.dart';
-import '../../../data/datasources/product_local_datasource.dart';
+import '../../../data/datasources/order_local_datasource.dart';
+import '../../../data/models/request/order_request_model.dart';
+import '../../../l10n/app_localizations.dart';
 import '../bloc/order/order_bloc.dart';
-import '../bloc/qris/models/order_model.dart';
 
 class PaymentQrisDialog extends StatefulWidget {
   final int price;
@@ -50,6 +51,12 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
   }
 
   @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
@@ -58,10 +65,10 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(12.0),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
             child: Text(
-              'Pembayaran QRIS',
+              AppLocalizations.of(context)!.paymentQR,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -119,22 +126,40 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                             });
                           }, success: (message) {
                             timer?.cancel();
-                            final orderModel = OrderModel(
-                                paymentMethod: paymentMethod,
-                                nominalBayar: nominalBayar,
-                                orders: products,
-                                totalQuantity: totalQuantity,
-                                totalPrice: totalPrice,
-                                idKasir: idKasir,
-                                namaKasir: namaKasir,
-                                transactionTime:
-                                    DateFormat('yyyy-MM-ddTHH:mm:ss')
-                                        .format(DateTime.now()),
-                                isSync: false,
-                                customerName: widget.customerName,
-                                customerPhone: widget.customerPhone);
-                            ProductLocalDatasource.instance
-                                .saveOrder(orderModel);
+
+                            // Convert products to OrderItemModel
+                            final orderItems = products
+                                .map((orderItem) => OrderItemModel(
+                                      productId: orderItem.product.id,
+                                      quantity: orderItem.quantity,
+                                      price: orderItem.product.price.toDouble(),
+                                    ))
+                                .toList();
+
+                            // Create order request
+                            final orderRequest = OrderRequestModel(
+                              transactionTime: DateFormat('yyyy-MM-ddTHH:mm:ss')
+                                  .format(DateTime.now()),
+                              kasirId: idKasir,
+                              customerId: 1, // Default customer ID
+                              subTotal: subTotal.toDouble(),
+                              totalPrice: totalPrice.toDouble(),
+                              totalItem: totalQuantity,
+                              paymentMethod: paymentMethod,
+                              paymentAmount: nominalBayar.toDouble(),
+                              changeAmount:
+                                  (nominalBayar - totalPrice).toDouble(),
+                              orderType: 'in-person',
+                              orderItems: orderItems,
+                            );
+
+                            // Save to local database
+                            OrderLocalDatasource.instance.saveOfflineOrder(
+                              orderRequest,
+                              kasirName: namaKasir,
+                              customerName: widget.customerName ?? 'Customer',
+                            );
+
                             context.pop();
                             showDialog(
                               context: context,
@@ -162,6 +187,20 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                                     child: Center(
                                       child: Image.network(
                                         data.actions!.first.url!,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Center(
+                                            child: Text(
+                                              AppLocalizations.of(context)!
+                                                  .qrCodeCannotBeLoaded,
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                   ),
@@ -180,61 +219,91 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                                   ),
                                 );
                               },
+                              error: (message) {
+                                return Container(
+                                  width: 256.0,
+                                  height: 256.0,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    color: Colors.white,
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.error_outline,
+                                          color: Colors.red,
+                                          size: 48,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          '${AppLocalizations.of(context)!.error}: $message',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            context.read<QrisBloc>().add(
+                                                  QrisEvent.generateQRCode(
+                                                    orderId,
+                                                    widget.price,
+                                                  ),
+                                                );
+                                          },
+                                          child: Text(
+                                            AppLocalizations.of(context)!
+                                                .tryAgain,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           },
                         ),
                       ),
-                      const SpaceHeight(5.0),
-                      const Text(
-                        'Scan QRIS untuk melakukan pembayaran',
+                      const SpaceHeight(16.0),
+                      Text(
+                        AppLocalizations.of(context)!.scanQrisToMakePayment,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SpaceHeight(16),
                       Text(
-                        'Price: ${totalPrice.currencyFormatRp}',
+                        '${AppLocalizations.of(context)!.total}: ${totalPrice.currencyFormatRp}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SpaceHeight(16),
                       ElevatedButton(
                         onPressed: () async {
-                          final bytes = await controller.capture();
-                          final listInt = await CwbPrint.instance
-                              .printQRIS(totalPrice, bytes!);
-                          CwbPrint.instance.printReceipt(listInt);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                        ),
-                        child: const Text(
-                          'Print QRIS',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final state = context.read<QrisBloc>().state;
-                          final qrisState = state.maybeWhen(
-                            orElse: () {},
-                            qrisResponse: (data) {
-                              return data;
-                            },
-                          );
-                          final url = qrisState?.actions?.first.url;
-                          if (url != null) {
-                            await launchUrl(Uri.parse(url),
-                                mode: LaunchMode.externalApplication);
+                          try {
+                            final bytes = await controller.capture();
+                            if (bytes != null) {
+                              final listInt = await CwbPrint.instance
+                                  .printQRIS(totalPrice, bytes);
+                              CwbPrint.instance.printReceipt(listInt);
+                            }
+                          } catch (e) { 
+                            SnackbarUtils(
+                              text: AppLocalizations.of(context)!
+                                  .errorPrinting,
+                              backgroundColor: Colors.red,
+                            ).showErrorSnackBar(context);
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -243,28 +312,32 @@ class _PaymentQrisDialogState extends State<PaymentQrisDialog> {
                             borderRadius: BorderRadius.circular(10.0),
                           ),
                         ),
-                        child: const Text(
-                          'Bayar via Midtrans',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.printQris,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                           ),
                         ),
                       ),
+                      const SpaceHeight(16),
                       if (widget.customerName != null ||
                           widget.customerPhone != null) ...[
-                        _buildReceiptRow(
-                            'Pelanggan', widget.customerName ?? '-'),
+                        _buildReceiptRow(AppLocalizations.of(context)!.customer,
+                            widget.customerName ?? '-'),
                         if (widget.customerPhone != null)
-                          _buildReceiptRow('No. HP', widget.customerPhone!),
+                          _buildReceiptRow(
+                              AppLocalizations.of(context)!.customerPhone,
+                              widget.customerPhone!),
                         const SpaceHeight(8.0),
                       ],
                       _buildReceiptRow(
-                          'Tanggal',
+                          AppLocalizations.of(context)!.date,
                           DateFormat('dd/MM/yyyy HH:mm')
                               .format(DateTime.now())),
                       const SpaceHeight(8.0),
-                      _buildReceiptRow('Metode Pembayaran', 'QRIS'),
+                      _buildReceiptRow(
+                          AppLocalizations.of(context)!.paymentMethod, 'QRIS'),
                       const SpaceHeight(8.0),
                     ],
                   ),

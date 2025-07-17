@@ -25,7 +25,8 @@ class OrderCard extends StatelessWidget {
     final isSmallScreen = MediaQuery.of(context).size.width < 360;
     final paddingValue = isSmallScreen ? 8.0 : 16.0;
     final imageSize = isSmallScreen ? 56.0 : 76.0;
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
@@ -33,9 +34,14 @@ class OrderCard extends StatelessWidget {
           margin: padding,
           padding: EdgeInsets.all(paddingValue),
           decoration: ShapeDecoration(
-            color: Colors.white,
+            color:
+                isDark ? Theme.of(context).colorScheme.surface : Colors.white,
             shape: RoundedRectangleBorder(
-              side: const BorderSide(width: 1.5, color: Color(0xFFC7D0EB)),
+              side: BorderSide(
+                  width: 1.5,
+                  color: isDark
+                      ? Theme.of(context).dividerColor
+                      : Color(0xFFC7D0EB)),
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -77,6 +83,9 @@ class OrderCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: isSmallScreen ? 14 : 16,
                               fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : Colors.black,
                             ),
                           ),
                         ),
@@ -86,6 +95,9 @@ class OrderCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: isSmallScreen ? 14 : 16,
                             fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.black,
                           ),
                         ),
                       ],
@@ -100,7 +112,8 @@ class OrderCard extends StatelessWidget {
                               GestureDetector(
                                 onTap: () {
                                   context.read<CheckoutBloc>().add(
-                                      CheckoutEvent.removeCheckout(data.product));
+                                      CheckoutEvent.removeCheckout(
+                                          data.product));
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(2),
@@ -116,7 +129,14 @@ class OrderCard extends StatelessWidget {
                                 child: Center(
                                   child: Text(
                                     data.quantity.toString(),
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                          : Colors.black,
+                                    ),
                                   ),
                                 ),
                               ),

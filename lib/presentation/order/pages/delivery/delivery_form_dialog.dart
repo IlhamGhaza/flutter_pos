@@ -3,6 +3,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_pos/data/models/request/delivery_request_model.dart';
 import 'package:geocoding/geocoding.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 class DeliveryFormDialog extends StatefulWidget {
   final int orderId;
   final LatLng? selectedLocation;
@@ -82,7 +84,7 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Form Pengiriman'),
+      title: Text(AppLocalizations.of(context)!.deliveryForm),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -91,13 +93,13 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
             children: [
               TextFormField(
                 controller: _recipientNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nama Penerima',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.recipientName,
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Nama penerima harus diisi';
+                    return AppLocalizations.of(context)!.recipientName;
                   }
                   return null;
                 },
@@ -105,14 +107,14 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _recipientPhoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Nomor Telepon',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.recipientPhone,
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Nomor telepon harus diisi';
+                    return AppLocalizations.of(context)!.recipientPhone;
                   }
                   return null;
                 },
@@ -120,14 +122,14 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _recipientAddressController,
-                decoration: const InputDecoration(
-                  labelText: 'Alamat',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.recipientAddress,
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Alamat harus diisi';
+                    return AppLocalizations.of(context)!.recipientAddress;
                   }
                   return null;
                 },
@@ -138,13 +140,13 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _recipientCityController,
-                      decoration: const InputDecoration(
-                        labelText: 'Kota',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.recipientCity,
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Kota harus diisi';
+                          return AppLocalizations.of(context)!.recipientCity;
                         }
                         return null;
                       },
@@ -154,13 +156,13 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _recipientStateController,
-                      decoration: const InputDecoration(
-                        labelText: 'Provinsi',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.recipientState,
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Provinsi harus diisi';
+                          return AppLocalizations.of(context)!.recipientState;
                         }
                         return null;
                       },
@@ -171,13 +173,13 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _recipientPostalCodeController,
-                decoration: const InputDecoration(
-                  labelText: 'Kode Pos',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.recipientPostalCode,
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Kode pos harus diisi';
+                    return AppLocalizations.of(context)!.recipientPostalCode;
                   }
                   return null;
                 },
@@ -185,17 +187,17 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _weightController,
-                decoration: const InputDecoration(
-                  labelText: 'Berat (kg)',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.totalWeight,
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Berat harus diisi';
+                    return AppLocalizations.of(context)!.totalWeight;
                   }
                   if (double.tryParse(value) == null) {
-                    return 'Berat harus berupa angka';
+                    return AppLocalizations.of(context)!.weightWarning;
                   }
                   return null;
                 },
@@ -205,7 +207,7 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
                 children: [
                   Expanded(
                     child: ListTile(
-                      title: const Text('Tanggal Pengiriman'),
+                      title: Text(AppLocalizations.of(context)!.scheduledDate),
                       subtitle: Text(
                           '${_scheduledDate.day}/${_scheduledDate.month}/${_scheduledDate.year}'),
                       onTap: () async {
@@ -226,7 +228,7 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
                   ),
                   Expanded(
                     child: ListTile(
-                      title: const Text('Waktu'),
+                      title: Text(AppLocalizations.of(context)!.scheduledTime),
                       subtitle: Text(
                           '${_scheduledTime.hour}:${_scheduledTime.minute.toString().padLeft(2, '0')}'),
                       onTap: () async {
@@ -246,7 +248,7 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
               ),
               const SizedBox(height: 16),
               CheckboxListTile(
-                title: const Text('Perlu Penanganan Khusus'),
+                title: Text(AppLocalizations.of(context)!.specialHandling),
                 value: _requiresSpecialHandling,
                 onChanged: (value) {
                   setState(() {
@@ -257,8 +259,8 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _deliveryNotesController,
-                decoration: const InputDecoration(
-                  labelText: 'Catatan Pengiriman',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.deliveryNotes,
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 2,
@@ -270,7 +272,7 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Batal'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         ElevatedButton(
           onPressed: () {
@@ -303,7 +305,7 @@ class _DeliveryFormDialogState extends State<DeliveryFormDialog> {
               Navigator.pop(context, deliveryRequest);
             }
           },
-          child: const Text('Simpan'),
+          child: Text(AppLocalizations.of(context)!.confirm),
         ),
       ],
     );

@@ -3,8 +3,9 @@ import 'package:intl/intl.dart';
 extension StringExt on String {
   int get toIntegerFromText {
     final cleanedText = replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanedText.isEmpty) return 0;
     final parsedValue = int.tryParse(cleanedText) ?? 0;
-    return parsedValue;
+    return parsedValue < 0 ? 0 : parsedValue;
   }
 
   //transactionTime: DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now())

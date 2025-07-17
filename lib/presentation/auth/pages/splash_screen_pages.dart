@@ -55,8 +55,9 @@ class _SplashScreenPagesState extends State<SplashScreenPages>
 
   @override
   Widget build(BuildContext context) {
+    // final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      // backgroundColor: Colors.grey.shade100,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: Center(

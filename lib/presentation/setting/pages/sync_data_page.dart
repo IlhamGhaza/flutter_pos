@@ -4,6 +4,7 @@ import 'package:flutter_pos/core/constants/colors.dart';
 import 'package:flutter_pos/core/utils/snackbar_utils.dart';
 import 'package:flutter_pos/core/utils/connectivity_utils.dart';
 import 'package:flutter_pos/data/datasources/product_local_datasource.dart';
+import 'package:flutter_pos/data/datasources/order_local_datasource.dart';
 
 // Home Blocs
 import 'package:flutter_pos/presentation/home/bloc/category/category_bloc.dart';
@@ -26,6 +27,10 @@ import 'package:flutter_pos/presentation/setting/bloc/sync_tax/sync_tax_state.da
 import 'package:flutter_pos/presentation/setting/bloc/sync_service_charge/sync_service_charge_bloc.dart';
 import 'package:flutter_pos/presentation/setting/bloc/sync_service_charge/sync_service_charge_event.dart';
 import 'package:flutter_pos/presentation/setting/bloc/sync_service_charge/sync_service_charge_state.dart';
+
+import 'package:flutter_pos/presentation/setting/bloc/sync_customer/sync_customer_bloc.dart';
+
+import '../../../l10n/app_localizations.dart';
 
 class SyncDataPage extends StatefulWidget {
   const SyncDataPage({super.key});
@@ -81,7 +86,9 @@ class _SyncDataPageState extends State<SyncDataPage> {
       final discounts = await localDataSource.getAllDiscount();
       final taxes = await localDataSource.getAllTax();
       final serviceCharges = await localDataSource.getAllServiceCharge();
-      final pendingOrders = await localDataSource.getOrderByIsSync();
+      final pendingOrders =
+          await OrderLocalDatasource.instance.getUnsyncedOrders();
+      final pendingCustomer = await localDataSource.getUnsyncedCustomers();
 
       if (mounted) {
         setState(() {
@@ -92,8 +99,8 @@ class _SyncDataPageState extends State<SyncDataPage> {
             'discounts': discounts.isNotEmpty,
             'taxes': taxes.isNotEmpty,
             'service_charges': serviceCharges.isNotEmpty,
-            'orders': pendingOrders
-                .isEmpty, // Orders are synced when no pending orders
+            'orders': pendingOrders.isEmpty,
+            'customer': pendingCustomer.isEmpty,
           };
           _isLoadingStatus = false;
         });
@@ -103,11 +110,13 @@ class _SyncDataPageState extends State<SyncDataPage> {
         setState(() {
           _syncStatus = {};
           _isLoadingStatus = false;
+          _isOnline ? _syncAllData() : null;
         });
       }
     }
   }
 
+  // Sync all data
   Future<void> _syncAllData() async {
     if (!mounted || !_isOnline) return;
 
@@ -121,14 +130,12 @@ class _SyncDataPageState extends State<SyncDataPage> {
       context
           .read<SyncServiceChargeBloc>()
           .add(const SyncServiceChargeEvent.sync());
-      context.read<SyncOrderBloc>().add(const SyncOrderEvent.sendOrder());
-
+      context.read<SyncCustomerBloc>().add(SyncCustomerEvent.started());
       if (mounted) {
         SnackbarUtils(
-          text: 'Sync started for all data',
+          text: AppLocalizations.of(context)!.syncStartedForAllData,
           backgroundColor: AppColors.primary,
         ).showSuccessSnackBar(context);
-
         // Refresh sync status after a delay to allow sync operations to complete
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
@@ -139,7 +146,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
     } catch (e) {
       if (mounted) {
         SnackbarUtils(
-          text: 'Failed to start sync: $e',
+          text: AppLocalizations.of(context)!.failedToStartSync,
           backgroundColor: Colors.red,
         ).showErrorSnackBar(context);
       }
@@ -152,7 +159,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sync Data'),
+        title: Text(AppLocalizations.of(context)!.syncData),
         centerTitle: true,
         actions: [
           Container(
@@ -200,13 +207,13 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 context: context,
                 onPressed: _isOnline ? _syncAllData : null,
                 icon: Icons.sync,
-                label: 'SYNC ALL DATA',
+                label: AppLocalizations.of(context)!.syncAllData,
                 color: AppColors.primary,
               ),
               const SizedBox(height: 24),
 
               // Master Data Section
-              _buildSectionHeader('Master Data'),
+              _buildSectionHeader(AppLocalizations.of(context)!.masterData),
               const SizedBox(height: 8),
 
               // Products
@@ -225,7 +232,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 },
                 builder: (context, state) {
                   return _buildSyncStatusCard(
-                    title: 'Products',
+                    title: AppLocalizations.of(context)!.products,
                     state: state,
                     onSync: _isOnline
                         ? () => context
@@ -270,7 +277,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 },
                 builder: (context, state) {
                   return _buildSyncStatusCard(
-                    title: 'Categories',
+                    title: AppLocalizations.of(context)!.categories,
                     state: state,
                     onSync: _isOnline
                         ? () => context
@@ -303,7 +310,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 },
                 builder: (context, state) {
                   return _buildSyncStatusCard(
-                    title: 'Customers',
+                    title: AppLocalizations.of(context)!.customer,
                     state: state,
                     onSync: _isOnline
                         ? () => context
@@ -320,7 +327,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
               ),
 
               const SizedBox(height: 16),
-              _buildSectionHeader('Settings'),
+              _buildSectionHeader(AppLocalizations.of(context)!.menuSetting),
               const SizedBox(height: 8),
 
               // Discounts
@@ -339,7 +346,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 },
                 builder: (context, state) {
                   return _buildSyncStatusCard(
-                    title: 'Discounts',
+                    title: AppLocalizations.of(context)!.discount,
                     state: state,
                     onSync: _isOnline
                         ? () => context
@@ -372,7 +379,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 },
                 builder: (context, state) {
                   return _buildSyncStatusCard(
-                    title: 'Taxes',
+                    title: AppLocalizations.of(context)!.tax,
                     state: state,
                     onSync: _isOnline
                         ? () => context
@@ -405,7 +412,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 },
                 builder: (context, state) {
                   return _buildSyncStatusCard(
-                    title: 'Service Charges',
+                    title: AppLocalizations.of(context)!.serviceCharge,
                     state: state,
                     onSync: _isOnline
                         ? () => context
@@ -423,7 +430,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
 
               const SizedBox(height: 24),
               // Sync Orders Section
-              _buildSectionHeader('Orders'),
+              _buildSectionHeader(AppLocalizations.of(context)!.syncData),
               const SizedBox(height: 8),
 
               // Orders
@@ -434,7 +441,8 @@ class _SyncDataPageState extends State<SyncDataPage> {
                       if (mounted) {
                         SnackbarUtils(
                           text:
-                              'Successfully synced $syncedCount order${syncedCount != 1 ? 's' : ''}',
+                              // 'Successfully synced $syncedCount order${syncedCount != 1 ? 's' : ''}',
+                              '${AppLocalizations.of(context)!.syncedSuccessfully} $syncedCount ${AppLocalizations.of(context)!.order}${syncedCount != 1 ? 's' : ''}',
                           backgroundColor: Colors.green,
                         ).showSuccessSnackBar(context);
                         // Refresh sync status after successful sync
@@ -454,7 +462,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 },
                 builder: (context, state) {
                   return _buildSyncStatusCard(
-                    title: 'Send Pending Orders',
+                    title: AppLocalizations.of(context)!.sendPendingOrders,
                     state: state,
                     onSync: _isOnline
                         ? () => context
@@ -465,6 +473,56 @@ class _SyncDataPageState extends State<SyncDataPage> {
                         ? () => context
                             .read<SyncOrderBloc>()
                             .add(const SyncOrderEvent.sendOrder())
+                        : null,
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              // Sync Customers
+              BlocConsumer<SyncCustomerBloc, SyncCustomerState>(
+                listener: (context, state) {
+                  state.maybeWhen(
+                    success: (syncedCount) {
+                      if (mounted) {
+                        SnackbarUtils(
+                          text:
+                              '${AppLocalizations.of(context)!.syncedSuccessfully} $syncedCount ${AppLocalizations.of(context)!.customer}${syncedCount != 1 ? 's' : ''}',
+                          backgroundColor: Colors.green,
+                        ).showSuccessSnackBar(context);
+                        _checkSyncStatus();
+                      }
+                    },
+                    readyToFetch: (syncedCount) {
+                      if (mounted) {
+                        context
+                            .read<SyncCustomerBloc>()
+                            .add(const SyncCustomerEvent.fetchFromServer());
+                      }
+                    },
+                    error: (message, _) {
+                      if (mounted) {
+                        SnackbarUtils(
+                          text: message,
+                          backgroundColor: Colors.red,
+                        ).showErrorSnackBar(context);
+                      }
+                    },
+                    orElse: () {},
+                  );
+                },
+                builder: (context, state) {
+                  return _buildSyncStatusCard(
+                    title: AppLocalizations.of(context)!.sendPendingCustomer,
+                    state: state,
+                    onSync: _isOnline
+                        ? () => context
+                            .read<SyncCustomerBloc>()
+                            .add(const SyncCustomerEvent.sendCustomer())
+                        : null,
+                    onRetry: _isOnline
+                        ? () => context
+                            .read<SyncCustomerBloc>()
+                            .add(const SyncCustomerEvent.sendCustomer())
                         : null,
                   );
                 },
@@ -522,8 +580,6 @@ class _SyncDataPageState extends State<SyncDataPage> {
         loaded: (categories) => isSynced = true,
         loadedLocal: (categories) {
           hasLocalData = categories.isNotEmpty;
-          // For categories, we only consider it synced if it came from remote
-          // Local data means it was loaded from cache, not fresh sync
         },
         error: (message) {
           hasError = true;
@@ -572,6 +628,17 @@ class _SyncDataPageState extends State<SyncDataPage> {
         },
       );
     } else if (state is SyncOrderState) {
+      state.maybeWhen(
+        orElse: () {},
+        initial: () {},
+        loading: () => isLoading = true,
+        success: (syncedCount) => isSynced = true,
+        error: (message, _) {
+          hasError = true;
+          errorMessage = message;
+        },
+      );
+    } else if (state is SyncCustomerState) {
       state.maybeWhen(
         orElse: () {},
         initial: () {},
@@ -663,7 +730,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 !hasError) ...[
               const SizedBox(height: 4),
               Text(
-                'Local data available, sync to update from server',
+                '${AppLocalizations.of(context)!.localDataAvailable}, ${AppLocalizations.of(context)!.syncToUpdateFromServer}',
                 style: const TextStyle(color: Colors.orange, fontSize: 11),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -692,6 +759,8 @@ class _SyncDataPageState extends State<SyncDataPage> {
         return 'service_charges';
       case 'send pending orders':
         return 'orders';
+      case 'send pending customer':
+        return 'customer';
       default:
         return title.toLowerCase().replaceAll(' ', '_');
     }
@@ -709,7 +778,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
           borderRadius: BorderRadius.circular(6),
         ),
       ),
-      child: const Text('Retry', style: TextStyle(fontSize: 12)),
+      child: Text(AppLocalizations.of(context)!.retry, style: const TextStyle(fontSize: 12)),
     );
   }
 
@@ -734,7 +803,7 @@ class _SyncDataPageState extends State<SyncDataPage> {
                 color: Colors.white,
               ),
             )
-          : const Text('Sync Now', style: TextStyle(fontSize: 12)),
+          : Text(AppLocalizations.of(context)!.syncNow, style: const TextStyle(fontSize: 12)),
     );
   }
 

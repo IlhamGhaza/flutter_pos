@@ -18,9 +18,12 @@ class SearchInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: isDark ? theme.cardColor : AppColors.card,
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: TextFormField(
@@ -30,27 +33,34 @@ class SearchInput extends StatelessWidget {
         onChanged: onChanged,
         decoration: InputDecoration(
           hintText: 'Search...',
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.search,
-            color: AppColors.primary,
+            color: isDark ? theme.colorScheme.primary : AppColors.primary,
           ),
           suffixIcon: InkWell(
             onTap: () {
               context.push(const ScannerPage());
             },
-            child: const Icon(
+            child: Icon(
               Icons.qr_code_2,
-              color: AppColors.primary,
+              color: isDark ? theme.colorScheme.primary : AppColors.primary,
             ),
           ),
           contentPadding: const EdgeInsets.all(16.0),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: AppColors.blueLight),
+            borderSide:
+                BorderSide(color: isDark ? theme.dividerColor : AppColors.card),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: AppColors.blueLight),
+            borderSide:
+                BorderSide(color: isDark ? theme.dividerColor : AppColors.card),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(
+                color: isDark ? theme.colorScheme.primary : AppColors.primary),
           ),
         ),
       ),

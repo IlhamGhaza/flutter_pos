@@ -39,6 +39,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
+  flutter_localizations:
+    sdk: flutter
   flutter_map: ^8.1.1
   flutter_osm_plugin: ^1.3.8
   flutter_svg: ^2.0.9
@@ -55,11 +57,12 @@ dependencies:
   open_file: ^3.3.3
   path_provider: ^2.1.2
   pdf: ^3.11.1
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.1
   print_bluetooth_thermal: ^1.1.3
   shared_preferences: ^2.2.2
   sqflite: ^2.3.0
-  syncfusion_flutter_charts: ^29.2.11
+  sqflite_common_ffi: ^2.3.6
+  syncfusion_flutter_charts: ^30.1.40
   url_launcher: ^6.3.1
   widgets_to_image: ^2.0.1
 
@@ -87,6 +90,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  generate: true
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
@@ -115,6 +119,15 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+  # Localization config
+  # See: https://docs.flutter.dev/accessibility-and-localization/internationalization
+  # This will generate l10n files in lib/l10n
+  # You can customize the output directory and template as needed
+  # l10n:
+  #   arb-dir: lib/l10n
+  #   template-arb-file: app_en.arb
+  #   output-localization-file: app_localizations.dart
+  #   output-class: AppLocalizations
 flutter_launcher_icons:
   android: true
   ios: true

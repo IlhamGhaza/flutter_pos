@@ -11,6 +11,8 @@ import '../../../core/components/buttons.dart';
 import '../../../core/components/custom_text_field.dart';
 import '../../../core/components/spaces.dart';
 import '../../../core/constants/colors.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PaymentCashDialog extends StatefulWidget {
   final int price;
@@ -41,25 +43,27 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Text(
               label,
               style: TextStyle(
                 fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                fontSize: isLarge ? 16 : 14,
+                fontSize: isLarge ? 14 : 12,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            flex: 1,
+            flex: 2,
             child: Text(
               value,
               style: TextStyle(
                 fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                fontSize: isLarge ? 18 : 14,
-                color: isLarge ? AppColors.primary : Colors.black,
+                fontSize: isLarge ? 16 : 11,
+                color: isLarge
+                    ? AppColors.primary
+                    : Theme.of(context).textTheme.bodySmall!.color,
               ),
               textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
@@ -105,6 +109,9 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AlertDialog(
       scrollable: true,
       title: Stack(
@@ -114,11 +121,11 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
             icon: const Icon(Icons.highlight_off),
             color: AppColors.primary,
           ),
-          const Center(
+          Center(
             child: Padding(
-              padding: EdgeInsets.only(top: 12.0),
+              padding: const EdgeInsets.only(top: 12.0),
               child: Text(
-                'Payment - Cash',
+                AppLocalizations.of(context)!.paymentCash,
                 style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 16,
@@ -136,8 +143,8 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
           const SpaceHeight(16.0),
 
           // Shortcut money buttons
-          const Text(
-            'Quick Amount:',
+          Text(
+            AppLocalizations.of(context)!.quickAmount,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -171,7 +178,8 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
             },
           ),
           const SpaceHeight(16.0),
-          _buildReceiptRow('Metode Pembayaran', 'Tunai'),
+          _buildReceiptRow(AppLocalizations.of(context)!.paymentMethod,
+              AppLocalizations.of(context)!.cash),
           const SpaceHeight(8.0),
           const Divider(),
           const SpaceHeight(8.0),
@@ -208,18 +216,21 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                     barrierDismissible: false,
                     builder: (context) => Dialog(
                       child: Container(
-                        padding: const EdgeInsets.all(24.0),
-                        constraints:
-                            const BoxConstraints(maxWidth: 400, maxHeight: 600),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 20.0),
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.95,
+                          maxHeight: MediaQuery.of(context).size.height * 0.8,
+                        ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            const Text(
-                              'PAYMENT SUCCESSFUL',
+                            Text(
+                              AppLocalizations.of(context)!.paymentSuccess,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
@@ -238,8 +249,8 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.stretch,
                                     children: [
-                                      const Text(
-                                        'RECEIPT',
+                                      Text(
+                                        AppLocalizations.of(context)!.receipt,
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
@@ -256,60 +267,101 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                                       const Divider(height: 24),
                                       if (widget.customerName != null ||
                                           widget.customerPhone != null) ...[
-                                        _buildReceiptRow('Pelanggan',
+                                        _buildReceiptRow(
+                                            AppLocalizations.of(context)!
+                                                .customerName,
                                             widget.customerName ?? '-'),
                                         if (widget.customerPhone != null)
                                           _buildReceiptRow(
-                                              'No. HP', widget.customerPhone!),
+                                              AppLocalizations.of(context)!
+                                                  .customerPhone,
+                                              widget.customerPhone!),
                                         const SpaceHeight(8.0),
                                         const Divider(),
                                         const SpaceHeight(8.0),
                                       ],
                                       _buildReceiptRow(
-                                          'Tanggal',
+                                          AppLocalizations.of(context)!.date,
                                           DateFormat('dd/MM/yyyy HH:mm')
                                               .format(DateTime.now())),
                                       const SpaceHeight(8.0),
                                       const Divider(),
                                       const SpaceHeight(8.0),
-                                      _buildReceiptRow('Subtotal',
+                                      _buildReceiptRow(
+                                          AppLocalizations.of(context)!
+                                              .subtotal,
                                           subTotal.currencyFormatRp),
                                       if (appliedDiscounts.isNotEmpty) ...[
                                         for (var discountResponse
                                             in appliedDiscounts)
                                           if (discountResponse.data.isNotEmpty)
                                             _buildReceiptRow(
-                                                'Discount ${discountResponse.data[0].value}%',
+                                                AppLocalizations.of(context)!
+                                                    .discount,
                                                 '-${(subTotal * discountResponse.data[0].value / 100).round().currencyFormatRp}'),
                                       ],
                                       if (tax != null && tax > 0)
-                                        _buildReceiptRow('Tax $taxRate%',
+                                        _buildReceiptRow(
+                                            AppLocalizations.of(context)!.tax,
                                             tax.currencyFormatRp),
                                       if (serviceCharge != null &&
                                           serviceCharge > 0)
                                         _buildReceiptRow(
-                                            'Service Charge $serviceChargeRate%',
+                                            AppLocalizations.of(context)!
+                                                .serviceCharge,
                                             serviceCharge.currencyFormatRp),
                                       const Divider(height: 16),
                                       _buildReceiptRow(
-                                          'Total', totalPrice.currencyFormatRp,
+                                          AppLocalizations.of(context)!.total,
+                                          totalPrice.currencyFormatRp,
                                           isBold: true),
-                                      _buildReceiptRow('Paid',
+                                      _buildReceiptRow(
+                                          AppLocalizations.of(context)!.paid,
                                           nominalBayar.currencyFormatRp),
                                       const Divider(height: 16),
-                                      _buildReceiptRow(
-                                        'Change',
-                                        (nominalBayar - totalPrice)
-                                            .currencyFormatRp,
-                                        isBold: true,
-                                        isLarge: true,
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 4.0),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              flex: 1,
+                                              child: Text(
+                                                AppLocalizations.of(context)!
+                                                    .change,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                (nominalBayar - totalPrice)
+                                                    .currencyFormatRp,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                  color: AppColors.primary,
+                                                ),
+                                                textAlign: TextAlign.end,
+                                                softWrap: true,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
                             Row(
                               children: [
                                 Expanded(
@@ -317,16 +369,19 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                                     onPressed: () {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        const SnackBar(
-                                            content:
-                                                Text('Printing receipt...')),
+                                        SnackBar(
+                                            content: Text(
+                                                AppLocalizations.of(context)!
+                                                    .printingReceipt)),
                                       );
                                     },
                                     icon: const Icon(Icons.print, size: 20),
-                                    label: const Text('Print'),
+                                    label: Text(
+                                      AppLocalizations.of(context)!.print,
+                                    ),
                                     style: OutlinedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 12),
+                                          vertical: 10),
                                       side:
                                           BorderSide(color: AppColors.primary),
                                     ),
@@ -347,10 +402,13 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.primary,
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 12),
+                                          vertical: 10),
                                     ),
-                                    child: const Text('Close',
-                                        style: TextStyle(color: Colors.white)),
+                                    child: Text(
+                                      AppLocalizations.of(context)!.close,
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -365,12 +423,12 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Error'),
+                      title: Text(AppLocalizations.of(context)!.error),
                       content: Text(message),
                       actions: [
                         TextButton(
                           onPressed: () => context.pop(),
-                          child: const Text('OK'),
+                          child: Text(AppLocalizations.of(context)!.ok),
                         ),
                       ],
                     ),
@@ -407,14 +465,15 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                           context: context,
                           builder: (context) {
                             return AlertDialog(
-                              title: const Text('Error'),
-                              content: const Text('Please input the price'),
+                              title: Text(AppLocalizations.of(context)!.error),
+                              content: Text(AppLocalizations.of(context)!
+                                  .pleaseInputThePrice),
                               actions: [
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
                                   },
-                                  child: const Text('OK'),
+                                  child: Text(AppLocalizations.of(context)!.ok),
                                 ),
                               ],
                             );
@@ -430,15 +489,15 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                           context: context,
                           builder: (context) {
                             return AlertDialog(
-                              title: const Text('Error'),
-                              content: const Text(
-                                  'The nominal is less than the total price'),
+                              title: Text(AppLocalizations.of(context)!.error),
+                              content: Text(AppLocalizations.of(context)!
+                                  .nominalIsLessThanTheTotalPrice),
                               actions: [
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
                                   },
-                                  child: const Text('OK'),
+                                  child: Text(AppLocalizations.of(context)!.ok),
                                 ),
                               ],
                             );
@@ -468,7 +527,7 @@ class _PaymentCashDialogState extends State<PaymentCashDialog> {
                           discountId: appliedDiscount?.data.firstOrNull?.id,
                         ));
                   },
-                  label: 'Pay',
+                  label: AppLocalizations.of(context)!.pay,
                 );
               }, error: (message) {
                 return const SizedBox();

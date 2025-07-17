@@ -18,15 +18,16 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       var currentStates = state as _Success;
       List<OrderItem> newCheckout = [...currentStates.products];
       emit(const _Loading());
-      
+
       final existingIndex = newCheckout.indexWhere(
         (element) => element.product == event.product,
       );
-      
+
       if (existingIndex != -1) {
         // Update quantity by creating a new OrderItem with updated quantity
         final existingItem = newCheckout[existingIndex];
-        newCheckout[existingIndex] = existingItem.withQuantity(existingItem.quantity + 1);
+        newCheckout[existingIndex] =
+            existingItem.withQuantity(existingItem.quantity + 1);
       } else {
         newCheckout.add(OrderItem(product: event.product, quantity: 1));
       }
@@ -36,7 +37,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       int totalPrice = 0;
       for (var element in newCheckout) {
         totalQuantity += element.quantity;
-        totalPrice += element.quantity * element.product.price.toInt();
+        totalPrice += element.quantity * element.product.price.round();
       }
 
       emit(_Success(
@@ -47,16 +48,16 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       var currentStates = state as _Success;
       List<OrderItem> newCheckout = [...currentStates.products];
       emit(const _Loading());
-      
+
       final existingIndex = newCheckout.indexWhere(
         (element) => element.product == event.product,
       );
-      
+
       if (existingIndex != -1) {
         final existingItem = newCheckout[existingIndex];
         if (existingItem.quantity > 1) {
           // Decrement quantity by creating a new OrderItem
-          newCheckout[existingIndex] = 
+          newCheckout[existingIndex] =
               existingItem.withQuantity(existingItem.quantity - 1);
         } else {
           newCheckout.removeAt(existingIndex);
@@ -68,7 +69,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       int totalPrice = 0;
       for (var element in newCheckout) {
         totalQuantity += element.quantity;
-        totalPrice += element.quantity * element.product.price.toInt();
+        totalPrice += element.quantity * element.product.price.round();
       }
 
       emit(_Success(
@@ -91,7 +92,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       int totalPrice = 0;
       for (var element in newCheckout) {
         totalQuantity += element.quantity;
-        totalPrice += element.quantity * element.product.price.toInt();
+        totalPrice += element.quantity * element.product.price.round();
       }
 
       emit(_Success(

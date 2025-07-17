@@ -1,7 +1,5 @@
 import 'dart:developer';
-import 'package:flutter_pos/data/models/order_item_model.dart';
 import 'package:flutter_pos/data/models/response/product_response_model.dart';
-import 'package:flutter_pos/presentation/order/bloc/qris/models/order_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../presentation/home/models/draft_order_item.dart';
@@ -11,7 +9,10 @@ import '../models/response/discount_response_model.dart';
 import '../models/response/tax_response_model.dart';
 import '../models/response/service_charge_response_model.dart';
 import '../models/response/customer_response_model.dart';
+import '../models/request/customer_request_model.dart';
 import 'package:flutter_pos/core/constants/db_config.dart';
+import 'dart:convert';
+import '../../core/utils/db_initializer.dart';
 
 class ProductLocalDatasource {
   ProductLocalDatasource._init();
@@ -29,182 +30,18 @@ class ProductLocalDatasource {
     return await openDatabase(
       path,
       version: kDatabaseVersion, // Ambil dari config
-      onCreate: _createDB,
+      onCreate: (db, version) async {
+        await createAllTables(db, version);
+      },
       onUpgrade: (db, oldVersion, newVersion) async {
-        // Drop all tables and recreate
-        await db.execute('DROP TABLE IF EXISTS $tableProducts');
-        await db.execute('DROP TABLE IF EXISTS orders');
-        await db.execute('DROP TABLE IF EXISTS categories');
-        await db.execute('DROP TABLE IF EXISTS discounts');
-        await db.execute('DROP TABLE IF EXISTS taxes');
-        await db.execute('DROP TABLE IF EXISTS service_charges');
-        await db.execute('DROP TABLE IF EXISTS customers');
-        await db.execute('DROP TABLE IF EXISTS order_items');
-        await db.execute('DROP TABLE IF EXISTS draft_orders');
-        await db.execute('DROP TABLE IF EXISTS draft_order_items');
-        await _createDB(db, newVersion);
+        await createAllTables(db, newVersion);
       },
     );
   }
 
-  Future<void> _createDB(Database db, int version) async {
-    // Drop existing tables to avoid conflicts
-    await db.execute('DROP TABLE IF EXISTS $tableProducts');
-    await db.execute('DROP TABLE IF EXISTS orders');
-    await db.execute('DROP TABLE IF EXISTS categories');
-    await db.execute('DROP TABLE IF EXISTS discounts');
-    await db.execute('DROP TABLE IF EXISTS taxes');
-    await db.execute('DROP TABLE IF EXISTS service_charges');
-    await db.execute('DROP TABLE IF EXISTS customers');
-    await db.execute('DROP TABLE IF EXISTS order_items');
-    await db.execute('DROP TABLE IF EXISTS draft_orders');
-    await db.execute('DROP TABLE IF EXISTS draft_order_items');
-    await db.execute('''
-      CREATE TABLE $tableProducts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        product_id INTEGER,
-        name TEXT,
-        description TEXT,
-        price INTEGER,
-        stock INTEGER,
-        category_id INTEGER,
-        sku TEXT,
-        unit_of_measure TEXT,
-        expired_date TEXT,
-        image TEXT,
-        is_best_seller INTEGER,
-        is_ready INTEGER,
-        is_sync INTEGER DEFAULT 0,
-        created_at TEXT,
-        updated_at TEXT,
-        deleted_at TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nominal INTEGER,
-        payment_method TEXT,
-        total_item INTEGER,
-        id_kasir INTEGER,
-        nama_kasir TEXT,
-        transaction_time TEXT,
-        is_sync INTEGER DEFAULT 0
-      )
-    ''');
-
-    //categories
-    await db.execute('''
-      CREATE TABLE categories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category_id INTEGER NULLABLE,
-        name TEXT
-      )
-    ''');
-
-    // discounts
-    await db.execute('''
-      CREATE TABLE discounts (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        description TEXT,
-        type TEXT,
-        value REAL,
-        status TEXT,
-        min_quantity REAL,
-        max_quantity REAL,
-        min_amount REAL,
-        buy_quantity INTEGER,
-        get_quantity INTEGER,
-        quantity_tiers TEXT,
-        apply_to TEXT,
-        applicable_items TEXT,
-        customer_type TEXT,
-        valid_days TEXT,
-        start_date TEXT,
-        expired_date TEXT,
-        start_time TEXT,
-        end_time TEXT,
-        combinable INTEGER,
-        usage_limit INTEGER,
-        usage_count INTEGER,
-        created_at TEXT,
-        updated_at TEXT,
-        deleted_at TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE taxes (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        rate REAL,
-        created_at TEXT,
-        updated_at TEXT,
-        deleted_at TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE service_charges (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        rate REAL,
-        created_at TEXT,
-        updated_at TEXT,
-        deleted_at TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE customers (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        phone_number TEXT,
-        email TEXT,
-        address TEXT,
-        city TEXT,
-        state TEXT,
-        postal_code TEXT,
-        customer_type TEXT,
-        created_at TEXT,
-        updated_at TEXT,
-        deleted_at TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE order_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_order INTEGER,
-        id_product INTEGER,
-        quantity INTEGER,
-        price INTEGER
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE draft_orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        total_item INTEGER,
-        nominal INTEGER,
-        transaction_time TEXT,
-        table_number INTEGER,
-        draft_name TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE draft_order_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_draft_order INTEGER,
-        id_product INTEGER,
-        quantity INTEGER,
-        price INTEGER
-      )
-    ''');
-  }
+  // Future<void> _createDB(Database db, int version) async {
+  //   // Tidak perlu lagi, sudah digantikan oleh createAllTables
+  // }
 
   // Customer methods
   Future<void> saveCustomer(CustomerResponseModel customer) async {
@@ -449,16 +286,6 @@ class ProductLocalDatasource {
     return result.map((e) => Category.fromLocal(e)).toList();
   }
 
-  //save order
-  Future<int> saveOrder(OrderModel order) async {
-    final db = await instance.database;
-    int id = await db.insert('orders', order.toMapForLocal());
-    for (var orderItem in order.orders) {
-      await db.insert('order_items', orderItem.toMapForLocal(id));
-    }
-    return id;
-  }
-
   //save draft order
   Future<int> saveDraftOrder(DraftOrderModel order) async {
     final db = await instance.database;
@@ -515,105 +342,10 @@ class ProductLocalDatasource {
     }
   }
 
-  //get order by isSync = 0
-  Future<List<OrderModel>> getOrderByIsSync() async {
-    final db = await instance.database;
-    final result = await db.query('orders', where: 'is_sync = 0');
-
-    return result.map((e) => OrderModel.fromLocalMap(e)).toList();
-  }
-
-  //get order item by id order
-  Future<List<OrderItem>> getOrderItemByOrderIdLocal(int idOrder) async {
-    final db = await instance.database;
-    final result = await db.query('order_items', where: 'id_order = $idOrder');
-
-    // Get all product IDs first
-    final productIds = result.map((e) => e['product_id'] as int).toList();
-
-    // Get all products in a single query
-    final products = await Future.wait(
-      productIds.map((id) => getProductById(id)),
-    );
-
-    // Create a map of product ID to Product
-    final productMap = {for (var product in products) product?.id: product};
-
-    // Convert each order item
-    return result.map((e) {
-      final product = productMap[e['product_id'] as int]!;
-      return OrderItem(
-        product: product,
-        quantity: e['quantity'] as int,
-        id: e['id'] as int?,
-        orderId: e['order_id'] as int?,
-        createdAt: e['created_at'] != null
-            ? DateTime.parse(e['created_at'] as String)
-            : null,
-        updatedAt: e['updated_at'] != null
-            ? DateTime.parse(e['updated_at'] as String)
-            : null,
-      );
-    }).toList();
-  }
-
-  //update isSync order by id
-  Future<int> updateIsSyncOrderById(int id) async {
-    final db = await instance.database;
-    return await db.update('orders', {'is_sync': 1},
-        where: 'id = ?', whereArgs: [id]);
-  }
-
-  //get all orders
-  Future<List<OrderModel>> getAllOrder() async {
-    final db = await instance.database;
-    final result = await db.query('orders', orderBy: 'id DESC');
-
-    List<OrderModel> results = await Future.wait(result.map((item) async {
-      // Your asynchronous operation here
-      final orderItem = await getOrderItemByOrderId(item['id'] as int);
-      return OrderModel.newFromLocalMap(item, orderItem);
-    }));
-    return results;
-    // return result.map((e) {
-    //   return OrderModel.fromLocalMap(e);
-    // }).toList();
-  }
-
-  //get order item by id order
-  Future<List<OrderItem>> getOrderItemByOrderId(int idOrder) async {
-    final db = await instance.database;
-    final result = await db
-        .query('order_items', where: 'id_order = ?', whereArgs: [idOrder]);
-
-    List<OrderItem> results = await Future.wait(result.map((item) async {
-      // Ensure id_product is not null before fetching the product
-      final idProduct = item['id_product'] as int?;
-      if (idProduct != null) {
-        final product = await getProductById(idProduct);
-        return OrderItem(product: product!, quantity: item['quantity'] as int);
-      } else {
-        // Handle the case where id_product is null
-        throw Exception('Product ID is null for order item: $item');
-      }
-    }));
-
-    return results;
-  }
-
   Future<Database> get database async {
-    if (_database != null) return _database!;
-
-    try {
-      _database = await _initDB(
-          kDatabaseName); // Ganti nama file db agar pasti recreate
-      return _database!;
-    } catch (e) {
-      // If there's an error, delete the database and try again
-      await deleteDatabase(kDatabaseName);
-      _database = await _initDB(kDatabaseName);
-      return _database!;
-    }
+    if (_database != null && _database!.isOpen) return _database!;
+    _database = await _initDB(kDatabaseName);
+    return _database!;
   }
 
   //remove all data product
@@ -877,10 +609,12 @@ class ProductLocalDatasource {
   //insert all customers
   Future<void> insertAllCustomer(List<CustomerResponseModel> customers) async {
     final db = await instance.database;
-    await db.delete('customers');
+    // Hanya hapus customer yang sudah tersinkronisasi (is_synced=1), biarkan yang offline tetap ada
+    await db.delete('customers', where: 'is_synced = 1');
     final batch = db.batch();
     for (var c in customers) {
-      batch.insert('customers', _customerToMap(c));
+      batch.insert('customers', _customerToMap(c),
+          conflictAlgorithm: ConflictAlgorithm.replace);
     }
     await batch.commit(noResult: true);
   }
@@ -898,6 +632,40 @@ class ProductLocalDatasource {
     return result.map((e) => _customerFromMap(e)).toList();
   }
 
+  // Get unsynced customers (is_synced = 0 and request_json IS NOT NULL)
+  Future<List<CustomerResponseModel>> getUnsyncedCustomers() async {
+    final db = await instance.database;
+    final result = await db.query('customers',
+        where: 'is_synced = 0 AND request_json IS NOT NULL');
+    return result.map((e) => _customerFromMap(e)).toList();
+  }
+
+  // Hapus customer lokal yang tidak valid (is_synced = 0 dan request_json IS NULL)
+  Future<void> removeInvalidUnsyncedCustomers() async {
+    final db = await instance.database;
+    await db.delete('customers',
+        where: 'is_synced = 0 AND request_json IS NULL');
+  }
+
+  // Update customer sync status
+  Future<void> updateCustomerSyncStatus(int id, bool isSynced) async {
+    final db = await instance.database;
+    await db.update('customers', {'is_synced': isSynced ? 1 : 0},
+        where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Save customer with sync flag (request is required for offline customer)
+  Future<void> saveCustomerWithSyncFlag(CustomerResponseModel customer,
+      {required CustomerRequestModel request, bool isSynced = false}) async {
+    final db = await instance.database;
+    final map = _customerToMap(customer);
+    map['is_synced'] = isSynced ? 1 : 0;
+    map['request_json'] =
+        request.toJson() != null ? json.encode(request.toJson()) : null;
+    await db.insert('customers', map,
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
   Map<String, dynamic> _customerToMap(CustomerResponseModel c) => {
         'id': c.id,
         'name': c.name,
@@ -911,6 +679,7 @@ class ProductLocalDatasource {
         'created_at': c.createdAt?.toIso8601String(),
         'updated_at': c.updatedAt?.toIso8601String(),
         'deleted_at': c.deletedAt?.toIso8601String(),
+        'request_json': c.requestJson,
       };
 
   CustomerResponseModel _customerFromMap(Map<String, dynamic> map) {
@@ -933,6 +702,7 @@ class ProductLocalDatasource {
       deletedAt: map['deleted_at'] != null
           ? DateTime.tryParse(map['deleted_at'])
           : null,
+      requestJson: map['request_json'] as String?,
     );
   }
 
@@ -945,6 +715,20 @@ class ProductLocalDatasource {
       {'usage_count': newUsageCount},
       where: 'id = ?',
       whereArgs: [discountId],
+    );
+  }
+
+  // Update all offline orders with old customer_id to new customer_id (server)
+  Future<void> updateOfflineOrdersCustomerId({
+    required int oldCustomerId,
+    required int newCustomerId,
+  }) async {
+    final db = await instance.database;
+    await db.update(
+      'offline_orders',
+      {'customer_id': newCustomerId},
+      where: 'customer_id = ?',
+      whereArgs: [oldCustomerId],
     );
   }
 }

@@ -17,8 +17,15 @@ class ProductCard extends StatelessWidget {
     required this.data,
   });
 
+  // Check if the screen width is tablet size (600dp or wider)
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= 600;
+
   @override
   Widget build(BuildContext context) {
+    final isTablet = _isTablet(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Stack(
       children: [
         GestureDetector(
@@ -26,80 +33,159 @@ class ProductCard extends StatelessWidget {
             context.read<CheckoutBloc>().add(CheckoutEvent.addCheckout(data));
           },
           child: Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: isTablet
+                ? const EdgeInsets.all(20.0)
+                : const EdgeInsets.all(16.0),
             decoration: ShapeDecoration(
               shape: RoundedRectangleBorder(
-                side: const BorderSide(width: 1, color: AppColors.card),
+                side: BorderSide(
+                    width: 1,
+                    color: isDark
+                        ? Theme.of(context).dividerColor
+                        : AppColors.card),
                 borderRadius: BorderRadius.circular(20),
               ),
-              color: AppColors.white,
+              color: isDark
+                  ? Theme.of(context).colorScheme.surface
+                  : AppColors.white,
+              shadows: isTablet
+                  ? [
+                      BoxShadow(
+                        color: isDark
+                            ? Theme.of(context).shadowColor.withOpacity(0.1)
+                            : Colors.grey.withValues(alpha: 0.1),
+                        spreadRadius: 2,
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: isTablet
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
               children: [
+                // Product Image
                 Container(
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.all(12.0),
+                  padding: isTablet
+                      ? const EdgeInsets.all(16.0)
+                      : const EdgeInsets.all(12.0),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.disabled.withValues(alpha: 0.4),
+                    color: isDark
+                        ? Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.08)
+                        : AppColors.disabled.withValues(alpha: 0.2),
+                    border: isTablet
+                        ? Border.all(
+                            color: isDark
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.1)
+                                : AppColors.primary.withValues(alpha: 0.1),
+                            width: 1.5)
+                        : null,
                   ),
                   child: ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(50.0)),
                     child: CachedNetworkImage(
-                      height: 50,
-                      fit: BoxFit.fitWidth,
+                      height: isTablet ? 70 : 50,
+                      fit: BoxFit.contain,
                       imageUrl: '${Variables.imageBaseUrl}${data.image}',
-                      placeholder: (context, url) =>
-                          const Center(child: CircularProgressIndicator()),
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
                       errorWidget: (context, url, error) => Image.asset(
                         'assets/logo/logo.png',
-                        height: 50,
+                        height: isTablet ? 70 : 50,
                         fit: BoxFit.contain,
                       ),
                     ),
                   ),
                 ),
+
                 const SpaceHeight(16.0),
+
+                // Product Name
                 Text(
                   data.name,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  textAlign: isTablet ? TextAlign.center : TextAlign.left,
+                  style: TextStyle(
+                    fontSize: isTablet ? 16 : 14,
                     fontWeight: FontWeight.w700,
+                    height: 1.2,
+                    color: isDark
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Colors.black,
                   ),
-                  maxLines: 1,
+                  maxLines: isTablet ? 2 : 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SpaceHeight(8.0),
+
+                SpaceHeight(isTablet ? 12.0 : 8.0),
+
+                // Category
                 Text(
                   data.categoryId.toString(),
-                  style: const TextStyle(
-                    color: AppColors.grey,
-                    fontSize: 12,
+                  textAlign: isTablet ? TextAlign.center : TextAlign.left,
+                  style: TextStyle(
+                    color: isDark
+                        ? Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.6)
+                        : AppColors.grey,
+                    fontSize: isTablet ? 13 : 12,
+                    fontWeight: isTablet ? FontWeight.w500 : FontWeight.normal,
                   ),
                 ),
-                const SpaceHeight(8.0),
+
+                const Spacer(),
+
+                // Price and Add Button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Flexible(
                       child: Text(
                         data.price.toInt().currencyFormatRp,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
+                          fontSize: isTablet ? 15 : 14,
+                          color: isDark
+                              ? Theme.of(context).colorScheme.primary
+                              : (isTablet ? AppColors.primary : Colors.black),
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          color: AppColors.primary,
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                        )),
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.0),
+                        color: AppColors.primary,
+                        boxShadow: isTablet
+                            ? [
+                                BoxShadow(
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                )
+                              ]
+                            : null,
+                      ),
+                      child: Icon(
+                        Icons.add,
+                        size: isTablet ? 20 : 18,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -111,32 +197,34 @@ class ProductCard extends StatelessWidget {
             return state.maybeWhen(
               orElse: () => const SizedBox(),
               success: (products, qty, price, _) {
-                if (qty == 0) {
+                if (qty == 0 || products.isEmpty) {
                   return const SizedBox();
                 }
-                return products.any((element) => element.product == data)
-                    ? products
-                                .firstWhere(
-                                    (element) => element.product == data)
-                                .quantity >
-                            0
-                        ? Positioned(
-                            top: 8,
-                            right: 8,
-                            child: CircleAvatar(
-                              backgroundColor: AppColors.primary,
-                              child: Text(
-                                products
-                                    .firstWhere(
-                                        (element) => element.product == data)
-                                    .quantity
-                                    .toString(),
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          )
-                        : const SizedBox()
-                    : const SizedBox();
+
+                try {
+                  final productInCart = products.firstWhere(
+                    (element) => element.product == data,
+                  );
+
+                  if (productInCart.quantity > 0) {
+                    return Positioned(
+                      top: 8,
+                      right: 8,
+                      child: CircleAvatar(
+                        backgroundColor: AppColors.primary,
+                        child: Text(
+                          productInCart.quantity.toString(),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  // Product not found in cart
+                }
+
+                // Default return for all other cases
+                return const SizedBox();
               },
             );
           },

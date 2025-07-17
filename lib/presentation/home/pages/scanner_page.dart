@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_pos/core/extensions/build_context_ext.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../bloc/product/product_bloc.dart';
 
 class ScannerPage extends StatefulWidget {
@@ -25,15 +26,15 @@ class _ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
 
   Widget _buildBarcode(Barcode? value) {
     if (value == null) {
-      return const Text(
-        'Scan something!',
+      return Text(
+        AppLocalizations.of(context)!.scanSomething,
         overflow: TextOverflow.fade,
-        style: TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white),
       );
     }
 
     return Text(
-      value.displayValue ?? 'No display value.',
+      value.displayValue ?? AppLocalizations.of(context)!.noDisplayValue,
       overflow: TextOverflow.fade,
       style: const TextStyle(color: Colors.white),
     );
@@ -108,7 +109,7 @@ class _ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
             Navigator.pop(context);
           },
         ),
-        title: const Text('Scanning'),
+        title: Text(AppLocalizations.of(context)!.scanning),
         actions: [
           IconButton(
             color: Colors.white,

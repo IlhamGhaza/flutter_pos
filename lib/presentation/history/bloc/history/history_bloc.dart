@@ -15,34 +15,42 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
     on<_Fetch>((event, emit) async {
       emit(const HistoryState.loading());
       try {
-        // Retrieve offline orders with their items
-        final rawData = await OrderLocalDatasource.instance.getAllOfflineOrders();
+        // Retrieve offline orders with their items and product details (JOIN)
+        final rawData = await OrderLocalDatasource.instance
+            .getAllOfflineOrdersWithProductJoin();
 
         // Convert to OrderModel list expected by UI
         final histories = await Future.wait(rawData.map((e) async {
           final orderMap = e['order'] as Map<String, dynamic>;
           final itemsMap = (e['items'] as List).cast<Map<String, dynamic>>();
 
-          // Build order items with product detail lookup
-          final orderItems = await Future.wait(itemsMap.map((item) async {
-            final productId = item['product_id'] as int? ?? 0;
-            Product? product = await ProductLocalDatasource.instance.getProductById(productId);
-
-            product ??= Product(
+          // Build order items with product detail from join
+          final orderItems = itemsMap.map((item) {
+            // Data produk hasil join (prefix p.)
+            final productId = (item['product_id'] ?? item['id'] ?? 0) as int;
+            final product = Product(
               id: productId,
-              name: item['product_name'] as String? ?? 'Unknown',
-              categoryId: 0,
-              sku: '',
-              description: '',
+              name: item['name'] as String? ??
+                  item['product_name'] as String? ??
+                  'Unknown',
+              categoryId: item['category_id'] as int? ?? 0,
+              sku: item['sku'] as String? ?? '',
+              description: item['description'] as String? ?? '',
               price: (item['price'] as num?)?.toDouble() ?? 0.0,
-              unitOfMeasure: 'pcs',
-              expiredDate: null,
-              stock: 0,
-              image: '',
-              isBestSeller: false,
-              isReady: true,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
+              unitOfMeasure: item['unit_of_measure'] as String? ?? 'pcs',
+              expiredDate: item['expired_date'] != null
+                  ? DateTime.tryParse(item['expired_date'])
+                  : null,
+              stock: item['stock'] as int? ?? 0,
+              image: item['image'] as String? ?? '',
+              isBestSeller: (item['is_best_seller'] as int?) == 1,
+              isReady: (item['is_ready'] as int?) != 0,
+              createdAt: item['created_at'] != null
+                  ? DateTime.tryParse(item['created_at']) ?? DateTime.now()
+                  : DateTime.now(),
+              updatedAt: item['updated_at'] != null
+                  ? DateTime.tryParse(item['updated_at']) ?? DateTime.now()
+                  : DateTime.now(),
             );
 
             return OrderItem(
@@ -50,17 +58,22 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
               quantity: item['quantity'] as int? ?? 0,
               id: item['id'] as int?,
               orderId: item['order_id'] as int?,
-              createdAt: item['created_at'] != null ? DateTime.tryParse(item['created_at']) : null,
-              updatedAt: item['updated_at'] != null ? DateTime.tryParse(item['updated_at']) : null,
+              createdAt: item['created_at'] != null
+                  ? DateTime.tryParse(item['created_at'])
+                  : null,
+              updatedAt: item['updated_at'] != null
+                  ? DateTime.tryParse(item['updated_at'])
+                  : null,
             );
-          }));
+          }).toList();
 
           return OrderModel(
             id: orderMap['id'] as int?,
             paymentMethod: orderMap['payment_method'] as String? ?? 'Cash',
             nominalBayar: (orderMap['payment_amount'] ?? 0).toInt(),
             orders: orderItems,
-            totalQuantity: orderMap['total_item']?.toInt() ?? orderItems.fold<int>(0, (sum, item) => sum + item.quantity),
+            totalQuantity: orderMap['total_item']?.toInt() ??
+                orderItems.fold<int>(0, (sum, item) => sum + item.quantity),
             totalPrice: (orderMap['total_price'] ?? 0).toInt(),
             idKasir: orderMap['kasir_id']?.toInt() ?? 0,
             namaKasir: orderMap['kasir_name'] as String? ?? 'Kasir',

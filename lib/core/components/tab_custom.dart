@@ -18,10 +18,12 @@ class TabCustom extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Container(
       margin: padding,
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.primary, width: 1.5),
+        border: Border.all(color: theme.colorScheme.primary, width: 1.5),
         borderRadius: const BorderRadius.all(Radius.circular(9.0)),
       ),
       child: Row(
@@ -45,6 +47,8 @@ class TabMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Flexible(
       child: InkWell(
         onTap: onTap,
@@ -53,13 +57,13 @@ class TabMenu extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-            color: isActive ? AppColors.primary : AppColors.white,
+            color: isActive ? theme.colorScheme.primary : theme.cardColor,
           ),
           child: Center(
             child: Text(
               label,
               style: TextStyle(
-                color: isActive ? AppColors.white : AppColors.primary,
+                color: isActive ? Colors.white : theme.colorScheme.primary,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),

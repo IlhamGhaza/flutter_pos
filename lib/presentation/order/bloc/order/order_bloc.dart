@@ -106,7 +106,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       emit(OrderState.success(
         event.orders,
         totalQuantity,
-        totalPrice.toInt(),
+        totalPrice.round(),
         subTotal: subTotal,
         discountPercentage: totalDiscountAmount > 0
             ? (totalDiscountAmount / subTotal) * 100
@@ -119,9 +119,9 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         idKasir: user.user.id ?? 0,
         namaKasir: user.user.name ?? 'Kasir',
         customerName: event.customerName,
-        tax: taxAmount.toInt(),
+        tax: taxAmount.round(),
         taxRate: taxRate,
-        serviceCharge: serviceChargeAmount.toInt(),
+        serviceCharge: serviceChargeAmount.round(),
         serviceChargeRate: serviceChargeRate,
       ));
     } catch (e) {
@@ -508,15 +508,15 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       final totalPrice = afterDiscount + taxAmount + serviceChargeAmount;
 
       emit(state.copyWith(
-        totalPrice: totalPrice.toInt(),
+        totalPrice: totalPrice.round(),
         discountPercentage: totalDiscountAmount > 0
             ? (totalDiscountAmount / state.subTotal) * 100
             : 0.0,
         appliedDiscount:
             event.discounts.isNotEmpty ? event.discounts.last : null,
         appliedDiscounts: event.discounts,
-        tax: taxAmount.toInt(),
-        serviceCharge: serviceChargeAmount.toInt(),
+        tax: taxAmount.round(),
+        serviceCharge: serviceChargeAmount.round(),
       ));
     } catch (e) {
       emit(OrderState.error('Failed to apply discounts: $e'));

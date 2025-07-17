@@ -11,7 +11,8 @@ class OrderItemModel {
     required this.price,
   });
 
-  factory OrderItemModel.fromJson(String str) => OrderItemModel.fromMap(json.decode(str));
+  factory OrderItemModel.fromJson(String str) =>
+      OrderItemModel.fromMap(json.decode(str));
 
   String toJson() => json.encode(toMap());
 
@@ -46,6 +47,7 @@ class OrderRequestModel {
   final String orderType;
   final String? customerOrderNotes;
   final List<OrderItemModel> orderItems;
+  final int? isSyncedFromMobile;
 
   OrderRequestModel({
     required this.transactionTime,
@@ -65,13 +67,16 @@ class OrderRequestModel {
     required this.orderType,
     this.customerOrderNotes,
     required this.orderItems,
+    this.isSyncedFromMobile,
   });
 
-  factory OrderRequestModel.fromJson(String str) => OrderRequestModel.fromMap(json.decode(str));
+  factory OrderRequestModel.fromJson(String str) =>
+      OrderRequestModel.fromMap(json.decode(str));
 
   String toJson() => json.encode(toMap());
 
-  factory OrderRequestModel.fromMap(Map<String, dynamic> json) => OrderRequestModel(
+  factory OrderRequestModel.fromMap(Map<String, dynamic> json) =>
+      OrderRequestModel(
         transactionTime: json["transaction_time"] as String,
         kasirId: json["kasir_id"] as int,
         customerId: json["customer_id"] as int,
@@ -88,8 +93,9 @@ class OrderRequestModel {
         changeAmount: (json["change_amount"] as num).toDouble(),
         orderType: json["order_type"] as String,
         customerOrderNotes: json["customer_order_notes"],
-        orderItems: List<OrderItemModel>.from(
-            (json["order_items"] as List).map((x) => OrderItemModel.fromMap(x))),
+        orderItems: List<OrderItemModel>.from((json["order_items"] as List)
+            .map((x) => OrderItemModel.fromMap(x))),
+        isSyncedFromMobile: json["is_synced_from_mobile"],
       );
 
   Map<String, dynamic> toMap() => {
@@ -108,7 +114,9 @@ class OrderRequestModel {
         'payment_amount': paymentAmount,
         'change_amount': changeAmount,
         'order_type': orderType,
-        if (customerOrderNotes != null) 'customer_order_notes': customerOrderNotes,
+        if (customerOrderNotes != null)
+          'customer_order_notes': customerOrderNotes,
         'order_items': orderItems.map((item) => item.toMap()).toList(),
+        'is_synced_from_mobile': isSyncedFromMobile ?? 1,
       };
 }
