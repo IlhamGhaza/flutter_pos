@@ -286,7 +286,7 @@ class _DashboardPageState extends State<DashboardPage> {
             blurStyle: BlurStyle.outer,
             spreadRadius: 0,
             color: isDark
-                ? theme.shadowColor.withOpacity(0.08)
+                ? theme.shadowColor.withValues(alpha: 0.08)
                 : AppColors.black.withValues(alpha: 0.08),
           ),
         ],

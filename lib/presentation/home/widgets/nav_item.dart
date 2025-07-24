@@ -21,7 +21,7 @@ class NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -34,14 +34,18 @@ class NavItem extends StatelessWidget {
                     iconPath,
                     width: 25.0,
                     height: 25.0,
-                    color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: isActive
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   )
                 : SvgPicture.asset(
                     iconPath,
                     width: 25.0,
                     height: 25.0,
                     colorFilter: ColorFilter.mode(
-                      isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.6),
+                      isActive
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       BlendMode.srcIn,
                     ),
                   ),
@@ -50,7 +54,9 @@ class NavItem extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.6),
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -60,9 +66,9 @@ class NavItem extends StatelessWidget {
   }
 
   bool get isImage {
-    return iconPath.contains('.png') || 
-           iconPath.contains('.jpg') || 
-           iconPath.contains('.jpeg') ||
-           iconPath == Assets.images.logo.path;
+    return iconPath.contains('.png') ||
+        iconPath.contains('.jpg') ||
+        iconPath.contains('.jpeg') ||
+        iconPath == Assets.images.logo.path;
   }
 }

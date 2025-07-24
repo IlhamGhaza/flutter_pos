@@ -318,7 +318,9 @@ class _ReportPageState extends State<ReportPage> {
                       color: Theme.of(context).cardColor,
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).shadowColor.withOpacity(0.1),
+                          color: Theme.of(context)
+                              .shadowColor
+                              .withValues(alpha: 0.1),
                           spreadRadius: 5,
                           blurRadius: 7,
                           offset: const Offset(0, 3),
@@ -377,7 +379,9 @@ class _ReportPageState extends State<ReportPage> {
                     color: Theme.of(context).cardColor,
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).shadowColor.withOpacity(0.1),
+                        color: Theme.of(context)
+                            .shadowColor
+                            .withValues(alpha: 0.1),
                         spreadRadius: 5,
                         blurRadius: 7,
                         offset: const Offset(0, 3),
@@ -417,8 +421,10 @@ class _ReportPageState extends State<ReportPage> {
                   const Text('No offline order data.')
                 else ...[
                   Card(
-                    color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.07),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.07),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     child: Padding(
@@ -575,7 +581,7 @@ class _ReportPageState extends State<ReportPage> {
       width: width,
       height: 56,
       color: isDark
-          ? Theme.of(context).colorScheme.primary.withOpacity(0.18)
+          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.18)
           : Theme.of(context).colorScheme.primary,
       alignment: Alignment.centerLeft,
       child: Center(
@@ -588,7 +594,7 @@ class _ReportPageState extends State<ReportPage> {
         ),
       ),
     );
-  } 
+  }
 
   Widget tableProductSales(List<Map<String, dynamic>> data) {
     const double itemHeight = 55.0;

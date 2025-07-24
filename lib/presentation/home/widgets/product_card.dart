@@ -52,7 +52,9 @@ class ProductCard extends StatelessWidget {
                   ? [
                       BoxShadow(
                         color: isDark
-                            ? Theme.of(context).shadowColor.withOpacity(0.1)
+                            ? Theme.of(context)
+                                .shadowColor
+                                .withValues(alpha: 0.1)
                             : Colors.grey.withValues(alpha: 0.1),
                         spreadRadius: 2,
                         blurRadius: 8,
@@ -78,7 +80,7 @@ class ProductCard extends StatelessWidget {
                         ? Theme.of(context)
                             .colorScheme
                             .primary
-                            .withOpacity(0.08)
+                            .withValues(alpha: 0.08)
                         : AppColors.disabled.withValues(alpha: 0.2),
                     border: isTablet
                         ? Border.all(
@@ -86,7 +88,7 @@ class ProductCard extends StatelessWidget {
                                 ? Theme.of(context)
                                     .colorScheme
                                     .primary
-                                    .withOpacity(0.1)
+                                    .withValues(alpha: 0.1)
                                 : AppColors.primary.withValues(alpha: 0.1),
                             width: 1.5)
                         : null,
@@ -138,7 +140,7 @@ class ProductCard extends StatelessWidget {
                         ? Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withOpacity(0.6)
+                            .withValues(alpha: 0.6)
                         : AppColors.grey,
                     fontSize: isTablet ? 13 : 12,
                     fontWeight: isTablet ? FontWeight.w500 : FontWeight.normal,
