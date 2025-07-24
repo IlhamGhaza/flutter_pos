@@ -97,10 +97,24 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       double serviceChargeRate = 0;
       int? taxId;
       int? serviceChargeId;
-      // TODO: Ambil tax/service charge dari event atau state jika ada
+      int taxAmount = 0;
+      int serviceChargeAmount = 0;
+      final currentState = state;
+      if (currentState is _Success) {
+        taxRate = currentState.taxRate ?? 0;
+        serviceChargeRate = currentState.serviceChargeRate ?? 0;
+        taxAmount = currentState.tax ?? 0;
+        serviceChargeAmount = currentState.serviceCharge ?? 0;
+      }
 
-      final taxAmount = afterDiscount * (taxRate / 100);
-      final serviceChargeAmount = afterDiscount * (serviceChargeRate / 100);
+      // Hitung ulang tax/service charge jika rate > 0
+      if (taxRate > 0) {
+        taxAmount = (afterDiscount * (taxRate / 100)).round();
+      }
+      if (serviceChargeRate > 0) {
+        serviceChargeAmount =
+            (afterDiscount * (serviceChargeRate / 100)).round();
+      }
       final totalPrice = afterDiscount + taxAmount + serviceChargeAmount;
 
       emit(OrderState.success(
@@ -119,9 +133,9 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         idKasir: user.user.id ?? 0,
         namaKasir: user.user.name ?? 'Kasir',
         customerName: event.customerName,
-        tax: taxAmount.round(),
+        tax: taxAmount,
         taxRate: taxRate,
-        serviceCharge: serviceChargeAmount.round(),
+        serviceCharge: serviceChargeAmount,
         serviceChargeRate: serviceChargeRate,
       ));
     } catch (e) {

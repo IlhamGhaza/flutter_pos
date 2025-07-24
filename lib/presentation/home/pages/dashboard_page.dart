@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_pos/core/utils/snackbar_utils.dart';
 import 'package:flutter_pos/core/widgets/responsive_layout.dart';
-import 'package:flutter_pos/presentation/desktop/desktop_layout.dart';
+import 'package:flutter_pos/presentation/home/pages/desktop/desktop_layout.dart';
 import 'package:flutter_pos/presentation/home/widgets/nav_item.dart';
-import 'package:flutter_pos/presentation/tablet/tablet_layout.dart';
+import 'package:flutter_pos/presentation/home/pages/tablet/tablet_layout.dart';
 import 'package:flutter_pos/presentation/history/pages/history_page.dart';
 import 'package:flutter_pos/presentation/home/pages/home_page.dart';
 import 'package:flutter_pos/presentation/order/pages/order_page.dart';
@@ -20,7 +20,8 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  int _selectedIndex = 0;
+  // Logout button with distinct styling
+  late final Map<String, dynamic> _logoutButton;
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -28,6 +29,29 @@ class _DashboardPageState extends State<DashboardPage> {
     const HistoryPage(),
     const SettingPage(),
   ];
+
+  int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _logoutButton = {
+      'icon': Icons.logout_outlined,
+      'activeIcon': Icons.logout,
+      'label': 'Logout',
+      'color': Colors.red,
+      'onTap': () {
+        // Handle logout
+        if (mounted) {
+          SnackbarUtils(
+            text: 'Logout',
+            backgroundColor: Colors.red,
+          ).showErrorSnackBar(context);
+        }
+      },
+    };
+  }
 
   // Navigation items for sidebar with improved styling
   // For mobile: Home (0), Orders (1), History (2), Setting (3)
@@ -98,30 +122,6 @@ class _DashboardPageState extends State<DashboardPage> {
     return items;
   }
 
-  // Logout button with distinct styling
-  late final Map<String, dynamic> _logoutButton;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _logoutButton = {
-      'icon': Icons.logout_outlined,
-      'activeIcon': Icons.logout,
-      'label': 'Logout',
-      'color': Colors.red,
-      'onTap': () {
-        // Handle logout
-        if (mounted) {
-          SnackbarUtils(
-            text: 'Logout',
-            backgroundColor: Colors.red,
-          ).showErrorSnackBar(context);
-        }
-      },
-    };
-  }
-
   // Sidebar theme data
   SidebarTheme _getSidebarTheme(BuildContext context) {
     return SidebarTheme(
@@ -147,16 +147,6 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() {
       _selectedIndex = _getPageIndex(navIndex);
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final _sidebarTheme = _getSidebarTheme(context);
-    return ResponsiveLayout(
-      mobileScaffold: _buildMobileLayout(),
-      tabletScaffold: _buildSidebarLayout(_sidebarTheme),
-      desktopScaffold: _buildSidebarLayout(_sidebarTheme),
-    );
   }
 
   Widget _buildMobileLayout() {
@@ -397,23 +387,20 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final _sidebarTheme = _getSidebarTheme(context);
+    return ResponsiveLayout(
+      mobileScaffold: _buildMobileLayout(),
+      tabletScaffold: _buildSidebarLayout(_sidebarTheme),
+      desktopScaffold: _buildSidebarLayout(_sidebarTheme),
+    );
+  }
 }
 
 // Theme data for the sidebar
 class SidebarTheme {
-  final Color backgroundColor;
-  final double headerHeight;
-  final double itemHeight;
-  final double iconSize;
-  final TextStyle textStyle;
-  final Color selectedItemColor;
-  final Color unselectedItemColor;
-  final Color selectedBackgroundColor;
-  final Color hoverColor;
-  final double borderRadius;
-  final double spacing;
-  final EdgeInsetsGeometry padding;
-
   const SidebarTheme({
     required this.backgroundColor,
     required this.headerHeight,
@@ -428,4 +415,17 @@ class SidebarTheme {
     required this.spacing,
     required this.padding,
   });
+
+  final Color backgroundColor;
+  final double borderRadius;
+  final double headerHeight;
+  final Color hoverColor;
+  final double iconSize;
+  final double itemHeight;
+  final EdgeInsetsGeometry padding;
+  final Color selectedBackgroundColor;
+  final Color selectedItemColor;
+  final double spacing;
+  final TextStyle textStyle;
+  final Color unselectedItemColor;
 }

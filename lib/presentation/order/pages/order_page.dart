@@ -1434,6 +1434,7 @@ class _OrderPageState extends State<OrderPage> {
                               ],
                             ),
                             const SpaceHeight(20.0),
+                            //payment method
                             ValueListenableBuilder(
                               valueListenable: indexValue,
                               builder: (context, value, _) => Row(
@@ -1445,6 +1446,26 @@ class _OrderPageState extends State<OrderPage> {
                                       isActive: value == 1,
                                       onPressed: () {
                                         indexValue.value = 1;
+                                        // Auto-apply tax if not active
+                                        if (!_isTaxActive &&
+                                            _selectedTax != null) {
+                                          setState(() {
+                                            _isTaxActive = true;
+                                          });
+                                          context.read<OrderBloc>().add(
+                                              OrderEvent.applyTax(
+                                                  _selectedTax!));
+                                        }
+                                        // Auto-apply service charge if not active
+                                        if (!_isServiceChargeActive &&
+                                            _selectedServiceCharge != null) {
+                                          setState(() {
+                                            _isServiceChargeActive = true;
+                                          });
+                                          context.read<OrderBloc>().add(
+                                              OrderEvent.applyServiceCharge(
+                                                  _selectedServiceCharge!));
+                                        }
                                         context.read<OrderBloc>().add(
                                             OrderEvent.addPaymentMethod(
                                                 'Tunai', data, draftName));
@@ -1459,6 +1480,26 @@ class _OrderPageState extends State<OrderPage> {
                                       isActive: value == 2,
                                       onPressed: () {
                                         indexValue.value = 2;
+                                        // Auto-apply tax if not active
+                                        if (!_isTaxActive &&
+                                            _selectedTax != null) {
+                                          setState(() {
+                                            _isTaxActive = true;
+                                          });
+                                          context.read<OrderBloc>().add(
+                                              OrderEvent.applyTax(
+                                                  _selectedTax!));
+                                        }
+                                        // Auto-apply service charge if not active
+                                        if (!_isServiceChargeActive &&
+                                            _selectedServiceCharge != null) {
+                                          setState(() {
+                                            _isServiceChargeActive = true;
+                                          });
+                                          context.read<OrderBloc>().add(
+                                              OrderEvent.applyServiceCharge(
+                                                  _selectedServiceCharge!));
+                                        }
                                         context.read<OrderBloc>().add(
                                             OrderEvent.addPaymentMethod(
                                                 'QRIS', data, draftName));

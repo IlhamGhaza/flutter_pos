@@ -582,7 +582,7 @@ class _ReportPageState extends State<ReportPage> {
         child: Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
         ),
