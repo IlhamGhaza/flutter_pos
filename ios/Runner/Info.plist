@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIFileSharingEnabled</key>
+	<false/>
+	<key>NSUbiquitousContainers</key>
+	<dict/>
 </dict>
 </plist>
