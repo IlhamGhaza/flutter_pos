@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dartz/dartz.dart';
@@ -89,6 +90,63 @@ class ProductRemoteDatasource {
     } else {
       log('failed to get all category response: ${response.body}');
       return left(response.body);
+    }
+  }
+
+  // add category
+  Future<Either<String, int>> addCategory(String name) async {
+    try {
+      final authData = await AuthLocalDatasource().getAuthData();
+      final response = await http.post(
+        Uri.parse('${Variables.baseUrl}/api/categories'),
+        headers: {
+          'Authorization': 'Bearer ${authData.token}',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: '{"name":"$name"}',
+      );
+      if (response.statusCode == 201) {
+        log('Success to add category response: ${response.body}');
+        try {
+          final jsonBody = json.decode(response.body) as Map<String, dynamic>;
+          final data = jsonBody['data'] as Map<String, dynamic>;
+          final id = (data['id'] as num).toInt();
+          return right(id);
+        } catch (e) {
+          return left('Invalid response format: ${response.body}');
+        }
+      } else {
+        log('Failed to add category response: ${response.statusCode} - ${response.body}');
+        return left(response.body);
+      }
+    } catch (e) {
+      log('Exception when adding category: $e');
+      return left(e.toString());
+    }
+  }
+
+  // delete category
+  Future<Either<String, bool>> deleteCategory(int id) async {
+    try {
+      final authData = await AuthLocalDatasource().getAuthData();
+      final response = await http.delete(
+        Uri.parse('${Variables.baseUrl}/api/categories/$id'),
+        headers: {
+          'Authorization': 'Bearer ${authData.token}',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        log('Success to delete category response: ${response.body}');
+        return right(true);
+      } else {
+        log('Failed to delete category response: ${response.statusCode} - ${response.body}');
+        return left(response.body);
+      }
+    } catch (e) {
+      log('Exception when deleting category: $e');
+      return left(e.toString());
     }
   }
 }

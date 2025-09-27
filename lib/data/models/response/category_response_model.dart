@@ -75,7 +75,7 @@ class Category {
   factory Category.fromLocal(Map<String, dynamic> json) {
     try {
       return Category(
-        id: (json["category_id"] as num?)?.toInt() ?? 0,
+        id: (json["category_id"] as num?)?.toInt() ?? (json["id"] as num?)?.toInt() ?? 0,
         name: (json["name"] as String?) ?? 'Unknown Category',
       );
     } catch (e) {
