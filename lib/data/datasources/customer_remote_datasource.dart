@@ -17,7 +17,7 @@ class CustomerRemoteDatasource {
       },
     );
     if (response.statusCode == 200) {
-      log('Success to get all customer response: ${response.body}');
+      log('Success to get all customer response: ${response.body}', name: 'CustomerRemoteDatasource');
       final data = json.decode(response.body);
       if (data is List) {
         return CustomerResponseModel.fromList(data);
@@ -27,7 +27,7 @@ class CustomerRemoteDatasource {
         throw Exception('Unexpected response format');
       }
     } else {
-      log('failed to get all customer response: ${response.body}');
+      log('failed to get all customer response: ${response.body}', name: 'CustomerRemoteDatasource');
       throw Exception('Failed to load customers');
     }
   }
@@ -39,9 +39,9 @@ class CustomerRemoteDatasource {
     final requestBody = json.encode(customer.toJson());
     final url = '${Variables.baseUrl}/api/customers';
 
-    log('CustomerRemoteDatasource: Making POST request to $url');
-    log('CustomerRemoteDatasource: Request body: $requestBody');
-    log('CustomerRemoteDatasource: Auth token: ${authData.token}');
+    log('CustomerRemoteDatasource: Making POST request to $url', name: 'CustomerRemoteDatasource');
+    log('CustomerRemoteDatasource: Request body: $requestBody', name: 'CustomerRemoteDatasource');
+    log('CustomerRemoteDatasource: Auth token: ${authData.token}', name: 'CustomerRemoteDatasource');
 
     final response = await http.post(
       Uri.parse(url),
@@ -52,11 +52,11 @@ class CustomerRemoteDatasource {
       },
       body: requestBody,
     );
-    log('CustomerRemoteDatasource: Response status code: ${response.statusCode}');
-    log('CustomerRemoteDatasource: Response body: ${response.body}');
+    log('CustomerRemoteDatasource: Response status code: ${response.statusCode}', name: 'CustomerRemoteDatasource');
+    log('CustomerRemoteDatasource: Response body: ${response.body}', name: 'CustomerRemoteDatasource');
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      log('CustomerRemoteDatasource: create customer success: \n${response.body}');
+      log('CustomerRemoteDatasource: create customer success: \n${response.body}', name: 'CustomerRemoteDatasource');
       final data = json.decode(response.body);
       if (data is Map<String, dynamic>) {
         return CustomerResponseModel.fromMap(data['data'] ?? data);
@@ -64,7 +64,7 @@ class CustomerRemoteDatasource {
         throw Exception('Unexpected response format');
       }
     } else {
-      log('CustomerRemoteDatasource: Failed to create customer: \n${response.body}');
+      log('CustomerRemoteDatasource: Failed to create customer: \n${response.body}', name: 'CustomerRemoteDatasource');
       throw Exception(
           'Failed to create customer: ${response.statusCode} - ${response.body}');
     }

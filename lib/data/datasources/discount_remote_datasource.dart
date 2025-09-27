@@ -19,11 +19,13 @@ class DiscountRemoteDatasource {
       );
 
       if (response.statusCode == 200) {
-        log('Success to get all discount response: ${response.body}');
+        log('Success to get all discount response: ${response.body}',
+            name: 'DiscountRemoteDatasource');
         final dynamic decodedBody = json.decode(response.body);
-        
+
         // The API returns a single response with all discounts in the 'data' array
-        if (decodedBody is Map<String, dynamic> && decodedBody['data'] is List) {
+        if (decodedBody is Map<String, dynamic> &&
+            decodedBody['data'] is List) {
           // Create a single DiscountResponseModel with all discounts in the data field
           return [
             DiscountResponseModel(
@@ -33,20 +35,21 @@ class DiscountRemoteDatasource {
                   .map((item) => DiscountModel.fromMap(item))
                   .toList(),
               syncTime: DateTime.now().toUtc(),
-              total: (decodedBody['total'] is int) 
-                  ? decodedBody['total'] 
+              total: (decodedBody['total'] is int)
+                  ? decodedBody['total']
                   : int.tryParse(decodedBody['total']?.toString() ?? '0') ?? 0,
             )
           ];
         }
-        
+
         throw Exception('Unexpected response format: ${response.body}');
       } else {
-        log('Failed to get all discount response: ${response.statusCode} - ${response.body}');
+        log('Failed to get all discount response: ${response.statusCode} - ${response.body}',
+            name: 'DiscountRemoteDatasource');
         throw Exception('Failed to load discounts: ${response.statusCode}');
       }
     } catch (e) {
-      log('Error in getDiscounts: $e');
+      log('Error in getDiscounts: $e', name: 'DiscountRemoteDatasource');
       rethrow;
     }
   }
@@ -63,11 +66,13 @@ class DiscountRemoteDatasource {
       );
 
       if (response.statusCode == 200) {
-        log('Success to get today discount response: ${response.body}');
+        log('Success to get today discount response: ${response.body}',
+            name: 'DiscountRemoteDatasource');
         final dynamic decodedBody = json.decode(response.body);
-        
+
         // The API returns a single response with all discounts in the 'data' array
-        if (decodedBody is Map<String, dynamic> && decodedBody['data'] is List) {
+        if (decodedBody is Map<String, dynamic> &&
+            decodedBody['data'] is List) {
           // Create a single DiscountResponseModel with all discounts in the data field
           return [
             DiscountResponseModel(
@@ -77,21 +82,22 @@ class DiscountRemoteDatasource {
                   .map((item) => DiscountModel.fromMap(item))
                   .toList(),
               syncTime: DateTime.now().toUtc(),
-              total: (decodedBody['total'] is int) 
-                  ? decodedBody['total'] 
+              total: (decodedBody['total'] is int)
+                  ? decodedBody['total']
                   : int.tryParse(decodedBody['total']?.toString() ?? '0') ?? 0,
             )
           ];
         }
-        
-        log('Unexpected response format: $decodedBody');
+
+        log('Unexpected response format: $decodedBody', name: 'DiscountRemoteDatasource');
         return [];
       } else {
-        log('Failed to get today\'s discounts: ${response.statusCode} - ${response.body}');
-        throw Exception('Failed to load today\'s discounts: ${response.statusCode}');
+        log('Failed to get today\'s discounts: ${response.statusCode} - ${response.body}', name: 'DiscountRemoteDatasource');
+        throw Exception(
+            'Failed to load today\'s discounts: ${response.statusCode}');
       }
     } catch (e) {
-      log('Error in getTodayDiscounts: $e');
+      log('Error in getTodayDiscounts: $e', name: 'DiscountRemoteDatasource');
       rethrow;
     }
   }
@@ -108,31 +114,31 @@ class DiscountRemoteDatasource {
       );
 
       if (response.statusCode == 200) {
-        log('Success to get discount by id response: ${response.body}');
+        log('Success to get discount by id response: ${response.body}',
+            name: 'DiscountRemoteDatasource');
         final dynamic jsonData = json.decode(response.body);
-        
+
         // Handle different response formats
         if (jsonData is Map<String, dynamic>) {
           // If response has a 'data' field, use that
           if (jsonData['data'] != null) {
             return DiscountResponseModel.fromMap(
-              jsonData['data'] is Map<String, dynamic> 
-                ? jsonData['data'] 
-                : {'data': jsonData['data']}
-            );
+                jsonData['data'] is Map<String, dynamic>
+                    ? jsonData['data']
+                    : {'data': jsonData['data']});
           }
           // If no 'data' field, assume the entire response is the discount
           return DiscountResponseModel.fromMap(jsonData);
         } else {
-          log('Unexpected response format: $jsonData');
+          log('Unexpected response format: $jsonData', name: 'DiscountRemoteDatasource');
           throw Exception('Invalid discount data format');
         }
       } else {
-        log('Failed to get discount by id: ${response.statusCode} - ${response.body}');
+        log('Failed to get discount by id: ${response.statusCode} - ${response.body}', name: 'DiscountRemoteDatasource');
         throw Exception('Failed to load discount: ${response.statusCode}');
       }
     } catch (e) {
-      log('Error in getDiscountById: $e');
+      log('Error in getDiscountById: $e', name: 'DiscountRemoteDatasource');
       rethrow;
     }
   }
@@ -151,20 +157,20 @@ class DiscountRemoteDatasource {
       );
 
       if (response.statusCode == 201) {
-        log('Success to create discount: ${response.body}');
+        log('Success to create discount: ${response.body}', name: 'DiscountRemoteDatasource');
         final dynamic jsonData = json.decode(response.body);
-        
+
         if (jsonData is Map<String, dynamic> && jsonData['data'] != null) {
           return DiscountModel.fromMap(jsonData['data']);
         } else {
           throw Exception('Invalid response format');
         }
       } else {
-        log('Failed to create discount: ${response.statusCode} - ${response.body}');
+        log('Failed to create discount: ${response.statusCode} - ${response.body}', name: 'DiscountRemoteDatasource');
         throw Exception('Failed to create discount: ${response.statusCode}');
       }
     } catch (e) {
-      log('Error in createDiscount: $e');
+      log('Error in createDiscount: $e', name: 'DiscountRemoteDatasource');
       rethrow;
     }
   }
@@ -181,14 +187,14 @@ class DiscountRemoteDatasource {
       );
 
       if (response.statusCode == 200) {
-        log('Success to delete discount: ${response.body}');
+        log('Success to delete discount: ${response.body}', name: 'DiscountRemoteDatasource');
         return true;
       } else {
-        log('Failed to delete discount: ${response.statusCode} - ${response.body}');
+        log('Failed to delete discount: ${response.statusCode} - ${response.body}', name: 'DiscountRemoteDatasource');
         throw Exception('Failed to delete discount: ${response.statusCode}');
       }
     } catch (e) {
-      log('Error in deleteDiscount: $e');
+      log('Error in deleteDiscount: $e', name: 'DiscountRemoteDatasource');
       rethrow;
     }
   }

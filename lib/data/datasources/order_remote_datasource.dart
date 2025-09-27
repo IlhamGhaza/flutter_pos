@@ -19,10 +19,10 @@ class OrderRemoteDatasource {
     );
 
     if (response.statusCode == 201) {
-      log('Success to create order response: ${response.body}');
+      log('Success to create order response: ${response.body}', name: 'OrderRemoteDatasource');
       return json.decode(response.body);
     } else {
-      log('failed to create order response: ${response.body}');
+      log('failed to create order response: ${response.body}', name: 'OrderRemoteDatasource');
       throw Exception('Failed to create order: ${response.body}');
     }
   }
@@ -38,11 +38,11 @@ class OrderRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      log('Success to get all order response: ${response.body}');
+      log('Success to get all order response: ${response.body}', name: 'OrderRemoteDatasource');
       final jsonData = json.decode(response.body);
       return List<Map<String, dynamic>>.from(jsonData['data']);
     } else {
-      log('failed to get all order response: ${response.body}');
+      log('failed to get all order response: ${response.body}', name: 'OrderRemoteDatasource');
       throw Exception('Failed to load orders');
     }
   }
@@ -58,11 +58,11 @@ class OrderRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      log('Success to get order by id response: ${response.body}');
+      log('Success to get order by id response: ${response.body}', name: 'OrderRemoteDatasource');
       final jsonData = json.decode(response.body);
       return jsonData['data'];
     } else {
-      log('failed to get order by id response: ${response.body}');
+      log('failed to get order by id response: ${response.body}', name: 'OrderRemoteDatasource');
       throw Exception('Failed to load order');
     }
   }

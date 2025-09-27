@@ -22,6 +22,8 @@ mixin _$DiscountEvent {
     required TResult Function() getTodayDiscounts,
     required TResult Function(int id) getDiscountById,
     required TResult Function(DiscountRequestModel request) createDiscount,
+    required TResult Function(int id, DiscountRequestModel request)
+        updateDiscount,
     required TResult Function(int id) deleteDiscount,
   }) =>
       throw _privateConstructorUsedError;
@@ -31,6 +33,7 @@ mixin _$DiscountEvent {
     TResult? Function()? getTodayDiscounts,
     TResult? Function(int id)? getDiscountById,
     TResult? Function(DiscountRequestModel request)? createDiscount,
+    TResult? Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult? Function(int id)? deleteDiscount,
   }) =>
       throw _privateConstructorUsedError;
@@ -40,6 +43,7 @@ mixin _$DiscountEvent {
     TResult Function()? getTodayDiscounts,
     TResult Function(int id)? getDiscountById,
     TResult Function(DiscountRequestModel request)? createDiscount,
+    TResult Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult Function(int id)? deleteDiscount,
     required TResult orElse(),
   }) =>
@@ -50,6 +54,7 @@ mixin _$DiscountEvent {
     required TResult Function(_GetTodayDiscounts value) getTodayDiscounts,
     required TResult Function(_GetDiscountById value) getDiscountById,
     required TResult Function(_CreateDiscount value) createDiscount,
+    required TResult Function(_UpdateDiscount value) updateDiscount,
     required TResult Function(_DeleteDiscount value) deleteDiscount,
   }) =>
       throw _privateConstructorUsedError;
@@ -59,6 +64,7 @@ mixin _$DiscountEvent {
     TResult? Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult? Function(_GetDiscountById value)? getDiscountById,
     TResult? Function(_CreateDiscount value)? createDiscount,
+    TResult? Function(_UpdateDiscount value)? updateDiscount,
     TResult? Function(_DeleteDiscount value)? deleteDiscount,
   }) =>
       throw _privateConstructorUsedError;
@@ -68,6 +74,7 @@ mixin _$DiscountEvent {
     TResult Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult Function(_GetDiscountById value)? getDiscountById,
     TResult Function(_CreateDiscount value)? createDiscount,
+    TResult Function(_UpdateDiscount value)? updateDiscount,
     TResult Function(_DeleteDiscount value)? deleteDiscount,
     required TResult orElse(),
   }) =>
@@ -140,6 +147,8 @@ class _$GetDiscountsImpl implements _GetDiscounts {
     required TResult Function() getTodayDiscounts,
     required TResult Function(int id) getDiscountById,
     required TResult Function(DiscountRequestModel request) createDiscount,
+    required TResult Function(int id, DiscountRequestModel request)
+        updateDiscount,
     required TResult Function(int id) deleteDiscount,
   }) {
     return getDiscounts();
@@ -152,6 +161,7 @@ class _$GetDiscountsImpl implements _GetDiscounts {
     TResult? Function()? getTodayDiscounts,
     TResult? Function(int id)? getDiscountById,
     TResult? Function(DiscountRequestModel request)? createDiscount,
+    TResult? Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult? Function(int id)? deleteDiscount,
   }) {
     return getDiscounts?.call();
@@ -164,6 +174,7 @@ class _$GetDiscountsImpl implements _GetDiscounts {
     TResult Function()? getTodayDiscounts,
     TResult Function(int id)? getDiscountById,
     TResult Function(DiscountRequestModel request)? createDiscount,
+    TResult Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult Function(int id)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -180,6 +191,7 @@ class _$GetDiscountsImpl implements _GetDiscounts {
     required TResult Function(_GetTodayDiscounts value) getTodayDiscounts,
     required TResult Function(_GetDiscountById value) getDiscountById,
     required TResult Function(_CreateDiscount value) createDiscount,
+    required TResult Function(_UpdateDiscount value) updateDiscount,
     required TResult Function(_DeleteDiscount value) deleteDiscount,
   }) {
     return getDiscounts(this);
@@ -192,6 +204,7 @@ class _$GetDiscountsImpl implements _GetDiscounts {
     TResult? Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult? Function(_GetDiscountById value)? getDiscountById,
     TResult? Function(_CreateDiscount value)? createDiscount,
+    TResult? Function(_UpdateDiscount value)? updateDiscount,
     TResult? Function(_DeleteDiscount value)? deleteDiscount,
   }) {
     return getDiscounts?.call(this);
@@ -204,6 +217,7 @@ class _$GetDiscountsImpl implements _GetDiscounts {
     TResult Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult Function(_GetDiscountById value)? getDiscountById,
     TResult Function(_CreateDiscount value)? createDiscount,
+    TResult Function(_UpdateDiscount value)? updateDiscount,
     TResult Function(_DeleteDiscount value)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -263,6 +277,8 @@ class _$GetTodayDiscountsImpl implements _GetTodayDiscounts {
     required TResult Function() getTodayDiscounts,
     required TResult Function(int id) getDiscountById,
     required TResult Function(DiscountRequestModel request) createDiscount,
+    required TResult Function(int id, DiscountRequestModel request)
+        updateDiscount,
     required TResult Function(int id) deleteDiscount,
   }) {
     return getTodayDiscounts();
@@ -275,6 +291,7 @@ class _$GetTodayDiscountsImpl implements _GetTodayDiscounts {
     TResult? Function()? getTodayDiscounts,
     TResult? Function(int id)? getDiscountById,
     TResult? Function(DiscountRequestModel request)? createDiscount,
+    TResult? Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult? Function(int id)? deleteDiscount,
   }) {
     return getTodayDiscounts?.call();
@@ -287,6 +304,7 @@ class _$GetTodayDiscountsImpl implements _GetTodayDiscounts {
     TResult Function()? getTodayDiscounts,
     TResult Function(int id)? getDiscountById,
     TResult Function(DiscountRequestModel request)? createDiscount,
+    TResult Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult Function(int id)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -303,6 +321,7 @@ class _$GetTodayDiscountsImpl implements _GetTodayDiscounts {
     required TResult Function(_GetTodayDiscounts value) getTodayDiscounts,
     required TResult Function(_GetDiscountById value) getDiscountById,
     required TResult Function(_CreateDiscount value) createDiscount,
+    required TResult Function(_UpdateDiscount value) updateDiscount,
     required TResult Function(_DeleteDiscount value) deleteDiscount,
   }) {
     return getTodayDiscounts(this);
@@ -315,6 +334,7 @@ class _$GetTodayDiscountsImpl implements _GetTodayDiscounts {
     TResult? Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult? Function(_GetDiscountById value)? getDiscountById,
     TResult? Function(_CreateDiscount value)? createDiscount,
+    TResult? Function(_UpdateDiscount value)? updateDiscount,
     TResult? Function(_DeleteDiscount value)? deleteDiscount,
   }) {
     return getTodayDiscounts?.call(this);
@@ -327,6 +347,7 @@ class _$GetTodayDiscountsImpl implements _GetTodayDiscounts {
     TResult Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult Function(_GetDiscountById value)? getDiscountById,
     TResult Function(_CreateDiscount value)? createDiscount,
+    TResult Function(_UpdateDiscount value)? updateDiscount,
     TResult Function(_DeleteDiscount value)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -414,6 +435,8 @@ class _$GetDiscountByIdImpl implements _GetDiscountById {
     required TResult Function() getTodayDiscounts,
     required TResult Function(int id) getDiscountById,
     required TResult Function(DiscountRequestModel request) createDiscount,
+    required TResult Function(int id, DiscountRequestModel request)
+        updateDiscount,
     required TResult Function(int id) deleteDiscount,
   }) {
     return getDiscountById(id);
@@ -426,6 +449,7 @@ class _$GetDiscountByIdImpl implements _GetDiscountById {
     TResult? Function()? getTodayDiscounts,
     TResult? Function(int id)? getDiscountById,
     TResult? Function(DiscountRequestModel request)? createDiscount,
+    TResult? Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult? Function(int id)? deleteDiscount,
   }) {
     return getDiscountById?.call(id);
@@ -438,6 +462,7 @@ class _$GetDiscountByIdImpl implements _GetDiscountById {
     TResult Function()? getTodayDiscounts,
     TResult Function(int id)? getDiscountById,
     TResult Function(DiscountRequestModel request)? createDiscount,
+    TResult Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult Function(int id)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -454,6 +479,7 @@ class _$GetDiscountByIdImpl implements _GetDiscountById {
     required TResult Function(_GetTodayDiscounts value) getTodayDiscounts,
     required TResult Function(_GetDiscountById value) getDiscountById,
     required TResult Function(_CreateDiscount value) createDiscount,
+    required TResult Function(_UpdateDiscount value) updateDiscount,
     required TResult Function(_DeleteDiscount value) deleteDiscount,
   }) {
     return getDiscountById(this);
@@ -466,6 +492,7 @@ class _$GetDiscountByIdImpl implements _GetDiscountById {
     TResult? Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult? Function(_GetDiscountById value)? getDiscountById,
     TResult? Function(_CreateDiscount value)? createDiscount,
+    TResult? Function(_UpdateDiscount value)? updateDiscount,
     TResult? Function(_DeleteDiscount value)? deleteDiscount,
   }) {
     return getDiscountById?.call(this);
@@ -478,6 +505,7 @@ class _$GetDiscountByIdImpl implements _GetDiscountById {
     TResult Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult Function(_GetDiscountById value)? getDiscountById,
     TResult Function(_CreateDiscount value)? createDiscount,
+    TResult Function(_UpdateDiscount value)? updateDiscount,
     TResult Function(_DeleteDiscount value)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -573,6 +601,8 @@ class _$CreateDiscountImpl implements _CreateDiscount {
     required TResult Function() getTodayDiscounts,
     required TResult Function(int id) getDiscountById,
     required TResult Function(DiscountRequestModel request) createDiscount,
+    required TResult Function(int id, DiscountRequestModel request)
+        updateDiscount,
     required TResult Function(int id) deleteDiscount,
   }) {
     return createDiscount(request);
@@ -585,6 +615,7 @@ class _$CreateDiscountImpl implements _CreateDiscount {
     TResult? Function()? getTodayDiscounts,
     TResult? Function(int id)? getDiscountById,
     TResult? Function(DiscountRequestModel request)? createDiscount,
+    TResult? Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult? Function(int id)? deleteDiscount,
   }) {
     return createDiscount?.call(request);
@@ -597,6 +628,7 @@ class _$CreateDiscountImpl implements _CreateDiscount {
     TResult Function()? getTodayDiscounts,
     TResult Function(int id)? getDiscountById,
     TResult Function(DiscountRequestModel request)? createDiscount,
+    TResult Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult Function(int id)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -613,6 +645,7 @@ class _$CreateDiscountImpl implements _CreateDiscount {
     required TResult Function(_GetTodayDiscounts value) getTodayDiscounts,
     required TResult Function(_GetDiscountById value) getDiscountById,
     required TResult Function(_CreateDiscount value) createDiscount,
+    required TResult Function(_UpdateDiscount value) updateDiscount,
     required TResult Function(_DeleteDiscount value) deleteDiscount,
   }) {
     return createDiscount(this);
@@ -625,6 +658,7 @@ class _$CreateDiscountImpl implements _CreateDiscount {
     TResult? Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult? Function(_GetDiscountById value)? getDiscountById,
     TResult? Function(_CreateDiscount value)? createDiscount,
+    TResult? Function(_UpdateDiscount value)? updateDiscount,
     TResult? Function(_DeleteDiscount value)? deleteDiscount,
   }) {
     return createDiscount?.call(this);
@@ -637,6 +671,7 @@ class _$CreateDiscountImpl implements _CreateDiscount {
     TResult Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult Function(_GetDiscountById value)? getDiscountById,
     TResult Function(_CreateDiscount value)? createDiscount,
+    TResult Function(_UpdateDiscount value)? updateDiscount,
     TResult Function(_DeleteDiscount value)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -657,6 +692,182 @@ abstract class _CreateDiscount implements DiscountEvent {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CreateDiscountImplCopyWith<_$CreateDiscountImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$UpdateDiscountImplCopyWith<$Res> {
+  factory _$$UpdateDiscountImplCopyWith(_$UpdateDiscountImpl value,
+          $Res Function(_$UpdateDiscountImpl) then) =
+      __$$UpdateDiscountImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({int id, DiscountRequestModel request});
+}
+
+/// @nodoc
+class __$$UpdateDiscountImplCopyWithImpl<$Res>
+    extends _$DiscountEventCopyWithImpl<$Res, _$UpdateDiscountImpl>
+    implements _$$UpdateDiscountImplCopyWith<$Res> {
+  __$$UpdateDiscountImplCopyWithImpl(
+      _$UpdateDiscountImpl _value, $Res Function(_$UpdateDiscountImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of DiscountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? request = null,
+  }) {
+    return _then(_$UpdateDiscountImpl(
+      null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      null == request
+          ? _value.request
+          : request // ignore: cast_nullable_to_non_nullable
+              as DiscountRequestModel,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$UpdateDiscountImpl implements _UpdateDiscount {
+  const _$UpdateDiscountImpl(this.id, this.request);
+
+  @override
+  final int id;
+  @override
+  final DiscountRequestModel request;
+
+  @override
+  String toString() {
+    return 'DiscountEvent.updateDiscount(id: $id, request: $request)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UpdateDiscountImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.request, request) || other.request == request));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, id, request);
+
+  /// Create a copy of DiscountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UpdateDiscountImplCopyWith<_$UpdateDiscountImpl> get copyWith =>
+      __$$UpdateDiscountImplCopyWithImpl<_$UpdateDiscountImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() getDiscounts,
+    required TResult Function() getTodayDiscounts,
+    required TResult Function(int id) getDiscountById,
+    required TResult Function(DiscountRequestModel request) createDiscount,
+    required TResult Function(int id, DiscountRequestModel request)
+        updateDiscount,
+    required TResult Function(int id) deleteDiscount,
+  }) {
+    return updateDiscount(id, request);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? getDiscounts,
+    TResult? Function()? getTodayDiscounts,
+    TResult? Function(int id)? getDiscountById,
+    TResult? Function(DiscountRequestModel request)? createDiscount,
+    TResult? Function(int id, DiscountRequestModel request)? updateDiscount,
+    TResult? Function(int id)? deleteDiscount,
+  }) {
+    return updateDiscount?.call(id, request);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? getDiscounts,
+    TResult Function()? getTodayDiscounts,
+    TResult Function(int id)? getDiscountById,
+    TResult Function(DiscountRequestModel request)? createDiscount,
+    TResult Function(int id, DiscountRequestModel request)? updateDiscount,
+    TResult Function(int id)? deleteDiscount,
+    required TResult orElse(),
+  }) {
+    if (updateDiscount != null) {
+      return updateDiscount(id, request);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_GetDiscounts value) getDiscounts,
+    required TResult Function(_GetTodayDiscounts value) getTodayDiscounts,
+    required TResult Function(_GetDiscountById value) getDiscountById,
+    required TResult Function(_CreateDiscount value) createDiscount,
+    required TResult Function(_UpdateDiscount value) updateDiscount,
+    required TResult Function(_DeleteDiscount value) deleteDiscount,
+  }) {
+    return updateDiscount(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_GetDiscounts value)? getDiscounts,
+    TResult? Function(_GetTodayDiscounts value)? getTodayDiscounts,
+    TResult? Function(_GetDiscountById value)? getDiscountById,
+    TResult? Function(_CreateDiscount value)? createDiscount,
+    TResult? Function(_UpdateDiscount value)? updateDiscount,
+    TResult? Function(_DeleteDiscount value)? deleteDiscount,
+  }) {
+    return updateDiscount?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_GetDiscounts value)? getDiscounts,
+    TResult Function(_GetTodayDiscounts value)? getTodayDiscounts,
+    TResult Function(_GetDiscountById value)? getDiscountById,
+    TResult Function(_CreateDiscount value)? createDiscount,
+    TResult Function(_UpdateDiscount value)? updateDiscount,
+    TResult Function(_DeleteDiscount value)? deleteDiscount,
+    required TResult orElse(),
+  }) {
+    if (updateDiscount != null) {
+      return updateDiscount(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _UpdateDiscount implements DiscountEvent {
+  const factory _UpdateDiscount(
+      final int id, final DiscountRequestModel request) = _$UpdateDiscountImpl;
+
+  int get id;
+  DiscountRequestModel get request;
+
+  /// Create a copy of DiscountEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$UpdateDiscountImplCopyWith<_$UpdateDiscountImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -733,6 +944,8 @@ class _$DeleteDiscountImpl implements _DeleteDiscount {
     required TResult Function() getTodayDiscounts,
     required TResult Function(int id) getDiscountById,
     required TResult Function(DiscountRequestModel request) createDiscount,
+    required TResult Function(int id, DiscountRequestModel request)
+        updateDiscount,
     required TResult Function(int id) deleteDiscount,
   }) {
     return deleteDiscount(id);
@@ -745,6 +958,7 @@ class _$DeleteDiscountImpl implements _DeleteDiscount {
     TResult? Function()? getTodayDiscounts,
     TResult? Function(int id)? getDiscountById,
     TResult? Function(DiscountRequestModel request)? createDiscount,
+    TResult? Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult? Function(int id)? deleteDiscount,
   }) {
     return deleteDiscount?.call(id);
@@ -757,6 +971,7 @@ class _$DeleteDiscountImpl implements _DeleteDiscount {
     TResult Function()? getTodayDiscounts,
     TResult Function(int id)? getDiscountById,
     TResult Function(DiscountRequestModel request)? createDiscount,
+    TResult Function(int id, DiscountRequestModel request)? updateDiscount,
     TResult Function(int id)? deleteDiscount,
     required TResult orElse(),
   }) {
@@ -773,6 +988,7 @@ class _$DeleteDiscountImpl implements _DeleteDiscount {
     required TResult Function(_GetTodayDiscounts value) getTodayDiscounts,
     required TResult Function(_GetDiscountById value) getDiscountById,
     required TResult Function(_CreateDiscount value) createDiscount,
+    required TResult Function(_UpdateDiscount value) updateDiscount,
     required TResult Function(_DeleteDiscount value) deleteDiscount,
   }) {
     return deleteDiscount(this);
@@ -785,6 +1001,7 @@ class _$DeleteDiscountImpl implements _DeleteDiscount {
     TResult? Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult? Function(_GetDiscountById value)? getDiscountById,
     TResult? Function(_CreateDiscount value)? createDiscount,
+    TResult? Function(_UpdateDiscount value)? updateDiscount,
     TResult? Function(_DeleteDiscount value)? deleteDiscount,
   }) {
     return deleteDiscount?.call(this);
@@ -797,6 +1014,7 @@ class _$DeleteDiscountImpl implements _DeleteDiscount {
     TResult Function(_GetTodayDiscounts value)? getTodayDiscounts,
     TResult Function(_GetDiscountById value)? getDiscountById,
     TResult Function(_CreateDiscount value)? createDiscount,
+    TResult Function(_UpdateDiscount value)? updateDiscount,
     TResult Function(_DeleteDiscount value)? deleteDiscount,
     required TResult orElse(),
   }) {

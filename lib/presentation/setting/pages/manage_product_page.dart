@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_pos/core/extensions/build_context_ext.dart';
 import 'package:flutter_pos/presentation/home/pages/dashboard_page.dart';
+import 'package:flutter_pos/core/utils/connectivity_utils.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../../core/components/spaces.dart';
 import '../../home/bloc/product/product_bloc.dart';
@@ -16,6 +19,33 @@ class ManageProductPage extends StatefulWidget {
 }
 
 class _ManageProductPageState extends State<ManageProductPage> {
+  StreamSubscription<List<ConnectivityResult>>? _connSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Local-first
+    context.read<ProductBloc>().add(const ProductEvent.fetchLocal());
+    // Try remote fetch to refresh local cache
+    ConnectivityUtils.isConnected().then((online) {
+      if (online && mounted) {
+        context.read<ProductBloc>().add(const ProductEvent.fetch());
+      }
+    });
+    // Auto-sync when online
+    _connSub = ConnectivityUtils.connectivityStream.listen((_) async {
+      final online = await ConnectivityUtils.isConnected();
+      if (online && mounted) {
+        context.read<ProductBloc>().add(const ProductEvent.fetch());
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _connSub?.cancel();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,6 +64,14 @@ class _ManageProductPageState extends State<ManageProductPage> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sync),
+            onPressed: () {
+              context.read<ProductBloc>().add(const ProductEvent.fetch());
+            },
+          )
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),

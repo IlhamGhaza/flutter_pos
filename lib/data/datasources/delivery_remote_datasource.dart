@@ -20,10 +20,10 @@ class DeliveryRemoteDatasource {
     );
 
     if (response.statusCode == 201) {
-      log('Success to create delivery response: ${response.body}');
+      log('Success to create delivery response: ${response.body}', name: 'DeliveryRemoteDatasource');
       return json.decode(response.body);
     } else {
-      log('failed to create delivery response: ${response.body}');
+      log('failed to create delivery response: ${response.body}', name: 'DeliveryRemoteDatasource');
       throw Exception('Failed to create delivery: ${response.body}');
     }
   }
@@ -39,11 +39,11 @@ class DeliveryRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      log('Success to get all delivery response: ${response.body}');
+      log('Success to get all delivery response: ${response.body}', name: 'DeliveryRemoteDatasource');
       final jsonData = json.decode(response.body);
       return List<Map<String, dynamic>>.from(jsonData['data']);
     } else {
-      log('failed to get all delivery response: ${response.body}');
+      log('failed to get all delivery response: ${response.body}', name: 'DeliveryRemoteDatasource');
       throw Exception('Failed to load deliveries');
     }
   }
@@ -59,11 +59,11 @@ class DeliveryRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      log('Success to get delivery by id response: ${response.body}');
+      log('Success to get delivery by id response: ${response.body}', name: 'DeliveryRemoteDatasource');
       final jsonData = json.decode(response.body);
       return jsonData['data'];
     } else {
-      log('failed to get delivery by id response: ${response.body}');
+      log('failed to get delivery by id response: ${response.body}', name: 'DeliveryRemoteDatasource');
       throw Exception('Failed to load delivery');
     }
   }

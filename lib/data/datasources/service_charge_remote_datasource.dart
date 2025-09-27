@@ -16,12 +16,12 @@ class ServiceChargeRemoteDatasource {
       },
     );
     if (response.statusCode == 200) {
-      log('Success to get all service charge response: ${response.body}');
+      log('Success to get all service charge response: ${response.body}', name: 'ServiceChargeRemoteDatasource');
       final jsonData = json.decode(response.body);
       final List<dynamic> data = jsonData['data'] ?? jsonData;
       return ServiceChargeResponseModel.fromList(data);
     } else {
-      log('failed to get all service charge response: ${response.body}');
+      log('failed to get all service charge response: ${response.body}', name: 'ServiceChargeRemoteDatasource');
       throw Exception('Failed to load service charges');
     }
   }

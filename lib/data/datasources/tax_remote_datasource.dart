@@ -16,12 +16,12 @@ class TaxRemoteDatasource {
       },
     );
     if (response.statusCode == 200) {
-      log('Success to get all tax response: ${response.body}');
+      log('Success to get all tax response: ${response.body}', name: 'TaxRemoteDatasource');
       final jsonData = json.decode(response.body);
       final List<dynamic> data = jsonData['data'] ?? jsonData;
       return TaxResponseModel.fromList(data);
     } else {
-      log('failed to get all tax response: ${response.body}');
+      log('failed to get all tax response: ${response.body}', name: 'TaxRemoteDatasource');
       throw Exception('Failed to load taxes');
     }
   }

@@ -27,6 +27,8 @@ class _ManageDiscountPageState extends State<ManageDiscountPage> {
   void initState() {
     super.initState();
     context.read<DiscountBloc>().add(const DiscountEvent.getDiscounts());
+    // initial sync to ensure remote data pulled
+    context.read<SyncDiscountBloc>().add(const SyncDiscountEvent.sync());
     // auto sync when online
     _connSub = ConnectivityUtils.connectivityStream.listen((results) async {
       final online = await ConnectivityUtils.isConnected();
@@ -60,6 +62,14 @@ class _ManageDiscountPageState extends State<ManageDiscountPage> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sync),
+            onPressed: () {
+              context.read<SyncDiscountBloc>().add(const SyncDiscountEvent.sync());
+            },
+          )
+        ],
       ),
       body: BlocListener<SyncDiscountBloc, SyncDiscountState>(
         listener: (context, state) {

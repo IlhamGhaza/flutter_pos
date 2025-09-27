@@ -22,10 +22,10 @@ class ReportRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      log('Success to get summary response: ${response.body}');
+      log('Success to get summary response: ${response.body}', name: 'ReportRemoteDatasource');
       return right(SummaryResponseModel.fromJson(response.body));
     } else {
-      log('failed to get summary response: ${response.body}');
+      log('failed to get summary response: ${response.body}', name: 'ReportRemoteDatasource');
       return left(response.body);
     }
   }
@@ -42,10 +42,10 @@ class ReportRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      log('Success to get product sales response: ${response.body}');
+      log('Success to get product sales response: ${response.body}', name: 'ReportRemoteDatasource');
       return right(ProductSalesResponseModel.fromJson(response.body));
     } else {
-      log('failed to get product sales response: ${response.body}');
+      log('failed to get product sales response: ${response.body}', name: 'ReportRemoteDatasource');
       return left(response.body);
     }
   }
@@ -61,10 +61,10 @@ class ReportRemoteDatasource {
     );
 
     if (response.statusCode == 200) {
-      log('Success to close cashier response: ${response.body}');
+      log('Success to close cashier response: ${response.body}', name: 'ReportRemoteDatasource');
       return right('Success');
     } else {
-      log('failed to close cashier response: ${response.body}');
+      log('failed to close cashier response: ${response.body}', name: 'ReportRemoteDatasource');
       return left(response.body);
     }
   }

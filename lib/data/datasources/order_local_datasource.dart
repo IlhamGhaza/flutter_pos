@@ -33,7 +33,10 @@ class OrderLocalDatasource {
       );
       return db;
     } catch (e) {
-      log('Error initializing database: $e');
+      log('Error initializing database: $e',
+          name: 'OrderLocalDatasource',
+          error: e,
+          stackTrace: StackTrace.current);
       rethrow;
     }
   }
@@ -152,7 +155,10 @@ class OrderLocalDatasource {
 
       return result;
     } catch (e) {
-      log('Error getting order history: $e');
+      log('Error getting order history: $e',
+          name: 'OrderLocalDatasource',
+          error: e,
+          stackTrace: StackTrace.current);
       return [];
     }
   }

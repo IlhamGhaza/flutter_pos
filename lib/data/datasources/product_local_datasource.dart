@@ -202,14 +202,14 @@ class ProductLocalDatasource {
   // Insert all discounts from API responses
   Future<void> insertAllDiscount(List<DiscountResponseModel> responses) async {
     try {
-      log('Starting to process ${responses.length} discount responses');
+      log('Starting to process ${responses.length} discount responses', name: 'ProductLocalDatasource');
       if (responses.isEmpty) {
-        log('No discount responses to process');
+        log('No discount responses to process', name: 'ProductLocalDatasource');
         return;
       }
 
       // Debug log the first response structure
-      log('First response structure: ${responses.first.toMap().toString()}');
+      log('First response structure: ${responses.first.toMap().toString()}', name: 'ProductLocalDatasource');
 
       final db = await database;
       final batch = db.batch();
@@ -221,15 +221,15 @@ class ProductLocalDatasource {
 
       // Process each response (should be just one response with all discounts in data array)
       for (final response in responses) {
-        log('Processing response with ${response.data.length} discounts');
+        log('Processing response with ${response.data.length} discounts', name: 'ProductLocalDatasource');
         if (response.data.isEmpty) {
-          log('Warning: Response has no discount data');
+          log('Warning: Response has no discount data', name: 'ProductLocalDatasource');
           continue;
         }
 
         // Process all discounts in the data array of the response
         for (final discount in response.data) {
-          log('Processing discount: ${discount.id} - ${discount.name}');
+          log('Processing discount: ${discount.id} - ${discount.name}', name: 'ProductLocalDatasource');
 
           batch.insert(
             'discounts',
@@ -267,17 +267,17 @@ class ProductLocalDatasource {
           );
 
           totalDiscounts++;
-          log('Queued discount for insertion: ${discount.id} - ${discount.name}');
+          log('Queued discount for insertion: ${discount.id} - ${discount.name}', name: 'ProductLocalDatasource');
         }
       }
 
       // Commit the batch
-      log('Committing batch of $totalDiscounts discounts to database...');
+      log('Committing batch of $totalDiscounts discounts to database...', name: 'ProductLocalDatasource');
       await batch.commit(noResult: true);
-      log('Successfully saved $totalDiscounts discounts to local database');
+      log('Successfully saved $totalDiscounts discounts to local database', name: 'ProductLocalDatasource');
     } catch (e, stackTrace) {
       log('Error saving discounts to local database',
-          error: e, stackTrace: stackTrace);
+          name: 'ProductLocalDatasource', error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
