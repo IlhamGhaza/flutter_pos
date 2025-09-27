@@ -38,10 +38,6 @@ import 'presentation/auth/bloc/login/login_bloc.dart';
 import 'presentation/home/bloc/logout/logout_bloc.dart';
 import 'presentation/setting/bloc/discount/bloc/discount_bloc.dart';
 import 'presentation/setting/bloc/sync_customer/sync_customer_bloc.dart';
-import 'presentation/setting/bloc/category_manage/category_manage_cubit.dart';
-import 'presentation/setting/bloc/discount_manage/discount_manage_cubit.dart';
-import 'presentation/setting/bloc/sync_category_upload/sync_category_upload_cubit.dart';
-import 'presentation/setting/bloc/sync_discount_upload/sync_discount_upload_cubit.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -188,18 +184,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ),
         BlocProvider(
           create: (context) => DiscountBloc(DiscountRemoteDatasource()),
-        ),
-        BlocProvider(
-          create: (context) => CategoryManageCubit(),
-        ),
-        BlocProvider(
-          create: (context) => DiscountManageCubit(),
-        ),
-        BlocProvider(
-          create: (context) => SyncCategoryUploadCubit(),
-        ),
-        BlocProvider(
-          create: (context) => SyncDiscountUploadCubit(),
         ),
         BlocProvider(
           create: (context) => CustomerBloc(CustomerRemoteDatasource()),

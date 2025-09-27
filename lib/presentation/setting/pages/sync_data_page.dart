@@ -29,8 +29,6 @@ import 'package:flutter_pos/presentation/setting/bloc/sync_service_charge/sync_s
 import 'package:flutter_pos/presentation/setting/bloc/sync_service_charge/sync_service_charge_state.dart';
 
 import 'package:flutter_pos/presentation/setting/bloc/sync_customer/sync_customer_bloc.dart';
-import 'package:flutter_pos/presentation/setting/bloc/sync_category_upload/sync_category_upload_cubit.dart';
-import 'package:flutter_pos/presentation/setting/bloc/sync_discount_upload/sync_discount_upload_cubit.dart';
 
 import '../../../l10n/app_localizations.dart';
 
@@ -128,9 +126,6 @@ class _SyncDataPageState extends State<SyncDataPage> {
       context.read<CategoryBloc>().add(const CategoryEvent.getCategories());
       context.read<CustomerBloc>().add(const CustomerEvent.fetch());
       context.read<SyncDiscountBloc>().add(const SyncDiscountEvent.sync());
-      // Also send pending local changes for categories and discounts
-      context.read<SyncCategoryUploadCubit>().sendPending();
-      context.read<SyncDiscountUploadCubit>().sendPending();
       context.read<SyncTaxBloc>().add(const SyncTaxEvent.sync());
       context
           .read<SyncServiceChargeBloc>()
@@ -219,70 +214,6 @@ class _SyncDataPageState extends State<SyncDataPage> {
 
               // Master Data Section
               _buildSectionHeader(AppLocalizations.of(context)!.masterData),
-              const SizedBox(height: 8),
-              // Send Pending Categories (local -> server)
-              BlocConsumer<SyncCategoryUploadCubit, SyncCategoryUploadState>(
-                listener: (context, state) {
-                  if (!state.loading && state.error == null && mounted) {
-                    SnackbarUtils(
-                      text: 'Synced ${state.syncedCount} categories',
-                      backgroundColor: Colors.green,
-                    ).showSuccessSnackBar(context);
-                    // Refresh from server after upload
-                    context.read<SyncCategoryUploadCubit>().fetchFromServer();
-                    _checkSyncStatus();
-                  } else if (state.error != null && mounted) {
-                    SnackbarUtils(
-                      text: state.error!,
-                      backgroundColor: Colors.red,
-                    ).showErrorSnackBar(context);
-                  }
-                },
-                builder: (context, state) {
-                  return _buildSyncStatusCard(
-                    title: 'Send Pending Categories',
-                    state: state,
-                    onSync: _isOnline
-                        ? () => context.read<SyncCategoryUploadCubit>().sendPending()
-                        : null,
-                    onRetry: _isOnline
-                        ? () => context.read<SyncCategoryUploadCubit>().sendPending()
-                        : null,
-                  );
-                },
-              ),
-              const SizedBox(height: 8),
-              // Send Pending Discounts (local -> server)
-              BlocConsumer<SyncDiscountUploadCubit, SyncDiscountUploadState>(
-                listener: (context, state) {
-                  if (!state.loading && state.error == null && mounted) {
-                    SnackbarUtils(
-                      text: 'Synced ${state.syncedCount} discounts',
-                      backgroundColor: Colors.green,
-                    ).showSuccessSnackBar(context);
-                    // Pull from server to refresh
-                    context.read<SyncDiscountBloc>().add(const SyncDiscountEvent.sync());
-                    _checkSyncStatus();
-                  } else if (state.error != null && mounted) {
-                    SnackbarUtils(
-                      text: state.error!,
-                      backgroundColor: Colors.red,
-                    ).showErrorSnackBar(context);
-                  }
-                },
-                builder: (context, state) {
-                  return _buildSyncStatusCard(
-                    title: 'Send Pending Discounts',
-                    state: state,
-                    onSync: _isOnline
-                        ? () => context.read<SyncDiscountUploadCubit>().sendPending()
-                        : null,
-                    onRetry: _isOnline
-                        ? () => context.read<SyncDiscountUploadCubit>().sendPending()
-                        : null,
-                  );
-                },
-              ),
               const SizedBox(height: 8),
 
               // Products
@@ -718,14 +649,6 @@ class _SyncDataPageState extends State<SyncDataPage> {
           errorMessage = message;
         },
       );
-    } else if (state is SyncCategoryUploadState) {
-      isLoading = state.loading;
-      hasError = state.error != null;
-      errorMessage = state.error;
-    } else if (state is SyncDiscountUploadState) {
-      isLoading = state.loading;
-      hasError = state.error != null;
-      errorMessage = state.error;
     }
 
     // Check persistent sync status if not currently syncing/error

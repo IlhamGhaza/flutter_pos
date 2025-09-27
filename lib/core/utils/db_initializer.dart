@@ -80,9 +80,6 @@ Future<void> createAllTables(Database db, int version) async {
       deleted_at TEXT
     )
   ''');
-  // Ensure offline sync columns exist for discounts
-  try { await db.execute('ALTER TABLE discounts ADD COLUMN is_synced INTEGER DEFAULT 1'); } catch (_) {}
-  try { await db.execute('ALTER TABLE discounts ADD COLUMN request_json TEXT'); } catch (_) {}
   await db.execute('''
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,10 +87,6 @@ Future<void> createAllTables(Database db, int version) async {
       name TEXT
     )
   ''');
-  // Ensure offline sync columns exist for categories
-  try { await db.execute('ALTER TABLE categories ADD COLUMN deleted_at TEXT'); } catch (_) {}
-  try { await db.execute('ALTER TABLE categories ADD COLUMN is_synced INTEGER DEFAULT 0'); } catch (_) {}
-  try { await db.execute('ALTER TABLE categories ADD COLUMN request_json TEXT'); } catch (_) {}
   await db.execute('''
     CREATE TABLE IF NOT EXISTS discounts (
       id INTEGER PRIMARY KEY,

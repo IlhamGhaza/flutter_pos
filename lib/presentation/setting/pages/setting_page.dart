@@ -20,7 +20,6 @@ import '../../home/bloc/logout/logout_bloc.dart';
 import '../bloc/sync_order/sync_order_bloc.dart';
 import '../widgets/theme_selector.dart';
 import '../widgets/language_selector.dart';
-import 'manage_item_page.dart';
 // import 'manage_product_page.dart';
 
 class SettingPage extends StatefulWidget {
@@ -32,11 +31,9 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   bool isOnline = true;
-  bool showSettingItem = false;
   @override
   void initState() {
     _checkConnectivity();
-    _loadRoleAccess();
     super.initState();
   }
 
@@ -45,27 +42,6 @@ class _SettingPageState extends State<SettingPage> {
     setState(() {
       isOnline = connected;
     });
-  }
-
-  Future<void> _loadRoleAccess() async {
-    try {
-      final auth = await AuthLocalDatasource().getAuthData();
-      // roles can be int or String, normalize to int when possible
-      int? roleInt;
-      if (auth.user.roles is int) {
-        roleInt = auth.user.roles as int;
-      } else if (auth.user.roles is String) {
-        roleInt = int.tryParse(auth.user.roles as String);
-      }
-      setState(() {
-        showSettingItem = roleInt == 1;
-      });
-    } catch (_) {
-      // If failed to load, keep default (hidden)
-      setState(() {
-        showSettingItem = false;
-      });
-    }
   }
 
   @override
@@ -126,17 +102,16 @@ class _SettingPageState extends State<SettingPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Row(
                   children: [
-                    if (showSettingItem)
-                      Flexible(
-                        child: MenuButton(
-                          iconPath: Assets.images.manageProduct.path,
-                          label: 'Setting Item',
-                          onPressed: () =>
-                              context.push(const ManageItemPage()),
-                          isImage: true,
-                        ),
-                      ),
-                    const SpaceWidth(15.0),
+                    // Flexible(
+                    //   child: MenuButton(
+                    //     iconPath: Assets.images.manageProduct.path,
+                    //     label: 'Setting Product',
+                    //     onPressed: () =>
+                    //         context.push(const ManageProductPage()),
+                    //     isImage: true,
+                    //   ),
+                    // ),
+                    // const SpaceWidth(15.0),
                     Flexible(
                       child: MenuButton(
                         iconPath: Assets.images.managePrinter.path,
