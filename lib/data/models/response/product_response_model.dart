@@ -71,9 +71,13 @@ class Product {
   String toJson() => json.encode(toMap());
 
   factory Product.fromMap(Map<String, dynamic> json) => Product(
-        id: json['id'] as int,
+        id: json['id'] is int
+            ? json['id'] as int
+            : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
         name: json['name'] as String? ?? '',
-        categoryId: json['category_id'] as int? ?? 0,
+        categoryId: json['category_id'] is int
+            ? json['category_id'] as int
+            : int.tryParse(json['category_id']?.toString() ?? '0') ?? 0,
         sku: json['sku'] as String? ?? '',
         description: json['description'] as String? ?? '',
         price: json['price'] is String
@@ -83,14 +87,16 @@ class Product {
         expiredDate: json['expired_date'] != null
             ? DateTime.tryParse(json['expired_date'])
             : null,
-        stock: json['stock'] as int? ?? 0,
+        stock: json['stock'] is String
+            ? (double.tryParse(json['stock']) ?? 0.0).toInt()
+            : (json['stock']?.toInt() ?? 0),
         image: json['image'] as String? ?? 'products/default-product.jpg',
         isBestSeller: json['is_best_seller'] is bool 
             ? json['is_best_seller'] as bool 
             : (json['is_best_seller'] as int?) == 1,
-        isReady: json['is_ready'] is bool 
-            ? json['is_ready'] as bool 
-            : (json['is_ready'] as int?) == 1,
+        isReady: json['isReady'] is bool 
+            ? json['isReady'] as bool 
+            : (json['isReady'] as int?) == 1,
         createdAt: DateTime.parse(json['created_at'] as String? ?? DateTime.now().toIso8601String()),
         updatedAt: DateTime.parse(json['updated_at'] as String? ?? DateTime.now().toIso8601String()),
         deletedAt: json['deleted_at'] != null
