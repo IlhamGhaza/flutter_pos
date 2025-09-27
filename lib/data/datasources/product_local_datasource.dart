@@ -39,6 +39,81 @@ class ProductLocalDatasource {
     );
   }
 
+  // Pending queue helpers (created lazily, no destructive migration)
+  Future<void> _ensurePendingTables() async {
+    final db = await instance.database;
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS pending_categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        action TEXT NOT NULL,
+        payload_json TEXT NOT NULL,
+        local_temp_id INTEGER,
+        created_at TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS pending_discounts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        action TEXT NOT NULL,
+        payload_json TEXT NOT NULL,
+        local_temp_id INTEGER,
+        created_at TEXT
+      )
+    ''');
+  }
+
+  Future<void> enqueuePendingCategory({
+    required String action, // 'create' | 'update' | 'delete'
+    required Map<String, dynamic> payload,
+    int? localTempId,
+  }) async {
+    await _ensurePendingTables();
+    final db = await instance.database;
+    await db.insert('pending_categories', {
+      'action': action,
+      'payload_json': json.encode(payload),
+      'local_temp_id': localTempId,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getPendingCategoriesQueue() async {
+    await _ensurePendingTables();
+    final db = await instance.database;
+    return db.query('pending_categories', orderBy: 'id ASC');
+  }
+
+  Future<void> removePendingCategoryById(int id) async {
+    final db = await instance.database;
+    await db.delete('pending_categories', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> enqueuePendingDiscount({
+    required String action, // 'create' | 'update' | 'delete'
+    required Map<String, dynamic> payload,
+    int? localTempId,
+  }) async {
+    await _ensurePendingTables();
+    final db = await instance.database;
+    await db.insert('pending_discounts', {
+      'action': action,
+      'payload_json': json.encode(payload),
+      'local_temp_id': localTempId,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getPendingDiscountsQueue() async {
+    await _ensurePendingTables();
+    final db = await instance.database;
+    return db.query('pending_discounts', orderBy: 'id ASC');
+  }
+
+  Future<void> removePendingDiscountById(int id) async {
+    final db = await instance.database;
+    await db.delete('pending_discounts', where: 'id = ?', whereArgs: [id]);
+  }
+
   // Future<void> _createDB(Database db, int version) async {
   //   // Tidak perlu lagi, sudah digantikan oleh createAllTables
   // }
@@ -219,6 +294,47 @@ class ProductLocalDatasource {
     return result.map((e) => _discountFromMap(e)).toList();
   }
 
+  Future<void> upsertDiscountLocal(DiscountModel d) async {
+    final db = await instance.database;
+    await db.insert(
+      'discounts',
+      {
+        'id': d.id,
+        'name': d.name,
+        'description': d.description,
+        'type': d.type,
+        'value': d.value,
+        'status': d.status,
+        'min_quantity': d.minQuantity,
+        'max_quantity': d.maxQuantity,
+        'min_amount': d.minAmount,
+        'buy_quantity': d.buyQuantity,
+        'get_quantity': d.getQuantity,
+        'quantity_tiers': d.quantityTiers?.toString(),
+        'apply_to': d.applyTo,
+        'applicable_items': d.applicableItems?.toString(),
+        'customer_type': d.customerType,
+        'valid_days': (d.validDays).join(','),
+        'start_date': d.startDate.toIso8601String(),
+        'expired_date': d.expiredDate?.toIso8601String(),
+        'start_time': d.startTime,
+        'end_time': d.endTime,
+        'combinable': d.combinable ? 1 : 0,
+        'usage_limit': d.usageLimit,
+        'usage_count': d.usageCount,
+        'created_at': d.createdAt.toIso8601String(),
+        'updated_at': d.updatedAt.toIso8601String(),
+        'deleted_at': d.deletedAt?.toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteDiscountLocal(int id) async {
+    final db = await instance.database;
+    await db.delete('discounts', where: 'id = ?', whereArgs: [id]);
+  }
+
   DiscountResponseModel _discountFromMap(Map<String, dynamic> map) {
     return DiscountResponseModel(
       message: 'Discount loaded from local database',
@@ -284,6 +400,24 @@ class ProductLocalDatasource {
     final result = await db.query('categories');
 
     return result.map((e) => Category.fromLocal(e)).toList();
+  }
+
+  // upsert single category locally by category_id (negative for offline temp)
+  Future<void> upsertCategoryLocal({required int categoryId, required String name}) async {
+    final db = await instance.database;
+    await db.insert(
+      'categories',
+      {
+        'category_id': categoryId,
+        'name': name,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteCategoryLocal(int categoryId) async {
+    final db = await instance.database;
+    await db.delete('categories', where: 'category_id = ?', whereArgs: [categoryId]);
   }
 
   //save draft order

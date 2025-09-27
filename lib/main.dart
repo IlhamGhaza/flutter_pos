@@ -182,14 +182,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         BlocProvider(
           create: (context) => CloseCashierBloc(ReportRemoteDatasource()),
         ),
-        BlocProvider(
-          create: (context) => DiscountBloc(DiscountRemoteDatasource()),
-        ),
+        // Removed duplicate DiscountBloc provider (already provided above)
         BlocProvider(
           create: (context) => CustomerBloc(CustomerRemoteDatasource()),
         ),
         BlocProvider(
-          create: (context) => SyncDiscountBloc(DiscountRemoteDatasource()),
+          create: (context) => SyncDiscountBloc(DiscountRemoteDatasource(), ProductLocalDatasource.instance),
         ),
         BlocProvider(
           create: (context) => SyncTaxBloc(TaxRemoteDatasource()),
@@ -207,7 +205,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         //   )..add(const OrderEvent.started()),
         // ),
         BlocProvider(
-          create: (context) => DiscountBloc(DiscountRemoteDatasource()),
+          create: (context) => DiscountBloc(
+              DiscountRemoteDatasource(), ProductLocalDatasource.instance),
         ),
         BlocProvider(
           create: (context) => SyncCustomerBloc(CustomerRemoteDatasource()),

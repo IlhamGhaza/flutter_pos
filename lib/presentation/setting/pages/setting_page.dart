@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_pos/core/extensions/build_context_ext.dart';
 import 'package:flutter_pos/core/utils/snackbar_utils.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
+import 'package:flutter_pos/data/models/response/auth_response_model.dart';
 import 'package:flutter_pos/presentation/auth/pages/login_page.dart';
 import 'package:flutter_pos/presentation/home/pages/dashboard_page.dart';
 import 'package:flutter_pos/presentation/setting/bloc/report/close_cashier/close_cashier_bloc.dart';
+import 'package:flutter_pos/presentation/setting/pages/manage_item.dart';
 import 'package:flutter_pos/presentation/setting/pages/manage_printer_page.dart';
 import 'package:flutter_pos/presentation/setting/pages/report/report_page.dart';
 import 'package:flutter_pos/presentation/setting/pages/save_server_key_page.dart';
@@ -31,9 +33,12 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   bool isOnline = true;
+  User? currentUser;
+
   @override
   void initState() {
     _checkConnectivity();
+    _loadUserData();
     super.initState();
   }
 
@@ -42,6 +47,24 @@ class _SettingPageState extends State<SettingPage> {
     setState(() {
       isOnline = connected;
     });
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final authData = await AuthLocalDatasource().getAuthData();
+      setState(() {
+        currentUser = authData.user;
+      });
+    } catch (e) {
+      // Handle error if auth data is not available
+      print('Error loading user data: $e');
+    }
+  }
+
+  bool _hasAdminRole() {
+    if (currentUser == null) return false;
+    // Check if roles is 1 (admin role)
+    return currentUser!.roles == 1 || currentUser!.roles == '1';
   }
 
   @override
@@ -99,19 +122,23 @@ class _SettingPageState extends State<SettingPage> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                ),
                 child: Row(
                   children: [
-                    // Flexible(
-                    //   child: MenuButton(
-                    //     iconPath: Assets.images.manageProduct.path,
-                    //     label: 'Setting Product',
-                    //     onPressed: () =>
-                    //         context.push(const ManageProductPage()),
-                    //     isImage: true,
-                    //   ),
-                    // ),
-                    // const SpaceWidth(15.0),
+                    // Only show Setting Product for admin role (roles == 1)
+                    if (_hasAdminRole()) ...[
+                      Flexible(
+                        child: MenuButton(
+                          iconPath: Assets.images.manageProduct.path,
+                          label: 'Setting Product',
+                          onPressed: () => context.push(const ManageItemPage()),
+                          isImage: true,
+                        ),
+                      ),
+                      const SpaceWidth(15.0),
+                    ],
                     Flexible(
                       child: MenuButton(
                         iconPath: Assets.images.managePrinter.path,
@@ -182,7 +209,8 @@ class _SettingPageState extends State<SettingPage> {
 
                               context.pushReplacement(const LoginPage());
                               SnackbarUtils(
-                                text: AppLocalizations.of(context)!.closeKasirSuccess,
+                                text: AppLocalizations.of(context)!
+                                    .closeKasirSuccess,
                                 backgroundColor: Colors.green,
                               ).showSuccessSnackBar(context);
                             },
@@ -196,15 +224,18 @@ class _SettingPageState extends State<SettingPage> {
                                 context: context,
                                 builder: (context) {
                                   return AlertDialog(
-                                    title: Text(AppLocalizations.of(context)!.closeKasir),
-                                    content: Text(
-                                        AppLocalizations.of(context)!.areYouSureWantToCloseKasir),
+                                    title: Text(AppLocalizations.of(context)!
+                                        .closeKasir),
+                                    content: Text(AppLocalizations.of(context)!
+                                        .areYouSureWantToCloseKasir),
                                     actions: [
                                       TextButton(
                                         onPressed: () {
                                           Navigator.pop(context);
                                         },
-                                        child: Text(AppLocalizations.of(context)!.cancel),
+                                        child: Text(
+                                            AppLocalizations.of(context)!
+                                                .cancel),
                                       ),
                                       TextButton(
                                         onPressed: () {
@@ -214,7 +245,8 @@ class _SettingPageState extends State<SettingPage> {
                                               );
                                           Navigator.pop(context);
                                         },
-                                        child: Text(AppLocalizations.of(context)!.yes),
+                                        child: Text(
+                                            AppLocalizations.of(context)!.yes),
                                       ),
                                     ],
                                   );

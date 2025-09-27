@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter_pos/core/constants/variables.dart';
 import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
+import 'package:flutter_pos/data/models/request/discount_request_model.dart';
 import 'package:flutter_pos/data/models/response/discount_response_model.dart';
 
 class DiscountRemoteDatasource {
@@ -132,6 +133,62 @@ class DiscountRemoteDatasource {
       }
     } catch (e) {
       log('Error in getDiscountById: $e');
+      rethrow;
+    }
+  }
+
+  Future<DiscountModel> createDiscount(DiscountRequestModel request) async {
+    try {
+      final authData = await AuthLocalDatasource().getAuthData();
+      final response = await http.post(
+        Uri.parse('${Variables.baseUrl}/api/discounts'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${authData.token}',
+        },
+        body: json.encode(request.toMap()),
+      );
+
+      if (response.statusCode == 201) {
+        log('Success to create discount: ${response.body}');
+        final dynamic jsonData = json.decode(response.body);
+        
+        if (jsonData is Map<String, dynamic> && jsonData['data'] != null) {
+          return DiscountModel.fromMap(jsonData['data']);
+        } else {
+          throw Exception('Invalid response format');
+        }
+      } else {
+        log('Failed to create discount: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to create discount: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Error in createDiscount: $e');
+      rethrow;
+    }
+  }
+
+  Future<bool> deleteDiscount(int id) async {
+    try {
+      final authData = await AuthLocalDatasource().getAuthData();
+      final response = await http.delete(
+        Uri.parse('${Variables.baseUrl}/api/discounts/$id'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${authData.token}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        log('Success to delete discount: ${response.body}');
+        return true;
+      } else {
+        log('Failed to delete discount: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to delete discount: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Error in deleteDiscount: $e');
       rethrow;
     }
   }

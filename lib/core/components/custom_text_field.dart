@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
   final Function(String value)? onChanged;
   final bool obscureText;
   final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
   final bool showLabel;
   final Widget? suffixIcon;
 
@@ -19,7 +20,7 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType,
     this.showLabel = true,
-    this.suffixIcon,
+    this.suffixIcon, this.validator,
   });
 
   @override
@@ -38,6 +39,7 @@ class CustomTextField extends StatelessWidget {
           const SpaceHeight(12.0),
         ],
         TextFormField(
+          validator: validator,
           controller: controller,
           onChanged: onChanged,
           obscureText: obscureText,

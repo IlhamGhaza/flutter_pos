@@ -8,5 +8,6 @@ class DiscountState with _$DiscountState {
       _Loaded;
   const factory DiscountState.loadedDetail(DiscountResponseModel discount) =
       _LoadedDetail;
+  const factory DiscountState.success(String message) = _Success;
   const factory DiscountState.error(String message) = _Error;
 }
