@@ -270,6 +270,10 @@ class _SettingPageState extends State<SettingPage> {
                   state.maybeWhen(
                     success: () {
                       AuthLocalDatasource().removeAuthData();
+                      SnackbarUtils(
+                        text: 'Logout successfully',
+                        backgroundColor: Colors.green,
+                      ).showSuccessSnackBar(context);
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
@@ -279,12 +283,12 @@ class _SettingPageState extends State<SettingPage> {
                     },
                     error: (message) {
                       AuthLocalDatasource().removeAuthData();
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginPage()),
-                        (route) => false,
-                      );
+                      // Navigator.pushAndRemoveUntil(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //       builder: (context) => const LoginPage()),
+                      //   (route) => false,
+                      // );
                       SnackbarUtils(
                         text: message,
                         backgroundColor: Colors.red,

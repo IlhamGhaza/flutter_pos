@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_pos/core/utils/snackbar_utils.dart';
 import 'package:flutter_pos/core/widgets/responsive_layout.dart';
+import 'package:flutter_pos/data/datasources/auth_local_datasource.dart';
+import 'package:flutter_pos/l10n/app_localizations.dart';
+import 'package:flutter_pos/presentation/auth/pages/login_page.dart';
+import 'package:flutter_pos/presentation/home/bloc/logout/logout_bloc.dart';
 import 'package:flutter_pos/presentation/home/pages/desktop/desktop_layout.dart';
 import 'package:flutter_pos/presentation/home/widgets/nav_item.dart';
 import 'package:flutter_pos/presentation/home/pages/tablet/tablet_layout.dart';
@@ -20,9 +25,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  // Logout button with distinct styling
-  late final Map<String, dynamic> _logoutButton;
-
   final List<Widget> _pages = [
     const HomePage(),
     const OrderPage(), // Only accessible on mobile
@@ -31,27 +33,6 @@ class _DashboardPageState extends State<DashboardPage> {
   ];
 
   int _selectedIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _logoutButton = {
-      'icon': Icons.logout_outlined,
-      'activeIcon': Icons.logout,
-      'label': 'Logout',
-      'color': Colors.red,
-      'onTap': () {
-        // Handle logout
-        if (mounted) {
-          SnackbarUtils(
-            text: 'Logout',
-            backgroundColor: Colors.red,
-          ).showErrorSnackBar(context);
-        }
-      },
-    };
-  }
 
   // Navigation items for sidebar with improved styling
   // For mobile: Home (0), Orders (1), History (2), Setting (3)
@@ -149,6 +130,99 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
+  void _showLogoutDialog() {
+    final localizations = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(localizations.logout),
+        content: Text(localizations.confirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(localizations.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              context.read<LogoutBloc>().add(const LogoutEvent.logout());
+            },
+            child: Text(localizations.logout),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogoutSidebarItem(SidebarTheme sidebarTheme, bool isCollapsed) {
+    final localizations = AppLocalizations.of(context)!;
+
+    return BlocConsumer<LogoutBloc, LogoutState>(
+      listener: (context, state) {
+        state.maybeWhen(
+          success: () {
+            AuthLocalDatasource().removeAuthData();
+            if (!mounted) return;
+            SnackbarUtils(
+              text: 'Logout successfully',
+              backgroundColor: Colors.green,
+            ).showSuccessSnackBar(context);
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+              (route) => false,
+            );
+          },
+          error: (message) {
+            AuthLocalDatasource().removeAuthData();
+            if (!mounted) return;
+            // Navigator.pushAndRemoveUntil(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => const LoginPage()),
+            //   (route) => false,
+            // );
+            SnackbarUtils(
+              text: message,
+              backgroundColor: Colors.red,
+            ).showErrorSnackBar(context);
+          },
+          orElse: () {},
+        );
+      },
+      builder: (context, state) {
+        final isLoading = state.maybeWhen(
+          loading: () => true,
+          orElse: () => false,
+        );
+
+        return _buildSidebarItem(
+          icon: Icons.logout_outlined,
+          activeIcon: Icons.logout,
+          label: localizations.logout,
+          isSelected: false,
+          isCollapsed: isCollapsed,
+          color: Colors.red,
+          onTap: () {
+            if (!isLoading) {
+              _showLogoutDialog();
+            }
+          },
+          sidebarTheme: sidebarTheme,
+          trailing: isLoading && !isCollapsed
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.red,
+                  ),
+                )
+              : null,
+        );
+      },
+    );
+  }
+
   Widget _buildMobileLayout() {
     return Scaffold(
       body: _pages[_selectedIndex],
@@ -232,16 +306,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   // Logout Button
                   Padding(
                     padding: _sidebarTheme.padding,
-                    child: _buildSidebarItem(
-                      icon: _logoutButton['icon'],
-                      activeIcon: _logoutButton['activeIcon'],
-                      label: _logoutButton['label'],
-                      isSelected: false,
-                      isCollapsed: isTablet,
-                      color: _logoutButton['color'],
-                      onTap: _logoutButton['onTap'],
-                      sidebarTheme: _sidebarTheme,
-                    ),
+                    child: _buildLogoutSidebarItem(_sidebarTheme, isTablet),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -340,6 +405,7 @@ class _DashboardPageState extends State<DashboardPage> {
     required SidebarTheme sidebarTheme,
     IconData? activeIcon,
     Color? color,
+    Widget? trailing,
   }) {
     final itemColor = color ?? sidebarTheme.selectedItemColor;
 
@@ -367,18 +433,24 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 if (!isCollapsed) ...[
                   const SizedBox(width: 16),
-                  Text(
-                    label,
-                    style: sidebarTheme.textStyle.copyWith(
-                      color: isSelected
-                          ? itemColor
-                          : sidebarTheme.unselectedItemColor,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: sidebarTheme.textStyle.copyWith(
+                        color: isSelected
+                            ? itemColor
+                            : sidebarTheme.unselectedItemColor,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
+                  if (trailing != null) ...[
+                    const SizedBox(width: 12),
+                    trailing,
+                  ],
                 ],
               ],
             ),
