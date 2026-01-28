@@ -26,6 +26,7 @@ import 'package:flutter_pos/presentation/order/widgets/order_card.dart';
 import 'package:flutter_pos/presentation/order/widgets/payment_cash_dialog.dart';
 import 'package:flutter_pos/presentation/order/widgets/payment_qris_dialog.dart';
 import 'package:flutter_pos/presentation/order/widgets/process_button.dart';
+import 'package:flutter_pos/core/constants/colors.dart';
 
 import '../../../data/models/response/discount_response_model.dart';
 import 'package:flutter_pos/data/models/request/customer_request_model.dart';
@@ -1523,7 +1524,42 @@ class _OrderPageState extends State<OrderPage> {
                               ),
                             ),
                             const SpaceWidth(16.0),
-                            const SizedBox(height: 12.0),
+                             if (_isTaxActive || _isServiceChargeActive) ...[
+                              const SpaceHeight(12.0),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0, vertical: 10.0),
+                                decoration: BoxDecoration(
+                                  color: AppColors.light,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  border: Border.all(
+                                    color: AppColors.blueLight,
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(
+                                      Icons.info_outline,
+                                      size: 16,
+                                      color: AppColors.primary,
+                                    ),
+                                    const SpaceWidth(8.0),
+                                    Expanded(
+                                      child: Text(
+                                        'Transaksi akan dikenakan pajak dan/atau service charge sesuai pengaturan.',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            // const SizedBox(height: 12.0),
                           ],
                         );
                       },
